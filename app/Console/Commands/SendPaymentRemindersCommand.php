@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Console\Commands;
+
+use App\Enums\InvoiceStatus;
+use App\Models\Invoice;
+use App\Notifications\PaymentReceived;
+use App\Models\User;
+use App\Enums\UserRole;
+use Illuminate\Console\Command;
+
+class SendPaymentRemindersCommand extends Command
+{
+    protected $signature = 'invoices:send-reminders';
+
+    protected $description = 'Отправить напоминания по неоплаченным счетам старше 3 дней';
+
+    public function handle(): int
+    {
+        $invoices = Invoice::where('status', InvoiceStatus::Pending)
+            ->where('created_at', '<=', now()->subDays(3))
+            ->with('client', 'task')
+            ->get();
+
+        $this->info("Неоплаченных счетов для напоминания: {$invoices->count()}");
+
+        foreach ($invoices as $invoice) {
+            $invoice->client->notify(new \App\Notifications\InvoiceCreated($invoice));
+            $this->line("  → Напоминание отправлено: {$invoice->client->email} (счёт #{$invoice->id})");
+        }
+
+        return self::SUCCESS;
+    }
+}
