@@ -13,11 +13,15 @@ class YooKassaService
 
     public function __construct()
     {
+        $shopId = config('services.yookassa.shop_id');
+        $secretKey = config('services.yookassa.secret_key');
+
+        if (empty($shopId) || empty($secretKey)) {
+            throw new \RuntimeException('YooKassa credentials are not configured. Set YOOKASSA_SHOP_ID and YOOKASSA_SECRET_KEY in .env');
+        }
+
         $this->client = new Client();
-        $this->client->setAuth(
-            (string) config('services.yookassa.shop_id'),
-            (string) config('services.yookassa.secret_key'),
-        );
+        $this->client->setAuth((int) $shopId, $secretKey);
     }
 
     public function createPayment(Invoice $invoice, string $returnUrl): object

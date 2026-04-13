@@ -47,7 +47,8 @@ class InvoiceController extends Controller
     {
         $this->authorize('pay', $invoice);
 
-        $confirmationUrl = $action->execute($invoice);
+        $returnUrl = route('client.invoices.show', $invoice);
+        $confirmationUrl = $action->execute($invoice, $returnUrl);
 
         return redirect()->away($confirmationUrl);
     }

@@ -84,7 +84,7 @@ Route::middleware('auth')->group(function () {
 // Webhook (no auth, verify middleware)
 Route::post('/webhooks/yookassa', [YooKassaWebhookController::class, 'handle'])
     ->middleware('yookassa_webhook')
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class])
     ->name('webhooks.yookassa');
 
 // Redirect root

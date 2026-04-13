@@ -21,6 +21,8 @@ class HandleWebhookAction
 
     public function execute(array $data): void
     {
+        Log::info('YooKassa webhook received', ['event' => $data['event'] ?? 'unknown']);
+
         $factory = new NotificationFactory();
         $notification = $factory->factory($data);
         $payment = $notification->getObject();
