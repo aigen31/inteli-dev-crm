@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2E2A78"/>
+      <stop offset="100%" stop-color="#4338CA"/>
+    </linearGradient>
+    <linearGradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#C7D2FE"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bg)"/>
+
+  <!-- Decorative -->
+  <circle cx="150" cy="700" r="200" fill="#4F46E5" opacity="0.1"/>
+  <circle cx="1060" cy="90" r="180" fill="#6366F1" opacity="0.08"/>
+  <circle cx="200" cy="180" r="120" fill="#818CF8" opacity="0.06"/>
+  <circle cx="1000" cy="650" r="140" fill="#4F46E5" opacity="0.07"/>
+
+  <!-- Sparkles -->
+  <path d="M200 400 L204 390 L214 386 L204 382 L200 372 L196 382 L186 386 L196 390Z" fill="#A5B4FC" opacity="0.25"/>
+  <path d="M1000 350 L1003 343 L1010 341 L1003 339 L1000 332 L997 339 L990 341 L997 343Z" fill="#C7D2FE" opacity="0.2"/>
+  <path d="M350 650 L352 645 L357 643 L352 641 L350 636 L348 641 L343 643 L348 645Z" fill="#A5B4FC" opacity="0.2"/>
+
+  <!-- Speedometer gauge (center 600,380 r=220) -->
+  <!--
+    Arc from ~170° to ~10° going CCW (sweep=0) through 90° (bottom).
+    0% at left (~170°), 100% at right (~10°). Total ~160°.
+    Zones: Red 0-22%, Yellow 22-48%, Green 48-100%.
+    All arcs < 180° → large-arc=0, sweep=0 (CCW through bottom).
+  -->
+  <g transform="translate(600, 380)">
+    <!-- Outer ring background: 170° → 10° through bottom -->
+    <path d="M -217 38 A 220 220 0 0 0 217 38" fill="none" stroke="#3730A3" stroke-width="28" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- Red zone 0-22% (170° → 134.8°) -->
+    <path d="M -217 38 A 220 220 0 0 0 -155 156" fill="none" stroke="#EF4444" stroke-width="24" opacity="0.7"/>
+    <!-- Yellow zone 22-48% (134.8° → 94.8°) -->
+    <path d="M -155 156 A 220 220 0 0 0 -18 220" fill="none" stroke="#FBBF24" stroke-width="24" opacity="0.7"/>
+    <!-- Green zone 48-100% (94.8° → 10°) -->
+    <path d="M -18 220 A 220 220 0 0 0 217 38" fill="none" stroke="#4ADE80" stroke-width="24" opacity="0.8"/>
+
+    <!-- Tick marks (radial, from r=195 to r=240) -->
+    <line x1="-192" y1="34" x2="-237" y2="42" stroke="#C7D2FE" stroke-width="2" opacity="0.4"/>
+    <line x1="-156" y1="139" x2="-192" y2="171" stroke="#C7D2FE" stroke-width="2" opacity="0.4"/>
+    <line x1="-76" y1="196" x2="-94" y2="241" stroke="#C7D2FE" stroke-width="2" opacity="0.4"/>
+    <line x1="0" y1="200" x2="0" y2="248" stroke="#C7D2FE" stroke-width="2" opacity="0.4"/>
+    <line x1="76" y1="196" x2="94" y2="241" stroke="#C7D2FE" stroke-width="2" opacity="0.4"/>
+    <line x1="156" y1="139" x2="192" y2="171" stroke="#C7D2FE" stroke-width="2" opacity="0.4"/>
+    <line x1="192" y1="34" x2="237" y2="42" stroke="#C7D2FE" stroke-width="2" opacity="0.4"/>
+
+    <!-- Scale numbers (outside arc at r~260) -->
+    <text x="-256" y="48" font-family="'JetBrains Mono', monospace" font-size="16" fill="#A5B4FC" opacity="0.5" text-anchor="middle">0</text>
+    <text x="-208" y="188" font-family="'JetBrains Mono', monospace" font-size="16" fill="#A5B4FC" opacity="0.5" text-anchor="middle">25</text>
+    <text x="0" y="270" font-family="'JetBrains Mono', monospace" font-size="16" fill="#A5B4FC" opacity="0.5" text-anchor="middle">50</text>
+    <text x="208" y="188" font-family="'JetBrains Mono', monospace" font-size="16" fill="#A5B4FC" opacity="0.5" text-anchor="middle">75</text>
+    <text x="256" y="48" font-family="'JetBrains Mono', monospace" font-size="16" fill="#A5B4FC" opacity="0.5" text-anchor="middle">100</text>
+
+    <!-- Needle at 96% (angle ~16.4°, r=175) -->
+    <line x1="0" y1="0" x2="168" y2="49" stroke="url(#needleGrad)" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+    <!-- Needle base -->
+    <circle cx="0" cy="0" r="14" fill="#FFFFFF" opacity="0.9"/>
+    <circle cx="0" cy="0" r="8" fill="#4F46E5" opacity="0.9"/>
+
+    <!-- Score display (above gauge center) -->
+    <text x="0" y="-30" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="72" font-weight="700" fill="#FFFFFF" opacity="0.95">96</text>
+    <text x="0" y="5" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" fill="#C7D2FE" opacity="0.7">PageSpeed Score</text>
+  </g>
+
+  <!-- Performance metrics cards -->
+  <!-- FCP -->
+  <rect x="120" y="250" width="180" height="80" rx="12" fill="#1E1B4B" opacity="0.5"/>
+  <text x="210" y="282" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="24" font-weight="700" fill="#4ADE80" opacity="0.9">0.8s</text>
+  <text x="210" y="310" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#A5B4FC" opacity="0.6">FCP</text>
+
+  <!-- LCP -->
+  <rect x="120" y="350" width="180" height="80" rx="12" fill="#1E1B4B" opacity="0.5"/>
+  <text x="210" y="382" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="24" font-weight="700" fill="#4ADE80" opacity="0.9">1.2s</text>
+  <text x="210" y="410" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#A5B4FC" opacity="0.6">LCP</text>
+
+  <!-- CLS -->
+  <rect x="900" y="250" width="180" height="80" rx="12" fill="#1E1B4B" opacity="0.5"/>
+  <text x="990" y="282" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="24" font-weight="700" fill="#4ADE80" opacity="0.9">0.01</text>
+  <text x="990" y="310" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#A5B4FC" opacity="0.6">CLS</text>
+
+  <!-- TBT -->
+  <rect x="900" y="350" width="180" height="80" rx="12" fill="#1E1B4B" opacity="0.5"/>
+  <text x="990" y="382" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="24" font-weight="700" fill="#4ADE80" opacity="0.9">50ms</text>
+  <text x="990" y="410" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#A5B4FC" opacity="0.6">TBT</text>
+
+  <!-- Wrench icon (decorative) -->
+  <g transform="translate(160, 520) rotate(-30)" opacity="0.12">
+    <rect x="-8" y="-60" width="16" height="120" rx="8" fill="#C7D2FE"/>
+    <circle cx="0" cy="-60" r="24" fill="none" stroke="#C7D2FE" stroke-width="10"/>
+  </g>
+  <g transform="translate(1040, 520) rotate(30)" opacity="0.12">
+    <rect x="-8" y="-60" width="16" height="120" rx="8" fill="#C7D2FE"/>
+    <circle cx="0" cy="-60" r="24" fill="none" stroke="#C7D2FE" stroke-width="10"/>
+  </g>
+
+  <!-- Bottom label -->
+  <text x="600" y="700" text-anchor="middle" font-family="Inter, sans-serif" font-size="28" font-weight="600" fill="#FFFFFF" opacity="0.9">Исправление и оптимизация</text>
+  <text x="600" y="735" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" fill="#C7D2FE" opacity="0.6">Ускорение до 90+ PageSpeed · Устранение багов</text>
+</svg>

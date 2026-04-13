@@ -1,0 +1,19 @@
+# Local development overrides.
+# Docker Compose automatically merges this with docker-compose.yml.
+# This file is NOT synced to production (excluded in deploy.sh).
+
+services:
+  # Disable Traefik locally
+  traefik:
+    profiles: ["production"]
+
+  # Expose nginx directly for local dev
+  nginx:
+    ports:
+      - "${APP_PORT:-80}:80"
+    labels: []
+
+  # Expose PostgreSQL for local tooling
+  postgres:
+    ports:
+      - "${DB_FORWARD_PORT:-127.0.0.1:15432}:5432"

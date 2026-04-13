@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#302C80"/>
+      <stop offset="100%" stop-color="#4338CA"/>
+    </linearGradient>
+    <linearGradient id="barGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="50%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#4ADE80"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bg)"/>
+
+  <!-- Decorative -->
+  <circle cx="120" cy="680" r="170" fill="#4F46E5" opacity="0.1"/>
+  <circle cx="1080" cy="100" r="200" fill="#6366F1" opacity="0.08"/>
+  <circle cx="180" cy="150" r="110" fill="#818CF8" opacity="0.06"/>
+  <circle cx="950" cy="650" r="90" fill="#4F46E5" opacity="0.07"/>
+
+  <!-- Sparkles -->
+  <path d="M160 400 L164 390 L174 386 L164 382 L160 372 L156 382 L146 386 L156 390Z" fill="#A5B4FC" opacity="0.25"/>
+  <path d="M1050 380 L1053 373 L1060 371 L1053 369 L1050 362 L1047 369 L1040 371 L1047 373Z" fill="#C7D2FE" opacity="0.2"/>
+
+  <!-- Magnifying glass -->
+  <g transform="translate(440, 320)">
+    <!-- Glass circle -->
+    <circle cx="0" cy="0" r="160" fill="none" stroke="#A5B4FC" stroke-width="14" opacity="0.8"/>
+    <circle cx="0" cy="0" r="148" fill="#3730A3" opacity="0.35"/>
+
+    <!-- Handle -->
+    <line x1="113" y1="113" x2="235" y2="235" stroke="#A5B4FC" stroke-width="18" stroke-linecap="round" opacity="0.8"/>
+    <line x1="115" y1="115" x2="233" y2="233" stroke="#C7D2FE" stroke-width="10" stroke-linecap="round" opacity="0.2"/>
+
+    <!-- Search results inside glass -->
+    <!-- Result 1 -->
+    <rect x="-95" y="-90" width="190" height="12" rx="3" fill="#C7D2FE" opacity="0.5"/>
+    <rect x="-95" y="-72" width="150" height="8" rx="2" fill="#A5B4FC" opacity="0.25"/>
+    <rect x="-95" y="-58" width="120" height="8" rx="2" fill="#A5B4FC" opacity="0.15"/>
+
+    <!-- Result 2 -->
+    <rect x="-95" y="-32" width="170" height="12" rx="3" fill="#C7D2FE" opacity="0.5"/>
+    <rect x="-95" y="-14" width="140" height="8" rx="2" fill="#A5B4FC" opacity="0.25"/>
+    <rect x="-95" y="0" width="110" height="8" rx="2" fill="#A5B4FC" opacity="0.15"/>
+
+    <!-- Result 3 -->
+    <rect x="-95" y="26" width="180" height="12" rx="3" fill="#C7D2FE" opacity="0.5"/>
+    <rect x="-95" y="44" width="145" height="8" rx="2" fill="#A5B4FC" opacity="0.25"/>
+    <rect x="-95" y="58" width="130" height="8" rx="2" fill="#A5B4FC" opacity="0.15"/>
+
+    <!-- Lens shine -->
+    <ellipse cx="-60" cy="-80" rx="30" ry="12" fill="#FFFFFF" opacity="0.06" transform="rotate(-30, -60, -80)"/>
+  </g>
+
+  <!-- Rising chart (right side) -->
+  <g transform="translate(740, 160)">
+    <!-- Chart area -->
+    <rect x="0" y="0" width="330" height="380" rx="12" fill="#1E1B4B" opacity="0.35"/>
+
+    <!-- Grid lines -->
+    <line x1="40" y1="60" x2="300" y2="60" stroke="#3730A3" stroke-width="1" opacity="0.4"/>
+    <line x1="40" y1="130" x2="300" y2="130" stroke="#3730A3" stroke-width="1" opacity="0.4"/>
+    <line x1="40" y1="200" x2="300" y2="200" stroke="#3730A3" stroke-width="1" opacity="0.4"/>
+    <line x1="40" y1="270" x2="300" y2="270" stroke="#3730A3" stroke-width="1" opacity="0.4"/>
+    <line x1="40" y1="340" x2="300" y2="340" stroke="#3730A3" stroke-width="1" opacity="0.4"/>
+
+    <!-- Axis -->
+    <line x1="40" y1="30" x2="40" y2="345" stroke="#A5B4FC" stroke-width="2" opacity="0.3"/>
+    <line x1="35" y1="340" x2="310" y2="340" stroke="#A5B4FC" stroke-width="2" opacity="0.3"/>
+
+    <!-- Bars (rising) -->
+    <rect x="55" y="285" width="28" height="55" rx="4" fill="#EF4444" opacity="0.6"/>
+    <rect x="95" y="260" width="28" height="80" rx="4" fill="#EF4444" opacity="0.55"/>
+    <rect x="135" y="225" width="28" height="115" rx="4" fill="#FBBF24" opacity="0.6"/>
+    <rect x="175" y="200" width="28" height="140" rx="4" fill="#FBBF24" opacity="0.6"/>
+    <rect x="215" y="150" width="28" height="190" rx="4" fill="#4ADE80" opacity="0.65"/>
+    <rect x="255" y="95" width="28" height="245" rx="4" fill="#4ADE80" opacity="0.75"/>
+
+    <!-- Trend line -->
+    <polyline points="69,278 109,250 149,215 189,190 229,140 269,85" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+
+    <!-- Arrow up -->
+    <polygon points="269,75 280,95 258,95" fill="#4ADE80" opacity="0.7"/>
+
+    <!-- Y-axis labels -->
+    <text x="30" y="275" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="11" fill="#A5B4FC" opacity="0.4">25</text>
+    <text x="30" y="205" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="11" fill="#A5B4FC" opacity="0.4">50</text>
+    <text x="30" y="135" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="11" fill="#A5B4FC" opacity="0.4">75</text>
+    <text x="30" y="65" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="11" fill="#A5B4FC" opacity="0.4">100</text>
+
+    <!-- Label -->
+    <text x="165" y="370" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#A5B4FC" opacity="0.5">Позиции в поиске</text>
+  </g>
+
+  <!-- Schema.org badge -->
+  <rect x="750" y="570" width="130" height="36" rx="18" fill="#1E1B4B" opacity="0.5"/>
+  <text x="815" y="593" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="500" fill="#C7D2FE" opacity="0.7">schema.org</text>
+
+  <!-- GSC badge -->
+  <rect x="900" y="570" width="170" height="36" rx="18" fill="#1E1B4B" opacity="0.5"/>
+  <text x="985" y="593" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#C7D2FE" opacity="0.7">Search Console</text>
+
+  <!-- Bottom label -->
+  <text x="600" y="700" text-anchor="middle" font-family="Inter, sans-serif" font-size="28" font-weight="600" fill="#FFFFFF" opacity="0.9">SEO и поисковость</text>
+  <text x="600" y="735" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" fill="#C7D2FE" opacity="0.6">Google Search Console · Яндекс.Вебмастер · Schema.org</text>
+</svg>

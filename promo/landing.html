@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Евгений Биль — Fullstack-разработчик · Веб-приложения · Интеграция ИИ</title>
+  <meta name="description" content="Разработка веб-приложений, CRM, SaaS и интеграция искусственного интеллекта. Laravel, Vue, React. Современный стек, прозрачный процесс, результат в срок.">
+  <meta name="keywords" content="fullstack разработчик, laravel, vue, react, разработка сайтов, crm, saas, интеграция ИИ, веб-разработчик фрилансер">
+  <meta property="og:title" content="Евгений Биль — Fullstack-разработчик">
+  <meta property="og:description" content="Разработка веб-приложений, CRM, SaaS и интеграция искусственного интеллекта.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <link rel="shortcut icon" href="favicon.svg" type="image/x-icon">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    html { scroll-padding-top: 80px; }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(135deg, #312E81 0%, #3730A3 40%, #312E81 70%, #1e1b4b 100%);
+    }
+
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+      pointer-events: none;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    .float-animation {
+      animation: float 4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="font-sans text-gray-700 antialiased">
+
+  <!-- ========== NAVIGATION ========== -->
+  <header id="navbar" class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 transition-shadow duration-300">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="#hero" class="text-lg font-bold text-gray-900 hover:text-primary-600 transition-colors">
+        Евгений Биль
+      </a>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden lg:flex items-center gap-8">
+        <a href="#services" class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors">Услуги</a>
+        <a href="#advantages" class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors">Преимущества</a>
+        <a href="#process" class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors">Процесс</a>
+        <a href="#portfolio" class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors">Портфолио</a>
+        <a href="#faq" class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors">FAQ</a>
+        <a href="#contact" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+          Обсудить проект
+        </a>
+      </nav>
+
+      <!-- Mobile Hamburger -->
+      <button id="menuBtn" class="lg:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-label="Открыть меню">
+        <svg id="menuOpen" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+        </svg>
+        <svg id="menuClose" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="lg:hidden hidden border-t border-gray-200 bg-white">
+      <nav class="flex flex-col px-4 py-4 space-y-3">
+        <a href="#services" class="mobile-nav-link text-sm font-medium text-gray-600 hover:text-primary-600 py-2">Услуги</a>
+        <a href="#advantages" class="mobile-nav-link text-sm font-medium text-gray-600 hover:text-primary-600 py-2">Преимущества</a>
+        <a href="#process" class="mobile-nav-link text-sm font-medium text-gray-600 hover:text-primary-600 py-2">Процесс</a>
+        <a href="#portfolio" class="mobile-nav-link text-sm font-medium text-gray-600 hover:text-primary-600 py-2">Портфолио</a>
+        <a href="#faq" class="mobile-nav-link text-sm font-medium text-gray-600 hover:text-primary-600 py-2">FAQ</a>
+        <a href="#contact" class="mobile-nav-link inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md bg-primary-500 hover:bg-primary-600 text-white transition-colors text-center">
+          Обсудить проект
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section id="hero" class="hero-gradient relative overflow-hidden">
+    <div class="hero-grid absolute inset-0"></div>
+    <div class="hero-glow"></div>
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-primary-800/60 text-primary-200 border border-primary-700/50 mb-6">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+          Открыт для новых проектов
+        </div>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+          Разрабатываю веб&#8209;сервисы, усиленные
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-300 to-indigo-300">искусственным интеллектом</span>
+        </h1>
+        <p class="text-lg sm:text-xl text-primary-200 mb-4">
+          Fullstack-разработчик · PHP, Laravel, Vue, React · Автоматизация через ИИ
+        </p>
+        <p class="text-base text-primary-300/80 mb-8 max-w-2xl leading-relaxed">
+          Создаю CRM, SaaS, бизнес-приложения и интегрирую ИИ для ускорения ваших процессов. Современный стек, чистый код, результат в срок.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="#contact" class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md bg-white text-primary-700 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-900">
+            <svg class="w-5 h-5 mr-2 -ml-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg>
+            Обсудить проект
+          </a>
+          <a href="#services" class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md border border-primary-400/30 text-primary-200 hover:bg-primary-800/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-primary-900">
+            Смотреть услуги
+            <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TRUST BAR ========== -->
+  <section class="bg-white border-b border-gray-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
+        <div class="fade-in text-center">
+          <p class="text-3xl font-bold text-primary-500">3+</p>
+          <p class="text-sm text-gray-500 mt-1">лет опыта</p>
+        </div>
+        <div class="fade-in text-center">
+          <p class="text-3xl font-bold text-primary-500">50+</p>
+          <p class="text-sm text-gray-500 mt-1">реализованных проектов</p>
+        </div>
+        <div class="fade-in text-center">
+          <p class="text-3xl font-bold text-primary-500">ИИ</p>
+          <p class="text-sm text-gray-500 mt-1">в каждом проекте</p>
+        </div>
+        <div class="fade-in text-center">
+          <p class="text-3xl font-bold text-primary-500">10+</p>
+          <p class="text-sm text-gray-500 mt-1">постоянных клиентов</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SERVICES ========== -->
+  <section id="services" class="bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+      <div class="text-center mb-12 fade-in">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Услуги</h2>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto">Комплексная разработка от идеи до запуска — с фокусом на бизнес-результат</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Веб-приложения -->
+        <div class="fade-in bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Веб-приложения</h3>
+          <p class="text-sm text-gray-500">CRM, SaaS, личные кабинеты, внутренние сервисы компаний. Laravel + Vue/React. Масштабируемая архитектура.</p>
+        </div>
+
+        <!-- Интернет-магазины -->
+        <div class="fade-in bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Интернет-магазины и сайты</h3>
+          <p class="text-sm text-gray-500">Современные быстрые сайты и e-commerce решения. SEO-ready, адаптивные, с интеграцией платёжных систем.</p>
+        </div>
+
+        <!-- Интеграция ИИ -->
+        <div class="fade-in bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Интеграция ИИ</h3>
+          <p class="text-sm text-gray-500">Внедрение ChatGPT, AI-ассистентов и автоматизации на базе LLM в ваши существующие и новые сервисы.</p>
+        </div>
+
+        <!-- Автоматизация -->
+        <div class="fade-in bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0 0 15 0m-15 0a7.5 7.5 0 1 1 15 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077 1.41-.513m14.095-5.13 1.41-.513M5.106 17.785l1.15-.964m11.49-9.642 1.149-.964M7.501 19.795l.75-1.3m7.5-12.99.75-1.3m-6.063 16.658.26-1.477m2.605-14.772.26-1.477m-2.6 17.95-.26-1.477m2.605-14.772-.26-1.477M12 12h.008v.008H12V12Z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Автоматизация процессов</h3>
+          <p class="text-sm text-gray-500">Боты, парсеры, интеграции между системами, оптимизация рутины. Docker-инфраструктура под ключ.</p>
+        </div>
+
+        <!-- Доработка -->
+        <div class="fade-in bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Доработка и поддержка</h3>
+          <p class="text-sm text-gray-500">Рефакторинг, исправление багов, масштабирование существующих проектов. Техническое сопровождение.</p>
+        </div>
+
+        <!-- MVP -->
+        <div class="fade-in bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">MVP для стартапов</h3>
+          <p class="text-sm text-gray-500">Быстрый запуск минимального продукта — от идеи до работающего прототипа за недели, а не месяцы.</p>
+        </div>
+      </div>
+
+      <!-- Mid-page CTA -->
+      <div class="text-center mt-12 fade-in">
+        <a href="#contact" class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+          Обсудить мой проект
+          <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ADVANTAGES ========== -->
+  <section id="advantages" class="bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+      <div class="text-center mb-12 fade-in">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Почему я</h2>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto">Аргументы, которые важны при выборе разработчика</p>
+      </div>
+
+      <div class="space-y-8 max-w-4xl mx-auto">
+        <!-- Advantage 1 -->
+        <div class="fade-in flex gap-5 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456Z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">ИИ как суперсила</h3>
+            <p class="text-base text-gray-600 leading-relaxed">Использую ИИ не ради хайпа — он встроен в процесс разработки, тестирования и в конечный продукт. Ваш проект получает технологическое преимущество, которое увеличивает эффективность и снижает затраты.</p>
+          </div>
+        </div>
+
+        <!-- Advantage 2 -->
+        <div class="fade-in flex gap-5 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Fullstack = один исполнитель</h3>
+            <p class="text-base text-gray-600 leading-relaxed">Не нужно нанимать отдельно фронтенд- и бэкенд-разработчиков. Один человек — единая архитектура, быстрая коммуникация, меньше рисков и согласований.</p>
+          </div>
+        </div>
+
+        <!-- Advantage 3 -->
+        <div class="fade-in flex gap-5 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3"/></svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Современный стек</h3>
+            <p class="text-base text-gray-600 leading-relaxed">Laravel 11, Vue 3, React, Docker, Redis — проверенные масштабируемые технологии, которые используют компании от стартапов до enterprise.</p>
+          </div>
+        </div>
+
+        <!-- Advantage 4 -->
+        <div class="fade-in flex gap-5 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Прозрачный процесс</h3>
+            <p class="text-base text-gray-600 leading-relaxed">CRM-система для каждого клиента: видите статус задач, счета, отчёты в реальном времени. Никаких «чёрных ящиков» — полный контроль на каждом этапе.</p>
+          </div>
+        </div>
+
+        <!-- Advantage 5 -->
+        <div class="fade-in flex gap-5 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.745 3.745 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Результат, а не часы</h3>
+            <p class="text-base text-gray-600 leading-relaxed">Работаю на результат. Фиксированная стоимость за задачу, а не почасовая оплата за непредсказуемое время. Вы знаете цену до начала работы.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TECH STACK ========== -->
+  <section id="stack" class="bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+      <div class="text-center mb-12 fade-in">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Технологии</h2>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto">Проверенный стек для надёжных решений</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 fade-in">
+        <!-- Backend -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+          <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Backend</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">PHP 8.2+</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Laravel 11</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Livewire 3</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">REST API</span>
+          </div>
+        </div>
+
+        <!-- Frontend -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+          <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Frontend</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Vue.js 3</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">React</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Tailwind CSS</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Inertia.js</span>
+          </div>
+        </div>
+
+        <!-- AI / ML -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+          <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">ИИ / ML</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-700">OpenAI API</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-700">LangChain</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-700">RAG</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-700">AI-агенты</span>
+          </div>
+        </div>
+
+        <!-- DevOps -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+          <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">DevOps</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Docker</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">CI/CD</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">PostgreSQL</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Redis</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PROCESS ========== -->
+  <section id="process" class="bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+      <div class="text-center mb-12 fade-in">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Как я работаю</h2>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto">Простой и понятный процесс от заявки до результата</p>
+      </div>
+
+      <!-- Desktop timeline -->
+      <div class="hidden md:block fade-in">
+        <div class="grid grid-cols-5 gap-4 relative">
+          <!-- Connecting line -->
+          <div class="absolute top-4 left-[10%] right-[10%] h-0.5 bg-primary-200"></div>
+
+          <!-- Step 1 -->
+          <div class="relative flex flex-col items-center text-center">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center z-10 mb-4">1</div>
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Заявка</h4>
+            <p class="text-sm text-gray-500">Описываете задачу или идею в свободной форме</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="relative flex flex-col items-center text-center">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center z-10 mb-4">2</div>
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Оценка</h4>
+            <p class="text-sm text-gray-500">Анализирую требования, называю сроки и стоимость</p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="relative flex flex-col items-center text-center">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center z-10 mb-4">3</div>
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Разработка</h4>
+            <p class="text-sm text-gray-500">Итерации с отчётами. Вы видите прогресс в CRM</p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="relative flex flex-col items-center text-center">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center z-10 mb-4">4</div>
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Сдача</h4>
+            <p class="text-sm text-gray-500">Проверяете результат. Оплата по факту через ЮКасса</p>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="relative flex flex-col items-center text-center">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center z-10 mb-4">5</div>
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Поддержка</h4>
+            <p class="text-sm text-gray-500">Сопровождение и развитие проекта при необходимости</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile timeline -->
+      <div class="md:hidden space-y-6 fade-in">
+        <div class="flex gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
+            <div class="w-0.5 h-full bg-primary-200 mt-2"></div>
+          </div>
+          <div class="pb-6">
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Заявка</h4>
+            <p class="text-sm text-gray-500">Описываете задачу или идею — в свободной форме, в мессенджере или через форму на сайте.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
+            <div class="w-0.5 h-full bg-primary-200 mt-2"></div>
+          </div>
+          <div class="pb-6">
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Оценка</h4>
+            <p class="text-sm text-gray-500">Анализирую требования, задаю уточняющие вопросы, называю сроки и стоимость.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">3</div>
+            <div class="w-0.5 h-full bg-primary-200 mt-2"></div>
+          </div>
+          <div class="pb-6">
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Разработка</h4>
+            <p class="text-sm text-gray-500">Работа ведётся итерациями. Вы видите прогресс в CRM, оставляете комментарии.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">4</div>
+            <div class="w-0.5 h-full bg-primary-200 mt-2"></div>
+          </div>
+          <div class="pb-6">
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Сдача и оплата</h4>
+            <p class="text-sm text-gray-500">Проверяете результат, принимаете работу. Оплата по факту через ЮКасса.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-bold flex items-center justify-center">5</div>
+          </div>
+          <div>
+            <h4 class="text-base font-semibold text-gray-800 mb-1">Поддержка</h4>
+            <p class="text-sm text-gray-500">При необходимости — дальнейшее сопровождение и развитие проекта.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PORTFOLIO ========== -->
+  <section id="portfolio" class="bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+      <div class="text-center mb-12 fade-in">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Портфолио</h2>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto">Примеры реализованных проектов</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Project 1 -->
+        <div class="fade-in bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
+          <div class="w-full h-48 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+            <svg class="w-16 h-16 text-primary-400 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z"/></svg>
+          </div>
+          <div class="p-5">
+            <h3 class="text-base font-semibold text-gray-800 mb-1">CRM для самозанятого</h3>
+            <p class="text-sm text-gray-500 mb-3">Управление клиентами, задачами, счетами. Интеграция с ЮКасса, автоплатежи.</p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">Laravel</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">Vue.js</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">ЮКасса</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary-50 text-primary-600">ИИ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="fade-in bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
+          <div class="w-full h-48 bg-gradient-to-br from-indigo-100 to-blue-200 flex items-center justify-center">
+            <svg class="w-16 h-16 text-indigo-400 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg>
+          </div>
+          <div class="p-5">
+            <h3 class="text-base font-semibold text-gray-800 mb-1">AI-чатбот для бизнеса</h3>
+            <p class="text-sm text-gray-500 mb-3">Умный ассистент на базе GPT для автоматизации поддержки клиентов.</p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">React</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">Laravel</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary-50 text-primary-600">OpenAI</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary-50 text-primary-600">RAG</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="fade-in bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
+          <div class="w-full h-48 bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center">
+            <svg class="w-16 h-16 text-emerald-400 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+          </div>
+          <div class="p-5">
+            <h3 class="text-base font-semibold text-gray-800 mb-1">E-commerce платформа</h3>
+            <p class="text-sm text-gray-500 mb-3">Интернет-магазин с каталогом, корзиной, оплатой и личным кабинетом.</p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">Laravel</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">Livewire</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">Docker</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">Stripe</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FAQ ========== -->
+  <section id="faq" class="bg-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+      <div class="text-center mb-12 fade-in">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Частые вопросы</h2>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto">Ответы на вопросы, которые задают чаще всего</p>
+      </div>
+
+      <div class="space-y-0 fade-in" id="faqList">
+        <!-- FAQ 1 -->
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-toggle w-full flex items-center justify-between py-5 text-left focus:outline-none group" aria-expanded="false">
+            <span class="text-base font-medium text-gray-800 group-hover:text-primary-600 transition-colors">Сколько стоят ваши услуги?</span>
+            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 ml-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+          </button>
+          <div class="faq-content hidden pb-5">
+            <p class="text-sm text-gray-600 leading-relaxed">Стоимость зависит от объёма и сложности задачи. Типичный проект — от 30 000 ₽. Точную оценку дам после обсуждения требований. Консультация и оценка — бесплатно.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-toggle w-full flex items-center justify-between py-5 text-left focus:outline-none group" aria-expanded="false">
+            <span class="text-base font-medium text-gray-800 group-hover:text-primary-600 transition-colors">Сколько времени занимает разработка?</span>
+            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 ml-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+          </button>
+          <div class="faq-content hidden pb-5">
+            <p class="text-sm text-gray-600 leading-relaxed">MVP — от 2 недель. Средний проект — 1–2 месяца. Точные сроки обсуждаем до начала работы и фиксируем в договорённости.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-toggle w-full flex items-center justify-between py-5 text-left focus:outline-none group" aria-expanded="false">
+            <span class="text-base font-medium text-gray-800 group-hover:text-primary-600 transition-colors">Работаете по договору?</span>
+            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 ml-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+          </button>
+          <div class="faq-content hidden pb-5">
+            <p class="text-sm text-gray-600 leading-relaxed">Да, работаю как самозанятый с официальным оформлением. Предоставляю чеки за каждую оплату.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-toggle w-full flex items-center justify-between py-5 text-left focus:outline-none group" aria-expanded="false">
+            <span class="text-base font-medium text-gray-800 group-hover:text-primary-600 transition-colors">Что если результат не устроит?</span>
+            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 ml-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+          </button>
+          <div class="faq-content hidden pb-5">
+            <p class="text-sm text-gray-600 leading-relaxed">Работаю итерациями с промежуточной сдачей. Вы видите прогресс и можете вносить правки на каждом этапе. Финальная оплата — только после вашего подтверждения.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-toggle w-full flex items-center justify-between py-5 text-left focus:outline-none group" aria-expanded="false">
+            <span class="text-base font-medium text-gray-800 group-hover:text-primary-600 transition-colors">Как происходит оплата?</span>
+            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 ml-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+          </button>
+          <div class="faq-content hidden pb-5">
+            <p class="text-sm text-gray-600 leading-relaxed">Безопасная оплата через ЮКасса — банковские карты, электронные кошельки. Для крупных проектов — поэтапная оплата с привязкой к результатам.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 6 -->
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-toggle w-full flex items-center justify-between py-5 text-left focus:outline-none group" aria-expanded="false">
+            <span class="text-base font-medium text-gray-800 group-hover:text-primary-600 transition-colors">Что значит «интеграция ИИ»?</span>
+            <svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 ml-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+          </button>
+          <div class="faq-content hidden pb-5">
+            <p class="text-sm text-gray-600 leading-relaxed">Внедряю искусственный интеллект в ваши сервисы: AI-чатботы для поддержки клиентов, автоматизация рутинных задач, генерация контента, анализ данных, интеллектуальный поиск и другие решения на базе LLM.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CTA SECTION ========== -->
+  <section class="bg-gradient-to-r from-primary-600 to-primary-800">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
+      <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4 fade-in">Готовы обсудить проект?</h2>
+      <p class="text-lg text-primary-200 mb-8 fade-in">Расскажите о вашей задаче — я оценю сроки и стоимость бесплатно. Ответ в течение 24 часов.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in">
+        <a href="https://t.me/AiGen31" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md bg-white text-primary-700 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-700">
+          <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          Написать в Telegram
+        </a>
+        <a href="#contact" class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md border-2 border-white/30 text-white hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-700">
+          Отправить заявку
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CONTACT FORM ========== -->
+  <section id="contact" class="bg-gray-50">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+      <div class="text-center mb-10 fade-in">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Оставить заявку</h2>
+        <p class="text-lg text-gray-500">Опишите задачу — я свяжусь с вами в течение 24 часов</p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 fade-in">
+        <form id="contactForm" class="space-y-4" novalidate>
+          <!-- Name -->
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Имя <span class="text-red-500">*</span></label>
+            <input type="text" id="name" name="name" required placeholder="Как к вам обращаться" class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors">
+            <p class="mt-1 text-xs text-red-600 hidden" id="nameError">Укажите ваше имя</p>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <label for="contactInfo" class="block text-sm font-medium text-gray-700 mb-1">Email или Telegram <span class="text-red-500">*</span></label>
+            <input type="text" id="contactInfo" name="contact" required placeholder="email@example.com или @username" class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors">
+            <p class="mt-1 text-xs text-red-600 hidden" id="contactError">Укажите способ связи</p>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Описание задачи <span class="text-red-500">*</span></label>
+            <textarea id="description" name="description" required rows="4" placeholder="Расскажите о вашем проекте или идее..." class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 resize-y min-h-[100px] transition-colors"></textarea>
+            <p class="mt-1 text-xs text-red-600 hidden" id="descriptionError">Опишите вашу задачу</p>
+          </div>
+
+          <!-- Budget -->
+          <div>
+            <label for="budget" class="block text-sm font-medium text-gray-700 mb-1">Бюджет</label>
+            <select id="budget" name="budget" class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors">
+              <option value="">Не определён</option>
+              <option value="under_30k">до 30 000 ₽</option>
+              <option value="30k_100k">30 000 – 100 000 ₽</option>
+              <option value="over_100k">100 000+ ₽</option>
+            </select>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" id="submitBtn" class="w-full inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            Отправить заявку
+          </button>
+        </form>
+
+        <!-- Success message -->
+        <div id="formSuccess" class="hidden rounded-md p-4 bg-green-50 border border-green-200">
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 flex-shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+            <div>
+              <p class="text-sm font-medium text-green-700">Заявка отправлена!</p>
+              <p class="text-sm text-green-600 mt-1">Я свяжусь с вами в течение 24 часов.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="bg-gray-900">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-center sm:text-left">
+          <p class="text-sm text-gray-400">© 2020–2026 Евгений Биль</p>
+          <p class="text-xs text-gray-500 mt-1">Самозанятый · ИНН: по запросу</p>
+        </div>
+        <div class="flex items-center gap-5">
+          <!-- Telegram -->
+          <a href="https://t.me/AiGen31" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors" aria-label="Telegram">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          </a>
+          <!-- GitHub -->
+          <a href="https://github.com/aigen31" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors" aria-label="GitHub">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <!-- Email -->
+          <a href="mailto:contact@inteli-dev.ru" class="text-gray-400 hover:text-white transition-colors" aria-label="Email">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========== JAVASCRIPT ========== -->
+  <script>
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuOpen = document.getElementById('menuOpen');
+    const menuClose = document.getElementById('menuClose');
+
+    menuBtn.addEventListener('click', () => {
+      const isOpen = !mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      menuOpen.classList.toggle('hidden');
+      menuClose.classList.toggle('hidden');
+      menuBtn.setAttribute('aria-label', isOpen ? 'Открыть меню' : 'Закрыть меню');
+    });
+
+    // Close mobile menu on link click
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        menuOpen.classList.remove('hidden');
+        menuClose.classList.add('hidden');
+      });
+    });
+
+    // Navbar shadow on scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) {
+        navbar.classList.add('shadow-md');
+      } else {
+        navbar.classList.remove('shadow-md');
+      }
+    }, { passive: true });
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-toggle').forEach(button => {
+      button.addEventListener('click', () => {
+        const item = button.parentElement;
+        const content = item.querySelector('.faq-content');
+        const icon = item.querySelector('.faq-icon');
+        const isOpen = button.getAttribute('aria-expanded') === 'true';
+
+        // Close all others
+        document.querySelectorAll('.faq-item').forEach(otherItem => {
+          if (otherItem !== item) {
+            otherItem.querySelector('.faq-content').classList.add('hidden');
+            otherItem.querySelector('.faq-icon').style.transform = 'rotate(0deg)';
+            otherItem.querySelector('.faq-toggle').setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        // Toggle current
+        if (isOpen) {
+          content.classList.add('hidden');
+          icon.style.transform = 'rotate(0deg)';
+          button.setAttribute('aria-expanded', 'false');
+        } else {
+          content.classList.remove('hidden');
+          icon.style.transform = 'rotate(180deg)';
+          button.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+
+    // Scroll-based fade-in animation
+    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -40px 0px' };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Form validation & submit via Fetch API
+    const form = document.getElementById('contactForm');
+    const formSuccess = document.getElementById('formSuccess');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      let valid = true;
+
+      // Name
+      const name = document.getElementById('name');
+      const nameError = document.getElementById('nameError');
+      if (!name.value.trim()) {
+        name.classList.add('border-red-500');
+        nameError.classList.remove('hidden');
+        valid = false;
+      } else {
+        name.classList.remove('border-red-500');
+        nameError.classList.add('hidden');
+      }
+
+      // Contact
+      const contact = document.getElementById('contactInfo');
+      const contactError = document.getElementById('contactError');
+      if (!contact.value.trim()) {
+        contact.classList.add('border-red-500');
+        contactError.classList.remove('hidden');
+        valid = false;
+      } else {
+        contact.classList.remove('border-red-500');
+        contactError.classList.add('hidden');
+      }
+
+      // Description
+      const desc = document.getElementById('description');
+      const descError = document.getElementById('descriptionError');
+      if (!desc.value.trim()) {
+        desc.classList.add('border-red-500');
+        descError.classList.remove('hidden');
+        valid = false;
+      } else {
+        desc.classList.remove('border-red-500');
+        descError.classList.add('hidden');
+      }
+
+      if (!valid) return;
+
+      // Disable button & show loading
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Отправка...';
+
+      try {
+        const response = await fetch('/api/contact.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.value.trim(),
+            contact: contact.value.trim(),
+            description: desc.value.trim(),
+            budget: document.getElementById('budget').value,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          form.classList.add('hidden');
+          formSuccess.classList.remove('hidden');
+        } else if (response.status === 422 && data.errors) {
+          // Server-side validation errors
+          if (data.errors.name) { name.classList.add('border-red-500'); nameError.textContent = data.errors.name; nameError.classList.remove('hidden'); }
+          if (data.errors.contact) { contact.classList.add('border-red-500'); contactError.textContent = data.errors.contact; contactError.classList.remove('hidden'); }
+          if (data.errors.description) { desc.classList.add('border-red-500'); descError.textContent = data.errors.description; descError.classList.remove('hidden'); }
+        } else if (response.status === 429) {
+          showFormError('Слишком много запросов. Попробуйте через минуту.');
+        } else {
+          showFormError(data.error || 'Произошла ошибка. Попробуйте написать в Telegram.');
+        }
+      } catch (err) {
+        showFormError('Ошибка сети. Проверьте подключение или напишите в Telegram.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Отправить заявку';
+      }
+    });
+
+    function showFormError(message) {
+      // Show inline error below the form
+      let errorBanner = document.getElementById('formError');
+      if (!errorBanner) {
+        errorBanner = document.createElement('div');
+        errorBanner.id = 'formError';
+        errorBanner.className = 'rounded-md p-4 bg-red-50 border border-red-200 mt-4';
+        form.parentElement.appendChild(errorBanner);
+      }
+      errorBanner.innerHTML = '<div class="flex gap-3"><svg class="w-5 h-5 flex-shrink-0 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg><p class="text-sm text-red-700">' + message + '</p></div>';
+      errorBanner.classList.remove('hidden');
+      setTimeout(() => { errorBanner.classList.add('hidden'); }, 8000);
+    }
+
+    // Remove error state on input
+    ['name', 'contactInfo', 'description'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', () => {
+        el.classList.remove('border-red-500');
+        const errorEl = el.parentElement.querySelector('.text-red-600');
+        if (errorEl) errorEl.classList.add('hidden');
+      });
+    });
+  </script>
+
+</body>
+</html>

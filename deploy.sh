@@ -28,6 +28,16 @@ ssh -o BatchMode=yes -o ConnectTimeout=5 "$REMOTE_HOST" 'echo ok' >/dev/null 2>&
 [[ -f "$LOCAL_DIR/.env.production" ]] \
     || fail ".env.production not found. Copy .env.example and configure for production."
 
+# Validate critical .env.production values
+grep -q "ACME_EMAIL=.\+" "$LOCAL_DIR/.env.production" \
+    || fail "ACME_EMAIL is not set in .env.production (required for Let's Encrypt)."
+
+grep -q "APP_DEBUG=false" "$LOCAL_DIR/.env.production" \
+    || warn "APP_DEBUG is not false in .env.production!"
+
+grep -q "APP_ENV=production" "$LOCAL_DIR/.env.production" \
+    || warn "APP_ENV is not production in .env.production!"
+
 ok "Pre-flight passed"
 
 # ─── Step 1: Sync project files ─────────────────────────────────
@@ -39,6 +49,7 @@ rsync -azh --delete \
     --exclude='vendor' \
     --exclude='.env' \
     --exclude='.env.local' \
+    --exclude='.env.production' \
     --exclude='storage/logs/*' \
     --exclude='storage/framework/cache/data/*' \
     --exclude='storage/framework/sessions/*' \
@@ -82,6 +93,17 @@ docker compose up -d --remove-orphans --wait 2>&1 | tail -10
 
 echo "[remote] Checking container health..."
 docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
+
+echo "[remote] Waiting for Traefik to obtain SSL certificate..."
+sleep 5
+
+echo "[remote] Verifying HTTPS connectivity..."
+DOMAIN=$(grep APP_DOMAIN "$REMOTE_DIR/.env" | cut -d= -f2-)
+if curl -sf --max-time 10 "https://${DOMAIN}/up" > /dev/null 2>&1; then
+    echo "[remote] ✓ HTTPS is working on ${DOMAIN}"
+else
+    echo "[remote] ⚠ HTTPS check failed — certificate may still be provisioning"
+fi
 
 echo "[remote] Cleaning up old images..."
 docker image prune -f 2>&1 | tail -2

@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2D2970"/>
+      <stop offset="100%" stop-color="#3730A3"/>
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#4338CA"/>
+    </linearGradient>
+    <linearGradient id="shieldInner" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#3730A3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bg)"/>
+
+  <!-- Decorative -->
+  <circle cx="100" cy="650" r="180" fill="#4F46E5" opacity="0.1"/>
+  <circle cx="1100" cy="150" r="200" fill="#6366F1" opacity="0.08"/>
+  <circle cx="900" cy="600" r="130" fill="#818CF8" opacity="0.06"/>
+  <circle cx="300" cy="100" r="100" fill="#4F46E5" opacity="0.07"/>
+
+  <!-- Sparkles -->
+  <path d="M260 340 L264 330 L274 326 L264 322 L260 312 L256 322 L246 326 L256 330Z" fill="#A5B4FC" opacity="0.3"/>
+  <path d="M940 300 L943 293 L950 291 L943 289 L940 282 L937 289 L930 291 L937 293Z" fill="#C7D2FE" opacity="0.25"/>
+  <path d="M400 600 L402 595 L407 593 L402 591 L400 586 L398 591 L393 593 L398 595Z" fill="#A5B4FC" opacity="0.2"/>
+  <path d="M800 560 L802 555 L807 553 L802 551 L800 546 L798 551 L793 553 L798 555Z" fill="#C7D2FE" opacity="0.2"/>
+
+  <!-- Shield shape -->
+  <g transform="translate(600, 340)">
+    <!-- Outer shield -->
+    <path d="M0 -210 C0 -210 -180 -170 -180 -170 L-180 40 C-180 120 -60 210 0 240 C60 210 180 120 180 40 L180 -170 C180 -170 0 -210 0 -210Z" 
+          fill="url(#shieldGrad)" opacity="0.85"/>
+    <!-- Inner shield -->
+    <path d="M0 -175 C0 -175 -148 -140 -148 -140 L-148 35 C-148 100 -48 175 0 200 C48 175 148 100 148 35 L148 -140 C148 -140 0 -175 0 -175Z" 
+          fill="url(#shieldInner)" opacity="0.8"/>
+
+    <!-- Checkmark -->
+    <polyline points="-50,20 -15,58 60,-35" fill="none" stroke="#C7D2FE" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+
+    <!-- Glow effect around checkmark -->
+    <polyline points="-50,20 -15,58 60,-35" fill="none" stroke="#EEF2FF" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.15"/>
+
+    <!-- Lock icon on top of shield -->
+    <g transform="translate(0, -142)">
+      <rect x="-16" y="0" width="32" height="24" rx="4" fill="#C7D2FE" opacity="0.8"/>
+      <path d="M-10 0 L-10 -12 C-10 -22 10 -22 10 -12 L10 0" fill="none" stroke="#C7D2FE" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+      <circle cx="0" cy="10" r="4" fill="#3730A3" opacity="0.8"/>
+    </g>
+  </g>
+
+  <!-- Scanning lines (decorative) -->
+  <g opacity="0.08">
+    <line x1="200" y1="200" x2="420" y2="200" stroke="#C7D2FE" stroke-width="1"/>
+    <line x1="200" y1="240" x2="380" y2="240" stroke="#C7D2FE" stroke-width="1"/>
+    <line x1="200" y1="280" x2="400" y2="280" stroke="#C7D2FE" stroke-width="1"/>
+    <line x1="200" y1="320" x2="360" y2="320" stroke="#C7D2FE" stroke-width="1"/>
+    <line x1="800" y1="220" x2="1000" y2="220" stroke="#C7D2FE" stroke-width="1"/>
+    <line x1="820" y1="260" x2="1000" y2="260" stroke="#C7D2FE" stroke-width="1"/>
+    <line x1="800" y1="300" x2="980" y2="300" stroke="#C7D2FE" stroke-width="1"/>
+    <line x1="830" y1="340" x2="1000" y2="340" stroke="#C7D2FE" stroke-width="1"/>
+  </g>
+
+  <!-- Status badges -->
+  <rect x="140" y="420" width="160" height="40" rx="20" fill="#1E1B4B" opacity="0.5"/>
+  <circle cx="168" cy="440" r="6" fill="#4ADE80" opacity="0.8"/>
+  <text x="185" y="446" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#C7D2FE" opacity="0.7">Защищено</text>
+
+  <rect x="900" y="420" width="170" height="40" rx="20" fill="#1E1B4B" opacity="0.5"/>
+  <circle cx="928" cy="440" r="6" fill="#4ADE80" opacity="0.8"/>
+  <text x="945" y="446" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#C7D2FE" opacity="0.7">SSL Active</text>
+
+  <rect x="140" y="475" width="180" height="40" rx="20" fill="#1E1B4B" opacity="0.5"/>
+  <circle cx="168" cy="495" r="6" fill="#4ADE80" opacity="0.8"/>
+  <text x="185" y="501" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#C7D2FE" opacity="0.7">0 Вирусов</text>
+
+  <rect x="900" y="475" width="195" height="40" rx="20" fill="#1E1B4B" opacity="0.5"/>
+  <circle cx="928" cy="495" r="6" fill="#4ADE80" opacity="0.8"/>
+  <text x="945" y="501" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#C7D2FE" opacity="0.7">Firewall ON</text>
+
+  <!-- Bottom label -->
+  <text x="600" y="700" text-anchor="middle" font-family="Inter, sans-serif" font-size="28" font-weight="600" fill="#FFFFFF" opacity="0.9">Безопасность и восстановление</text>
+  <text x="600" y="735" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" fill="#C7D2FE" opacity="0.6">Удаление вирусов · Защита от взлома · Восстановление</text>
+</svg>

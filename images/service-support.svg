@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#302C7E"/>
+      <stop offset="100%" stop-color="#4338CA"/>
+    </linearGradient>
+    <linearGradient id="gearGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#3730A3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="130" cy="670" r="190" fill="#4F46E5" opacity="0.1"/>
+  <circle cx="1070" cy="130" r="210" fill="#6366F1" opacity="0.08"/>
+  <circle cx="900" cy="620" r="100" fill="#818CF8" opacity="0.06"/>
+  <circle cx="280" cy="100" r="80" fill="#4F46E5" opacity="0.07"/>
+
+  <!-- Large sparkle (main, center) -->
+  <g transform="translate(600, 360)">
+    <path d="M0 -170 L22 -40 L150 0 L22 40 L0 170 L-22 40 L-150 0 L-22 -40Z" fill="#C7D2FE" opacity="0.2"/>
+    <path d="M0 -130 L16 -30 L115 0 L16 30 L0 130 L-16 30 L-115 0 L-16 -30Z" fill="#A5B4FC" opacity="0.15"/>
+
+    <!-- Gear in center -->
+    <!-- Gear teeth -->
+    <circle cx="0" cy="-68" r="14" fill="#4F46E5" opacity="0.7"/>
+    <circle cx="48" cy="-48" r="14" fill="#4F46E5" opacity="0.7"/>
+    <circle cx="68" cy="0" r="14" fill="#4F46E5" opacity="0.7"/>
+    <circle cx="48" cy="48" r="14" fill="#4F46E5" opacity="0.7"/>
+    <circle cx="0" cy="68" r="14" fill="#4F46E5" opacity="0.7"/>
+    <circle cx="-48" cy="48" r="14" fill="#4F46E5" opacity="0.7"/>
+    <circle cx="-68" cy="0" r="14" fill="#4F46E5" opacity="0.7"/>
+    <circle cx="-48" cy="-48" r="14" fill="#4F46E5" opacity="0.7"/>
+    <!-- Gear body -->
+    <circle cx="0" cy="0" r="55" fill="url(#gearGrad)" opacity="0.85"/>
+    <circle cx="0" cy="0" r="55" fill="none" stroke="#6366F1" stroke-width="2" opacity="0.3"/>
+    <!-- Inner circle -->
+    <circle cx="0" cy="0" r="30" fill="#3730A3" opacity="0.8"/>
+    <!-- Plus sign -->
+    <line x1="-14" y1="0" x2="14" y2="0" stroke="#C7D2FE" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+    <line x1="0" y1="-14" x2="0" y2="14" stroke="#C7D2FE" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+  </g>
+
+  <!-- Medium sparkles -->
+  <g transform="translate(340, 230)">
+    <path d="M0 -85 L11 -20 L75 0 L11 20 L0 85 L-11 20 L-75 0 L-11 -20Z" fill="#A5B4FC" opacity="0.18"/>
+  </g>
+  <g transform="translate(860, 250)">
+    <path d="M0 -95 L12 -22 L85 0 L12 22 L0 95 L-12 22 L-85 0 L-12 -22Z" fill="#818CF8" opacity="0.16"/>
+  </g>
+  <g transform="translate(420, 530)">
+    <path d="M0 -70 L9 -16 L62 0 L9 16 L0 70 L-9 16 L-62 0 L-9 -16Z" fill="#818CF8" opacity="0.14"/>
+  </g>
+  <g transform="translate(790, 500)">
+    <path d="M0 -80 L10 -18 L70 0 L10 18 L0 80 L-10 18 L-70 0 L-10 -18Z" fill="#A5B4FC" opacity="0.15"/>
+  </g>
+
+  <!-- Small sparkles -->
+  <g transform="translate(230, 420)">
+    <path d="M0 -35 L5 -8 L32 0 L5 8 L0 35 L-5 8 L-32 0 L-5 -8Z" fill="#C7D2FE" opacity="0.12"/>
+  </g>
+  <g transform="translate(970, 400)">
+    <path d="M0 -40 L5 -9 L36 0 L5 9 L0 40 L-5 9 L-36 0 L-5 -9Z" fill="#C7D2FE" opacity="0.13"/>
+  </g>
+  <g transform="translate(500, 170)">
+    <path d="M0 -28 L4 -6 L25 0 L4 6 L0 28 L-4 6 L-25 0 L-4 -6Z" fill="#A5B4FC" opacity="0.11"/>
+  </g>
+  <g transform="translate(720, 580)">
+    <path d="M0 -32 L4 -7 L28 0 L4 7 L0 32 L-4 7 L-28 0 L-4 -7Z" fill="#A5B4FC" opacity="0.1"/>
+  </g>
+  <g transform="translate(300, 600)">
+    <path d="M0 -22 L3 -5 L20 0 L3 5 L0 22 L-3 5 L-20 0 L-3 -5Z" fill="#C7D2FE" opacity="0.09"/>
+  </g>
+  <g transform="translate(900, 170)">
+    <path d="M0 -25 L3 -6 L22 0 L3 6 L0 25 L-3 6 L-22 0 L-3 -6Z" fill="#818CF8" opacity="0.1"/>
+  </g>
+
+  <!-- Tiny dot sparkles -->
+  <circle cx="180" cy="300" r="3" fill="#C7D2FE" opacity="0.3"/>
+  <circle cx="1020" cy="300" r="3" fill="#A5B4FC" opacity="0.25"/>
+  <circle cx="450" cy="650" r="2" fill="#C7D2FE" opacity="0.2"/>
+  <circle cx="750" cy="150" r="3" fill="#A5B4FC" opacity="0.2"/>
+  <circle cx="550" cy="600" r="2" fill="#818CF8" opacity="0.2"/>
+  <circle cx="650" cy="160" r="2" fill="#C7D2FE" opacity="0.2"/>
+
+  <!-- Circular orbit lines -->
+  <circle cx="600" cy="360" r="240" fill="none" stroke="#4F46E5" stroke-width="1" opacity="0.1" stroke-dasharray="8 12"/>
+  <circle cx="600" cy="360" r="310" fill="none" stroke="#4F46E5" stroke-width="1" opacity="0.07" stroke-dasharray="6 14"/>
+
+  <!-- Support badges floating -->
+  <rect x="120" y="330" width="120" height="36" rx="18" fill="#1E1B4B" opacity="0.45"/>
+  <text x="148" y="353" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#C7D2FE" opacity="0.7">24/7</text>
+
+  <rect x="960" y="480" width="140" height="36" rx="18" fill="#1E1B4B" opacity="0.45"/>
+  <text x="990" y="503" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#C7D2FE" opacity="0.7">Быстро</text>
+
+  <rect x="140" y="500" width="160" height="36" rx="18" fill="#1E1B4B" opacity="0.45"/>
+  <text x="172" y="523" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#C7D2FE" opacity="0.7">Доработки</text>
+
+  <rect x="940" y="310" width="170" height="36" rx="18" fill="#1E1B4B" opacity="0.45"/>
+  <text x="972" y="333" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#C7D2FE" opacity="0.7">Функционал</text>
+
+  <!-- Bottom label -->
+  <text x="600" y="700" text-anchor="middle" font-family="Inter, sans-serif" font-size="28" font-weight="600" fill="#FFFFFF" opacity="0.9">Поддержка и доработки</text>
+  <text x="600" y="735" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" fill="#C7D2FE" opacity="0.6">Регулярная поддержка · Новый функционал · Срочные правки</text>
+</svg>
