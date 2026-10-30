@@ -9,10 +9,12 @@ const props = defineProps({
 });
 
 const sources = {
-    avatar: '/images/kiki/kiki-avatar.webp',
-    hero: '/images/kiki/kiki-hero.webp',
+    avatar: '/images/kiki/kiki-flight-avatar.webp',
+    hero: '/images/kiki/kiki-flight-portrait.webp',
     empty: '/images/kiki/kiki-empty.webp',
     thinking: '/images/kiki/kiki-thinking.webp',
+    flight: '/images/kiki/kiki-flight-badge.webp',
+    classic: '/images/kiki/kiki-avatar.webp',
 };
 
 const src = computed(() => sources[props.variant] ?? sources.avatar);

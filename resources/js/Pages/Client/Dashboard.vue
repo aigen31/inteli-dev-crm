@@ -54,8 +54,8 @@ const activeCount = computed(() =>
                     {{ intake.label }}: <strong class="text-ink">{{ intake.display || '—' }}</strong>
                 </div>
             </div>
-            <div class="pointer-events-none absolute bottom-0 right-2 hidden h-[210px] w-[280px] sm:block lg:h-[250px] lg:w-[330px]">
-                <img src="/images/kiki/kiki-empty.webp" alt="Кики" class="h-full w-full object-contain object-bottom" />
+            <div class="pointer-events-none absolute bottom-0 right-2 hidden h-[200px] w-[300px] sm:block lg:h-[235px] lg:w-[350px]">
+                <img src="/images/kiki/kiki-flight-hero.webp" alt="Кики" class="h-full w-full object-contain object-right-bottom" />
             </div>
         </section>
 
@@ -74,7 +74,7 @@ const activeCount = computed(() =>
                     </div>
                 </template>
                 <div v-if="!upcomingTasks?.length" class="p-2">
-                    <EmptyState compact title="Пока нет активных задач" text="Создайте заявку по шаблону — это быстрее, чем описывать всё словами.">
+                    <EmptyState compact variant="flight" title="Пока нет активных задач" text="Создайте заявку по шаблону — это быстрее, чем описывать всё словами.">
                         <Link :href="route('client.tasks.create')"><Button size="sm">Создать заявку</Button></Link>
                     </EmptyState>
                 </div>

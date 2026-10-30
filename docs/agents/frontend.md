@@ -44,7 +44,7 @@
 
 - `CustomFieldsForm` / `CustomFieldsView` / `CustomFieldInput` — единый рендер типов; не пишите отдельные поля под каждый тип.
 - `AssistantPanel` — глобальная панель (Teleport), открывается из сайдбара, `⌘K` или мобильной кнопки. Состояние — `useAssistant`.
-- `KikiAvatar` — варианты `avatar`, `hero`, `empty`, `thinking`; файлы в `public/images/kiki/`. Не рисуйте маскота заново CSS-ом.
+- `KikiAvatar` — варианты `avatar`, `hero`, `flight`, `empty`, `thinking`, `classic`; файлы в `public/images/kiki/`. Не рисуйте маскота заново CSS-ом. Новый набор и правила — [kiki-assets.md](kiki-assets.md).
 
 ## Сборка
 

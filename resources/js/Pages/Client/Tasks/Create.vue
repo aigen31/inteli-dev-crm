@@ -113,7 +113,7 @@ onMounted(() => {
 
             <div v-else class="surface-card">
                 <div class="flex flex-col items-center px-6 py-12 text-center">
-                    <KikiAvatar :size="100" variant="empty" class="kiki-ring" />
+                    <KikiAvatar :size="100" variant="flight" class="kiki-ring" />
                     <h3 class="mt-4 font-display text-[19px] font-medium text-ink">Шаблонов пока нет</h3>
                     <p class="mt-2 max-w-[360px] text-[12px] text-muted">Опишите заявку своими словами — владелец увидит её и поможет.</p>
                     <Button class="mt-4" size="sm" @click="startBlank">Создать заявку</Button>

@@ -33,6 +33,7 @@ docker compose exec app php artisan db:seed --force
 | Исследование PMS/CRM/AI-паттернов | [docs/research](docs/research/pms-landscape.md) |
 | Бизнес-требования | [.github/instructions/terms_of_reference.instructions.md](.github/instructions/terms_of_reference.instructions.md) |
 | Дизайн-система | [.superdesign/design-system.md](.superdesign/design-system.md) |
+| Иллюстрации и канон Кики | [kiki-assets.md](docs/agents/kiki-assets.md) |
 
 ## Что помнить всегда
 

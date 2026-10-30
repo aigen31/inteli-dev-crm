@@ -95,7 +95,7 @@ function toggle(template) {
         </div>
 
         <div v-if="!templates.data.length" class="surface-card">
-            <EmptyState title="Шаблонов пока нет" text="Начните с одного сценария, который повторяется чаще всего. Кики поможет собрать структуру.">
+            <EmptyState variant="flight" title="Шаблонов пока нет" text="Начните с одного сценария, который повторяется чаще всего. Кики поможет собрать структуру.">
                 <Link :href="route('admin.task-templates.create', { ai: 1 })">
                     <Button><SparklesIcon class="h-4 w-4" />Собрать с Кики</Button>
                 </Link>

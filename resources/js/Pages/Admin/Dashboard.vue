@@ -77,8 +77,8 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
                 </div>
             </div>
 
-            <div class="pointer-events-none absolute bottom-0 right-2 hidden h-[240px] w-[320px] sm:block lg:h-[285px] lg:w-[390px]">
-                <img src="/images/kiki/kiki-hero.webp" alt="Кики" class="h-full w-full object-contain object-bottom" />
+            <div class="pointer-events-none absolute bottom-0 right-2 hidden h-[230px] w-[360px] sm:block lg:h-[245px] lg:w-[420px]">
+                <img src="/images/kiki/kiki-flight-hero.webp" alt="Кики" class="h-full w-full object-contain object-right-bottom" />
             </div>
         </section>
 
@@ -105,7 +105,7 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
                 </template>
 
                 <div v-if="!focusTasks.length" class="p-2">
-                    <EmptyState compact title="День свободен" text="Новые заявки и задачи появятся здесь. Можно начать с шаблона.">
+                    <EmptyState compact variant="flight" title="День свободен" text="Новые заявки и задачи появятся здесь. Можно начать с шаблона.">
                         <Link :href="route('admin.task-templates.index')">
                             <Button variant="secondary" size="sm">Открыть шаблоны</Button>
                         </Link>
