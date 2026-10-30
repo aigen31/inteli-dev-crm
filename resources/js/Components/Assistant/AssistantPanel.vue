@@ -216,7 +216,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                         <img
                             src="/images/kiki/kiki-seated.webp"
                             alt="Кики — ассистент inteli dev"
-                            class="pointer-events-none h-[210px] w-full max-w-[330px] select-none object-contain"
+                            class="pointer-events-none h-[300px] w-full max-w-[390px] select-none object-contain"
                         />
                         <h2 class="mt-3 font-display text-[22px] font-medium tracking-[-0.03em] text-ink">Чем помочь?</h2>
                         <p class="mt-2 max-w-[300px] text-[13px] leading-relaxed text-muted">
