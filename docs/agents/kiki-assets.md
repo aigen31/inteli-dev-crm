@@ -12,6 +12,7 @@
 - Workflow: `/home/aigen31/Work/ComfyUI/user/default/workflows/image_qwen_image_2_1_image_edit.json`; рабочие копии — `storage/app/kiki/*-workflow.json`.
 - `<image1>` — изображение, которое редактируется; `<image2>` — identity-кроп или плоский цветовой референс. Для релайта и предметных правок второй референс — сознательно **не персонаж**, иначе Qwen дублирует Кики.
 - Параметры: steps 30, cfg 1, euler/simple, seed индивидуальный, prompt enhancer off.
+- Для прозрачного seated-кадра использован штатный workflow **Remove Background: Qwen Image 2.1** (`image_qwen_image_2_1_background_removal`) — он отдаёт настоящий RGBA-альфа-канал, без ручного GrabCut.
 - Промпты сохраняются в `storage/app/kiki/*-workflow.json` (`459.prompt`).
 
 **Важно:** финальные иллюстрации — только растровые рендеры Qwen. Векторные карточки, монеты, чат-баблы и конфетти не рисуются кодом. Допустима только постобработка растра: кроп, alpha-cutout, выравнивание света.
@@ -25,7 +26,7 @@
 | `kiki-flight-hero.webp` | 900×620, RGBA | hero админ-дашборда |
 | `kiki-flight-avatar.webp` | 640×640, RGB | аватар из светлого полёта; полная высокая шляпа |
 | `kiki-flight-badge.webp` | 640×640, RGBA | empty states; шляпа целиком |
-| `kiki-seated.webp` | 1035×1162, RGBA | шаблоны задач, приветствие ассистента, empty; полное платье, высокая шляпа, боковые поля |
+| `kiki-seated.webp` | 1200×1200, RGBA | шаблоны задач и ассистент; RGBA-вырезание Qwen, полное платье, высокая шляпа, поля |
 | `kiki-desk.webp` | 1152×1024, RGB | клиентский дашборд, framed-карточка «за работой»; высокая шляпа |
 | `kiki-standing.webp` | 544×1632, RGBA | резерв: стоячая поза в светлой теме |
 | `kiki-hero.webp` | 1024×576, RGBA | старый спокойный кадр (резерв) |
