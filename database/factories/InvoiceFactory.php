@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentMethod;
 use App\Models\Invoice;
 use App\Models\Task;
 use App\Models\User;
@@ -24,6 +25,7 @@ class InvoiceFactory extends Factory
             'currency' => 'RUB',
             'description' => fake()->sentence(),
             'status' => InvoiceStatus::Pending,
+            'payment_method' => PaymentMethod::YooKassa,
             'is_recurring' => false,
             'recurring_interval' => null,
             'recurring_next_date' => null,
@@ -39,6 +41,13 @@ class InvoiceFactory extends Factory
             'status' => InvoiceStatus::Paid,
             'paid_at' => now(),
             'yookassa_payment_id' => fake()->uuid(),
+        ]);
+    }
+
+    public function transfer(): static
+    {
+        return $this->state(fn () => [
+            'payment_method' => PaymentMethod::Transfer,
         ]);
     }
 

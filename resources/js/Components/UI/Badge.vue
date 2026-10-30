@@ -1,7 +1,9 @@
 <script setup>
+import { computed } from 'vue';
+
 const props = defineProps({
     status: { type: String, required: true },
-    type: { type: String, default: 'task' }, // task, invoice, priority
+    type: { type: String, default: 'task' }, // task, invoice, priority, payment
 });
 
 const taskColors = {
@@ -27,12 +29,17 @@ const priorityColors = {
     high: { bg: 'bg-danger/10', text: 'text-danger-ink', dot: 'bg-danger' },
 };
 
-const colorMap = { task: taskColors, invoice: invoiceColors, priority: priorityColors };
-const colors = colorMap[props.type]?.[props.status] ?? {
+const paymentColors = {
+    yookassa: { bg: 'bg-primary-500/12', text: 'text-primary-300', dot: 'bg-primary-400' },
+    transfer: { bg: 'bg-[#8fd0ff]/10', text: 'text-[#8fd0ff]', dot: 'bg-[#8fd0ff]' },
+};
+
+const colorMap = { task: taskColors, invoice: invoiceColors, priority: priorityColors, payment: paymentColors };
+const colors = computed(() => colorMap[props.type]?.[props.status] ?? {
     bg: 'bg-white/5',
     text: 'text-muted',
     dot: 'bg-white/40',
-};
+});
 </script>
 
 <template>

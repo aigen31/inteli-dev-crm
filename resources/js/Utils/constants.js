@@ -31,3 +31,8 @@ export const recurringIntervalLabels = {
     quarterly: 'Ежеквартально',
     yearly: 'Ежегодно',
 };
+
+export const paymentMethodLabels = {
+    yookassa: 'ЮКасса',
+    transfer: 'Прямой перевод',
+};

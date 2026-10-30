@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\Invoice\CancelInvoiceAction;
 use App\Actions\Invoice\CreateInvoiceAction;
+use App\Actions\Invoice\MarkInvoiceAsPaidAction;
 use App\Actions\Invoice\ProcessRefundAction;
 use App\Enums\InvoiceStatus;
 use App\Http\Controllers\Controller;
@@ -62,6 +63,15 @@ class InvoiceController extends Controller
         return Inertia::render('Admin/Invoices/Show', [
             'invoice' => $invoice,
         ]);
+    }
+
+    public function markPaid(Invoice $invoice, MarkInvoiceAsPaidAction $action): RedirectResponse
+    {
+        $this->authorize('markPaid', $invoice);
+
+        $action->execute($invoice);
+
+        return back()->with('success', 'Поступление подтверждено, счёт оплачен.');
     }
 
     public function cancel(Invoice $invoice, CancelInvoiceAction $action): RedirectResponse

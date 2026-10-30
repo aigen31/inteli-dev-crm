@@ -6,8 +6,10 @@ namespace App\Http\Controllers\Client;
 
 use App\Actions\Payment\CreatePaymentAction;
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -32,7 +34,7 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function show(Invoice $invoice): Response
+    public function show(Invoice $invoice, SettingsService $settings): Response
     {
         $this->authorize('view', $invoice);
 
@@ -40,14 +42,33 @@ class InvoiceController extends Controller
 
         return Inertia::render('Client/Invoices/Show', [
             'invoice' => $invoice,
+            'transfer' => $invoice->payment_method === PaymentMethod::Transfer
+                ? $settings->transferDetails()
+                : null,
         ]);
     }
 
-    public function pay(Invoice $invoice, CreatePaymentAction $action): RedirectResponse
+    public function pay(Invoice $invoice): RedirectResponse
     {
+        $this->authorize('view', $invoice);
+
+        if ($invoice->payment_method !== PaymentMethod::YooKassa) {
+            return redirect()
+                ->route('client.invoices.show', $invoice)
+                ->with('error', 'По этому счёту оплата принимается прямым переводом на реквизиты.');
+        }
+
         $this->authorize('pay', $invoice);
 
-        $confirmationUrl = $action->execute($invoice);
+        try {
+            $confirmationUrl = app(CreatePaymentAction::class)->execute($invoice);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect()
+                ->route('client.invoices.show', $invoice)
+                ->with('error', 'Не удалось создать платёж. Проверьте настройки ЮКассы.');
+        }
 
         return redirect()->away($confirmationUrl);
     }

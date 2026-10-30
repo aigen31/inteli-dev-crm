@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Payment;
 
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentMethod;
 use App\Events\Invoice\InvoicePaid;
 use App\Events\Invoice\RecurringPaymentFailed;
 use App\Models\Invoice;
@@ -33,6 +34,7 @@ class ProcessRecurringPaymentAction
             'currency' => $originalInvoice->currency,
             'description' => $originalInvoice->description,
             'status' => InvoiceStatus::Pending,
+            'payment_method' => PaymentMethod::YooKassa,
             'is_recurring' => true,
             'recurring_interval' => $originalInvoice->recurring_interval,
             'yookassa_payment_method_id' => $originalInvoice->yookassa_payment_method_id,

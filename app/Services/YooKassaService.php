@@ -11,17 +11,31 @@ class YooKassaService
 {
     private Client $client;
 
+    private bool $configured = false;
+
     public function __construct()
     {
         $this->client = new Client();
-        $this->client->setAuth(
-            (string) config('services.yookassa.shop_id'),
-            (string) config('services.yookassa.secret_key'),
-        );
+
+        $shopId = (string) config('services.yookassa.shop_id');
+        $secretKey = (string) config('services.yookassa.secret_key');
+
+        if ($shopId !== '' && $secretKey !== '') {
+            // SDK принимает shopId как int, строка из env ломает типизированное свойство.
+            $this->client->setAuth((int) $shopId, $secretKey);
+            $this->configured = true;
+        }
+    }
+
+    public function isConfigured(): bool
+    {
+        return $this->configured;
     }
 
     public function createPayment(Invoice $invoice, string $returnUrl): object
     {
+        $this->ensureConfigured();
+
         return $this->client->createPayment([
             'amount' => [
                 'value' => $invoice->amount,
@@ -42,6 +56,8 @@ class YooKassaService
 
     public function createRecurringPayment(Invoice $invoice, string $paymentMethodId): object
     {
+        $this->ensureConfigured();
+
         return $this->client->createPayment([
             'amount' => [
                 'value' => $invoice->amount,
@@ -58,6 +74,8 @@ class YooKassaService
 
     public function createRefund(string $paymentId, string $amount, string $currency = 'RUB'): object
     {
+        $this->ensureConfigured();
+
         return $this->client->createRefund([
             'payment_id' => $paymentId,
             'amount' => [
@@ -80,5 +98,12 @@ class YooKassaService
                 'currency' => $currency,
             ],
         ], $paymentId);
+    }
+
+    private function ensureConfigured(): void
+    {
+        if (! $this->configured) {
+            throw new \RuntimeException('ЮКасса не настроена: заполните YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY.');
+        }
     }
 }

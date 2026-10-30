@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Enums\PaymentMethod;
 use App\Models\Invoice;
 use App\Models\User;
 
@@ -31,11 +32,22 @@ class InvoicePolicy
 
     public function refund(User $user, Invoice $invoice): bool
     {
-        return $user->isAdmin() && $invoice->isPaid();
+        return $user->isAdmin()
+            && $invoice->isPaid()
+            && $invoice->payment_method === PaymentMethod::YooKassa;
     }
 
     public function pay(User $user, Invoice $invoice): bool
     {
-        return $invoice->client_id === $user->id && $invoice->isPending();
+        return $invoice->client_id === $user->id
+            && $invoice->isPending()
+            && $invoice->payment_method === PaymentMethod::YooKassa;
+    }
+
+    public function markPaid(User $user, Invoice $invoice): bool
+    {
+        return $user->isAdmin()
+            && $invoice->isPending()
+            && $invoice->payment_method === PaymentMethod::Transfer;
     }
 }

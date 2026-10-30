@@ -5,7 +5,7 @@ import Button from '@/Components/UI/Button.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
-import { invoiceStatusLabels } from '@/Utils/constants.js';
+import { invoiceStatusLabels, paymentMethodLabels } from '@/Utils/constants.js';
 import { formatMoney, formatDateTime } from '@/Utils/formatters.js';
 
 const props = defineProps({
@@ -50,12 +50,13 @@ function applyFilter(key, value) {
                         <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Задача</th>
                         <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Сумма</th>
                         <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Статус</th>
+                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Оплата</th>
                         <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Дата</th>
                     </tr>
                 </thead>
                 <tbody class="bg-surface divide-y divide-line">
                     <tr v-if="!invoices.data.length">
-                        <td colspan="6" class="px-6 py-10 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+                        <td colspan="7" class="px-6 py-10 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
                             Счетов пока нет
                         </td>
                     </tr>
@@ -70,6 +71,9 @@ function applyFilter(key, value) {
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-ink-soft">{{ formatMoney(invoice.amount) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <Badge :status="invoice.payment_method" type="payment">{{ paymentMethodLabels[invoice.payment_method] }}</Badge>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ formatDateTime(invoice.created_at) }}</td>
                     </tr>

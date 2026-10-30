@@ -55,14 +55,14 @@ composer dev     # serve + queue:listen + pail + vite concurrently
 Поток запроса: `routes/web.php` → Controller → FormRequest (валидация) → Action/Service (бизнес-логика) → Eloquent-модель → Event → Listener (уведомления, история).
 
 - `app/Actions/` — одноразовые операции (создание задачи/счёта, смена статуса, платёж, возврат).
-- `app/Services/` — `TaskService`, `InvoiceService`, `FileUploadService`, `YooKassaService`.
+- `app/Services/` — `TaskService`, `InvoiceService`, `FileUploadService`, `YooKassaService`, `SettingsService` (реквизиты прямого перевода).
 - `app/Http/Requests/` — вся валидация; контроллеры тонкие, без бизнес-логики.
 - `app/Policies/` — авторизация по моделям; не дублируйте проверки ролей в контроллерах.
-- `app/Enums/` — `UserRole`, `TaskStatus`, `TaskType`, `TaskPriority`, `InvoiceStatus`, `RecurringInterval`; статусы в БД хранятся строками этих enum.
+- `app/Enums/` — `UserRole`, `TaskStatus`, `TaskType`, `TaskPriority`, `InvoiceStatus`, `PaymentMethod`, `RecurringInterval`; статусы в БД хранятся строками этих enum.
 - `app/Events` + `app/Listeners` — побочные эффекты: уведомления, `TaskStatusHistory`, клонирование maintenance-задачи, отмена счетов.
 - Роли: `admin` и `client`. Middleware-алиасы в `bootstrap/app.php`: `is_admin`, `is_active`, `yookassa_webhook`. Клиент видит только свои задачи/счета (`/tasks`, `/invoices`), админ — `/admin/*`.
 
-Домен: задача (`one_time` / `maintenance`) проходит статусы `pending_review → queued → in_progress → awaiting_review → completed` с ветками отклонения; счёт — `pending → paid | cancelled | refunded`. Суммы — `decimal(10,2)` в рублях. Автоплатежи и напоминания — команды `payments:process-recurring`, `invoices:send-reminders`, `invoices:cancel-expired`, расписание в `routes/console.php`. Webhook ЮКассы: `POST /webhooks/yookassa` без auth, защищён `VerifyYooKassaWebhook`; ключи — `YOOKASSA_SHOP_ID`, `YOOKASSA_SECRET_KEY` (`config/services.php`).
+Домен: задача (`one_time` / `maintenance`) проходит статусы `pending_review → queued → in_progress → awaiting_review → completed` с ветками отклонения; счёт — `pending → paid | cancelled | refunded`. Суммы — `decimal(10,2)` в рублях. У счёта есть `payment_method`: `yookassa` (онлайн-оплата + вебхук, рекуррент разрешён) или `transfer` (прямой перевод на реквизиты из настроек, оплата вне кассы, рекуррент запрещён). Прямой перевод подтверждается вручную: `PATCH /admin/invoices/{invoice}/mark-paid` → `MarkInvoiceAsPaidAction` → `InvoicePaid`. Реквизиты хранятся в таблице `settings` (модель `Setting`, доступ через `SettingsService`) и редактируются на `/admin/settings`. Автоплатежи и напоминания — команды `payments:process-recurring`, `invoices:send-reminders`, `invoices:cancel-expired`, расписание в `routes/console.php`. Webhook ЮКассы: `POST /webhooks/yookassa` без auth, защищён `VerifyYooKassaWebhook`; ключи — `YOOKASSA_SHOP_ID`, `YOOKASSA_SECRET_KEY` (`config/services.php`).
 
 Куда добавлять фичу: маршрут в `routes/web.php` (в нужную группу) → контроллер → FormRequest → Action/Service → страница в `resources/js/Pages/{Admin,Client}/…`.
 
@@ -103,6 +103,8 @@ Entrypoint production-образа кеширует config/routes/views и вы�
 - `public/build` не коммитится и собирается внутри образа. Для быстрой итерации: `npm run build` → `docker compose cp public/build/. app:/var/www/public/build`; после любого рестарта контейнера entrypoint затрёт это старым `public-build` из образа, поэтому финальную версию закрепляйте через `docker compose build`.
 - Локальный `npm run build` требует `vendor/` (импорт `../../vendor/tightenco/ziggy`). Без composer берите его из контейнера: `docker compose cp app:/var/www/vendor ./vendor`.
 - PHP/blade-правки в запущенном контейнере не видны: код в образе, а opcache с `validate_timestamps=0`. Копируйте файл в контейнер и делайте `docker compose restart app` (либо пересобирайте образ).
+- После пересоздания контейнера `app` nginx может держать его старый IP и отдавать 502 — перезапустите `nginx`.
+- `settings` — key-value таблица для пользовательских настроек (сейчас реквизиты перевода); кеша нет, `SettingsService` читает значения в рамках запроса.
 - Промо-лендинг (`promo/`) — отдельный статический сайт в том же compose, не часть Inertia-приложения.
 
 ## Документация

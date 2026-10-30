@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\RecurringInterval;
 use Database\Factories\InvoiceFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -24,6 +25,7 @@ class Invoice extends Model
         'currency',
         'description',
         'status',
+        'payment_method',
         'is_recurring',
         'recurring_interval',
         'recurring_next_date',
@@ -37,6 +39,7 @@ class Invoice extends Model
         return [
             'amount' => 'decimal:2',
             'status' => InvoiceStatus::class,
+            'payment_method' => PaymentMethod::class,
             'is_recurring' => 'boolean',
             'recurring_interval' => RecurringInterval::class,
             'recurring_next_date' => 'date',

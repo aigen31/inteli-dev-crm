@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/invoices', [Admin\InvoiceController::class, 'store'])->name('invoices.store');
         Route::get('/invoices/{invoice}', [Admin\InvoiceController::class, 'show'])->name('invoices.show');
         Route::patch('/invoices/{invoice}/cancel', [Admin\InvoiceController::class, 'cancel'])->name('invoices.cancel');
+        Route::patch('/invoices/{invoice}/mark-paid', [Admin\InvoiceController::class, 'markPaid'])->name('invoices.mark-paid');
         Route::post('/invoices/{invoice}/refund', [Admin\InvoiceController::class, 'refund'])->name('invoices.refund');
 
         // Settings

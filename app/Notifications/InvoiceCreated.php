@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Enums\PaymentMethod;
 use App\Models\Invoice;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -28,7 +29,13 @@ class InvoiceCreated extends Notification
             ->subject('Новый счёт на оплату')
             ->line("Вам выставлен счёт на сумму {$this->invoice->amount} {$this->invoice->currency}.")
             ->line("Описание: {$this->invoice->description}")
-            ->action('Перейти к оплате', url("/invoices/{$this->invoice->id}"));
+            ->line($this->invoice->payment_method === PaymentMethod::Transfer
+                ? 'Оплата принимается прямым переводом на реквизиты из счёта.'
+                : 'Оплата проходит онлайн через ЮКассу.')
+            ->action(
+                $this->invoice->payment_method === PaymentMethod::Transfer ? 'Посмотреть реквизиты' : 'Перейти к оплате',
+                url("/invoices/{$this->invoice->id}"),
+            );
     }
 
     public function toArray(object $notifiable): array

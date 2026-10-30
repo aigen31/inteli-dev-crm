@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Invoice;
 
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\RecurringInterval;
 use App\Enums\TaskStatus;
 use App\Events\Invoice\InvoiceCreated;
 use App\Models\Invoice;
@@ -25,6 +27,11 @@ class CreateInvoiceAction
             throw new \InvalidArgumentException('Нельзя выставить счёт для отклонённой задачи.');
         }
 
+        $paymentMethod = PaymentMethod::from($data['payment_method'] ?? PaymentMethod::YooKassa->value);
+
+        // Прямой перевод принимается вне кассы, поэтому автосписаний для него нет.
+        $isRecurring = $paymentMethod->isOnline() && (bool) ($data['is_recurring'] ?? false);
+
         $invoice = Invoice::create([
             'task_id' => $task->id,
             'client_id' => $task->client_id,
@@ -32,11 +39,12 @@ class CreateInvoiceAction
             'currency' => 'RUB',
             'description' => $data['description'],
             'status' => InvoiceStatus::Pending,
-            'is_recurring' => $data['is_recurring'] ?? false,
-            'recurring_interval' => $data['recurring_interval'] ?? null,
-            'recurring_next_date' => isset($data['recurring_interval'])
+            'payment_method' => $paymentMethod,
+            'is_recurring' => $isRecurring,
+            'recurring_interval' => $isRecurring ? ($data['recurring_interval'] ?? null) : null,
+            'recurring_next_date' => $isRecurring && isset($data['recurring_interval'])
                 ? $this->invoiceService->calculateNextRecurringDate(
-                    \App\Enums\RecurringInterval::from($data['recurring_interval'])
+                    RecurringInterval::from($data['recurring_interval'])
                 )
                 : null,
         ]);
