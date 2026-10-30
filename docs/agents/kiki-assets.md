@@ -33,7 +33,7 @@
 | `kiki-assistant.webp` | 1100×850, RGBA | приветствие в панели Кики |
 | `kiki-success.webp` | 1200×900, RGBA | успех/пустое состояние (сцена) |
 | `kiki-success-badge.webp` | 640×640, RGBA | компактный success в empty state |
-| `kiki-desk.webp` | 1152×1010, RGB | запасная сцена «Кики за работой» |
+| `kiki-desk.webp` | 1152×1010, RGB | клиентский дашборд, framed-карточка «за работой» |
 | `kiki-hero.webp` | 1024×576 | старый спокойный кадр (резерв) |
 | `kiki-empty.webp` | 640×480 | старый empty-кадр (резерв) |
 | `kiki-thinking.webp` | 384×512 | размышление |
@@ -54,11 +54,12 @@
 - `resources/js/Components/Kiki/KikiAvatar.vue` — варианты `avatar`, `hero`, `flight`, `empty`, `thinking`, `classic`.
 - `resources/js/Pages/Auth/Login.vue` — `kiki-flight-portrait.webp`.
 - `resources/js/Pages/Admin/Dashboard.vue` — `kiki-flight-hero.webp`; empty state — `kiki-success-badge.webp`.
+- `resources/js/Pages/Client/Dashboard.vue` — `kiki-desk.webp` в рамке с тенью.
 - `resources/js/Pages/Admin/TaskTemplates/Index.vue` — `kiki-templates.webp`.
 - `resources/js/Pages/Admin/Invoices/Index.vue` — `kiki-invoices.webp`.
 - `resources/js/Components/Assistant/AssistantPanel.vue` — `kiki-assistant.webp` в приветствии, `avatar` в шапке.
 - `EmptyState.vue` + `variant="flight"` — `kiki-flight-badge.webp`.
 - `AppShell.vue` — `avatar` (flight face).
-- `kiki-desk.webp` — резерв для сцены «за работой»; в текущей вёрстке не используется.
+- `kiki-desk.webp` — сцена «за работой» на клиентском дашборде; обрезана по столу, чтобы не показывать обувь.
 
 Дизайн-токены и правила — [.superdesign/design-system.md](../../.superdesign/design-system.md).
