@@ -55,7 +55,7 @@ const activeCount = computed(() =>
                 </div>
             </div>
             <div class="pointer-events-none absolute bottom-3 right-3 hidden h-[200px] w-[280px] overflow-hidden rounded-[24px] border border-white/70 bg-white/30 shadow-[0_18px_45px_rgba(70,52,120,0.16)] sm:block lg:h-[225px] lg:w-[320px]">
-                <img src="/images/kiki/kiki-desk.webp" alt="Кики за работой" class="h-full w-full object-cover object-[58%_12%]" />
+                <img src="/images/kiki/kiki-desk.webp" alt="Кики за работой" class="h-full w-full object-cover object-[58%_0%]" />
             </div>
         </section>
 
