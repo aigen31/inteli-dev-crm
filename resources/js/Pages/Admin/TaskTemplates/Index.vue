@@ -5,7 +5,6 @@ import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
-import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import { PlusIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -56,20 +55,24 @@ function toggle(template) {
             </Link>
         </template>
 
-        <section class="surface-card mb-5 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
-            <KikiAvatar :size="64" class="kiki-ring" />
-            <div class="min-w-0 flex-1">
+        <section class="surface-card mb-5 grid grid-cols-1 gap-4 overflow-hidden p-5 sm:p-6 lg:grid-cols-[1fr_300px] lg:items-center">
+            <div class="min-w-0">
                 <p class="eyebrow">Меньше хаоса</p>
                 <h2 class="mt-1 font-display text-[19px] font-medium tracking-[-0.03em] text-ink">Одинаковые задачи — одинаково хорошо</h2>
-                <p class="mt-1 text-[12px] leading-relaxed text-muted">
+                <p class="mt-1 max-w-[620px] text-[12px] leading-relaxed text-muted">
                     Шаблон хранит структуру, критерии и чек-лист. Клиент выбирает понятный сценарий, а не пишет «сделайте красиво».
                 </p>
+                <div class="mt-4 flex gap-5 sm:gap-7">
+                    <div><p class="font-display text-[22px] font-medium text-ink">{{ stats?.total ?? 0 }}</p><p class="text-[10px] text-muted">всего</p></div>
+                    <div><p class="font-display text-[22px] font-medium text-ink">{{ stats?.active ?? 0 }}</p><p class="text-[10px] text-muted">активных</p></div>
+                    <div><p class="font-display text-[22px] font-medium text-ink">{{ stats?.usage ?? 0 }}</p><p class="text-[10px] text-muted">применений</p></div>
+                </div>
             </div>
-            <div class="flex shrink-0 gap-4 sm:gap-6">
-                <div><p class="font-display text-[22px] font-medium text-ink">{{ stats?.total ?? 0 }}</p><p class="text-[10px] text-muted">всего</p></div>
-                <div><p class="font-display text-[22px] font-medium text-ink">{{ stats?.active ?? 0 }}</p><p class="text-[10px] text-muted">активных</p></div>
-                <div><p class="font-display text-[22px] font-medium text-ink">{{ stats?.usage ?? 0 }}</p><p class="text-[10px] text-muted">применений</p></div>
-            </div>
+            <img
+                src="/images/kiki/kiki-templates.webp"
+                alt="Кики собирает шаблоны задач"
+                class="pointer-events-none hidden h-[180px] w-full select-none object-contain object-right lg:block"
+            />
         </section>
 
         <div class="mb-4 flex flex-wrap items-center gap-2">

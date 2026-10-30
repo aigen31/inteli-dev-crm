@@ -13,6 +13,7 @@ const sources = {
     hero: '/images/kiki/kiki-flight-portrait.webp',
     empty: '/images/kiki/kiki-empty.webp',
     thinking: '/images/kiki/kiki-thinking.webp',
+    success: '/images/kiki/kiki-success-badge.webp',
     flight: '/images/kiki/kiki-flight-badge.webp',
     classic: '/images/kiki/kiki-avatar.webp',
 };

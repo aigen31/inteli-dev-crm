@@ -16,6 +16,8 @@
 
 Промпты сохраняются в `storage/app/kiki/*-workflow.json` (`459.prompt`). Они явно перечисляют шляпу, ленту, пряжку, волосы, глаза, платье и ботинки, просят не менять лицо/одежду и оставить левую часть холста пустой.
 
+Для сцен-композиций (`templates`, `invoices`, `assistant`, `success`) персонаж вырезан/собран из i2i-рендера, а карточки-реквизит и конфетти нарисованы кодом в токенах дизайн-системы. Это не «генерация фона», а вёрстка сцены: лицо и одежда остаются из Qwen, свет и палитра — из макета. Поэтому такие файлы прозрачные и ложатся на бумажный градиент без прямоугольной подложки.
+
 ## Новый набор
 
 | Файл | Формат | Где используется |
@@ -25,6 +27,13 @@
 | `kiki-flight-hero.webp` | 900×620, RGBA | герой дашборда админа/клиента |
 | `kiki-flight-avatar.webp` | 640×640, RGBA | аватар Кики в панели/сайдбаре |
 | `kiki-flight-badge.webp` | 640×640, RGBA | empty states, компактные подсказки |
+| `kiki-standing.webp` | 271×820, RGBA | исходник для сцен: стоит, руки сложены |
+| `kiki-templates.webp` | 1200×900, RGBA | шапка «Шаблоны задач» |
+| `kiki-invoices.webp` | 1200×900, RGBA | сводка «Счета» |
+| `kiki-assistant.webp` | 1100×850, RGBA | приветствие в панели Кики |
+| `kiki-success.webp` | 1200×900, RGBA | успех/пустое состояние (сцена) |
+| `kiki-success-badge.webp` | 640×640, RGBA | компактный success в empty state |
+| `kiki-desk.webp` | 1152×1010, RGB | запасная сцена «Кики за работой» |
 | `kiki-hero.webp` | 1024×576 | старый спокойный кадр (резерв) |
 | `kiki-empty.webp` | 640×480 | старый empty-кадр (резерв) |
 | `kiki-thinking.webp` | 384×512 | размышление |
@@ -44,8 +53,12 @@
 
 - `resources/js/Components/Kiki/KikiAvatar.vue` — варианты `avatar`, `hero`, `flight`, `empty`, `thinking`, `classic`.
 - `resources/js/Pages/Auth/Login.vue` — `kiki-flight-portrait.webp`.
-- `resources/js/Pages/Admin/Dashboard.vue`, `Client/Dashboard.vue` — `kiki-flight-hero.webp`.
+- `resources/js/Pages/Admin/Dashboard.vue` — `kiki-flight-hero.webp`; empty state — `kiki-success-badge.webp`.
+- `resources/js/Pages/Admin/TaskTemplates/Index.vue` — `kiki-templates.webp`.
+- `resources/js/Pages/Admin/Invoices/Index.vue` — `kiki-invoices.webp`.
+- `resources/js/Components/Assistant/AssistantPanel.vue` — `kiki-assistant.webp` в приветствии, `avatar` в шапке.
 - `EmptyState.vue` + `variant="flight"` — `kiki-flight-badge.webp`.
-- `AssistantPanel.vue` и `AppShell.vue` — `avatar` (flight face).
+- `AppShell.vue` — `avatar` (flight face).
+- `kiki-desk.webp` — резерв для сцены «за работой»; в текущей вёрстке не используется.
 
 Дизайн-токены и правила — [.superdesign/design-system.md](../../.superdesign/design-system.md).

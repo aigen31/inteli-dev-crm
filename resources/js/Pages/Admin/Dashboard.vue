@@ -105,7 +105,7 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
                 </template>
 
                 <div v-if="!focusTasks.length" class="p-2">
-                    <EmptyState compact variant="flight" title="День свободен" text="Новые заявки и задачи появятся здесь. Можно начать с шаблона.">
+                    <EmptyState compact variant="success" title="День свободен" text="Новые заявки и задачи появятся здесь. Можно начать с шаблона.">
                         <Link :href="route('admin.task-templates.index')">
                             <Button variant="secondary" size="sm">Открыть шаблоны</Button>
                         </Link>

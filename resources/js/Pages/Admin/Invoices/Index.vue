@@ -35,10 +35,13 @@ function setStatus(value) {
             <Link :href="route('admin.invoices.create')"><Button><PlusIcon class="h-4 w-4" />Создать счёт</Button></Link>
         </template>
 
-        <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-[1fr_1fr_1fr_230px]">
             <StatCard label="Ждут оплаты" :value="formatMoney(summary?.pending ?? 0)" hint="сумма по pending" :icon="BanknotesIcon" tone="peach" mono />
             <StatCard label="Оплачено за месяц" :value="formatMoney(summary?.paid_month ?? 0)" hint="подтверждённые поступления" :icon="BanknotesIcon" tone="sage" mono />
             <StatCard label="Всего счетов" :value="invoices.total" hint="во всех статусах" tone="violet" />
+            <div class="hidden overflow-hidden rounded-[22px] border border-line/70 bg-white/35 lg:block">
+                <img src="/images/kiki/kiki-invoices.webp" alt="Кики и счета" class="pointer-events-none h-full w-full select-none object-contain object-right-bottom" />
+            </div>
         </div>
 
         <div class="mb-4 inline-flex flex-wrap gap-1 rounded-full border border-line bg-white/50 p-1">
