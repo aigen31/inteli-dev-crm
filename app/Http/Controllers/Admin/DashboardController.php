@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\InvoiceStatus;
 use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
+use App\Models\FormTemplate;
 use App\Models\Invoice;
 use App\Models\Task;
 use App\Models\TaskStatusHistory;
@@ -86,6 +87,7 @@ class DashboardController extends Controller
                     ->whereIn('status', $activeStatuses)
                     ->count(),
                 'templates' => TaskTemplate::query()->where('is_active', true)->count(),
+                'forms' => FormTemplate::query()->where('is_active', true)->count(),
             ],
         ]);
     }

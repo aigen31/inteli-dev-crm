@@ -49,6 +49,48 @@
         }
       },
       "updatedAt": "2026-10-30T17:14:15.063359+00:00"
+    },
+    "structured-request-forms": {
+      "targetKind": "new-ui",
+      "projectId": "cdadc30d-3c7d-4afc-b622-5afcdc1de499",
+      "activeDraftId": "327f7e57-63f7-4d50-9ea0-8a508fef19a6",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "resources/css/app.css",
+        "resources/js/Components/Layout/AppShell.vue",
+        "resources/js/Components/UI/Button.vue",
+        "resources/js/Components/UI/Card.vue",
+        "resources/js/Components/UI/Badge.vue",
+        "resources/js/Components/UI/Segmented.vue",
+        "resources/js/Components/Form/TextInput.vue",
+        "resources/js/Components/Form/TextArea.vue",
+        "resources/js/Components/Form/SelectInput.vue",
+        "resources/js/Pages/Client/Tasks/Create.vue",
+        "resources/js/Pages/Admin/TaskTemplates/Index.vue"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "381436f1bf90ea3d7d7be0c8a1279318cab53a429bbc8911f318811736da8a83",
+        "resources/css/app.css": "fac10d2abfeaf527c53acd7b321c11364728fe327f185fb39f25f3ca6d30fe91",
+        "resources/js/Components/Layout/AppShell.vue": "f9b9c1ed2160c8609feb9a4f263f915a76003567eb64605fe9e07d86c96e0c44",
+        "resources/js/Components/UI/Button.vue": "7c8347fd054352ae1e6dbb7960b86dbe2d8520c337153b6b40a5d81aae48882c",
+        "resources/js/Components/UI/Card.vue": "5dce8ee76943718fa69ea525ca85fb3f2f9a2d66c60d8ec787de13ba391ff711",
+        "resources/js/Components/UI/Badge.vue": "b3d917fcecff72e5475dff55e79ab160fefeca8313dbf077c4be56749c41a246",
+        "resources/js/Components/UI/Segmented.vue": "c32167c7f5ad941765a77aff6d96e2da5ef3a099e520f2c505c7f9eed3ef4cd5",
+        "resources/js/Components/Form/TextInput.vue": "aa7a347103835a6f56712ce5f99b4c0727186ba13cb927da7057596dea3aebd5",
+        "resources/js/Components/Form/TextArea.vue": "bb1d67804e15cf3ba053c4571b2772c8262190a61f24930c9520f7d9798361b0",
+        "resources/js/Components/Form/SelectInput.vue": "9f65caed463b99b730745d173514b7237232ccfa9b127edf80a6db11447c802b",
+        "resources/js/Pages/Client/Tasks/Create.vue": "71234cc2efeff550469b2724dcb4702558d1fe907d69649b09b41f82e3f89717",
+        "resources/js/Pages/Admin/TaskTemplates/Index.vue": "1ea627c347a426cbd4f8dddb8bd106f222c048f30f55d3cd1d4689b900bc2c10"
+      },
+      "drafts": {
+        "327f7e57-63f7-4d50-9ea0-8a508fef19a6": {
+          "title": "Новая заявка — Формы",
+          "visualDirection": "light paper, left form library + right live structured form",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-10-31T06:20:00+07:00"
     }
   }
 }

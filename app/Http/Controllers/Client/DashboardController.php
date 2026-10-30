@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Client;
 use App\Enums\InvoiceStatus;
 use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
+use App\Models\FormTemplate;
 use App\Models\TaskTemplate;
 use App\Services\CustomFieldService;
 use Illuminate\Http\Request;
@@ -54,11 +55,14 @@ class DashboardController extends Controller
             'awaitingReview' => $awaitingReview,
             'pendingInvoices' => $pendingInvoices,
             'upcomingTasks' => $upcomingTasks,
-            'templates' => TaskTemplate::query()
-                ->visibleTo($user)
-                ->orderByDesc('usage_count')
+            'forms' => FormTemplate::query()
+                ->active()
+                ->orderBy('sort_order')
                 ->take(4)
-                ->get(['id', 'name', 'summary', 'estimated_minutes', 'default_due_days']),
+                ->get()
+                ->map(fn (FormTemplate $form) => $form->toLibraryArray())
+                ->values(),
+            'scenariosCount' => TaskTemplate::query()->visibleTo($user)->count(),
             'customFields' => $customFields->serializedValues($user),
         ]);
     }

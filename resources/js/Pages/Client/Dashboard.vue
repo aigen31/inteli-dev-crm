@@ -18,7 +18,8 @@ const props = defineProps({
     awaitingReview: Array,
     pendingInvoices: Array,
     upcomingTasks: Array,
-    templates: Array,
+    forms: Array,
+    scenariosCount: Number,
     customFields: Array,
 });
 
@@ -112,14 +113,17 @@ const activeCount = computed(() =>
 
         <div class="mt-4">
             <div class="mb-3 flex items-center justify-between">
-                <div><p class="eyebrow">Быстрый старт</p><h2 class="mt-1 text-[15px] font-bold text-ink">Шаблоны заявок</h2></div>
-                <Link :href="route('client.tasks.create')" class="text-[11px] font-semibold text-primary-700 hover:underline">Все шаблоны</Link>
+                <div><p class="eyebrow">Быстрый старт</p><h2 class="mt-1 text-[15px] font-bold text-ink">Формы заявок</h2></div>
+                <div class="flex items-center gap-3">
+                    <Link :href="route('client.tasks.scenarios')" class="text-[10px] font-semibold text-muted hover:text-ink">Сценарии</Link>
+                    <Link :href="route('client.tasks.create')" class="text-[11px] font-semibold text-primary-700 hover:underline">Все формы</Link>
+                </div>
             </div>
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Link v-for="template in templates" :key="template.id" :href="route('client.tasks.create', { template: template.id })" class="surface-card surface-card-hover p-4">
-                    <p class="text-[12px] font-bold text-ink">{{ template.name }}</p>
-                    <p class="mt-1 line-clamp-2 text-[10px] leading-relaxed text-muted">{{ template.summary || 'Готовый сценарий заявки' }}</p>
-                    <p class="mt-3 font-mono text-[9px] text-faint">{{ template.default_due_days ? `${template.default_due_days} дн.` : 'срок обсуждается' }}</p>
+                <Link v-for="form in forms" :key="form.key" :href="route('client.tasks.create', { form: form.key })" class="surface-card surface-card-hover p-4">
+                    <p class="text-[12px] font-bold text-ink">{{ form.name }}</p>
+                    <p class="mt-1 line-clamp-2 text-[10px] leading-relaxed text-muted">{{ form.summary }}</p>
+                    <p class="mt-3 font-mono text-[9px] text-faint">{{ form.field_count }} полей · {{ form.required_count }} обяз.</p>
                 </Link>
             </div>
         </div>

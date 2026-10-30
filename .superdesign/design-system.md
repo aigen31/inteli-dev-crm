@@ -103,3 +103,11 @@ Status pills: translucent tint + colored text + 6px dot (see `Badge.vue`). No he
 - Icons: Heroicons outline 20/24px, stroke 1.5.
 - Status/money always use `Badge`/`formatMoney`; dates `formatDate`.
 - New UI must be responsive at 1440 and 390 and keep the 4-item navigation.
+
+
+## Structured intake pattern
+
+- Splits `library → selected form → live fields`; never a bare description textarea as the primary path.
+- Required fields use a violet asterisk; repeatable groups are bordered inset panels with a dashed add action.
+- Classic scenarios live in a separate tab/section, not mixed into structured forms.
+- The right panel is sticky on desktop and stacks below the library on mobile.

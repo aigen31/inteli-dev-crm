@@ -52,6 +52,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/clients/{client}/custom-fields', [Admin\ClientController::class, 'updateCustomFields'])->name('clients.custom-fields');
         Route::patch('/clients/{client}/deactivate', [Admin\ClientController::class, 'deactivate'])->name('clients.deactivate');
 
+        // Forms and scenarios
+        Route::get('/forms', [Admin\FormTemplateController::class, 'index'])->name('forms.index');
+        Route::patch('/forms/{formTemplate}/toggle', [Admin\FormTemplateController::class, 'toggle'])->name('forms.toggle');
+
         // Task templates
         Route::get('/task-templates', [Admin\TaskTemplateController::class, 'index'])->name('task-templates.index');
         Route::get('/task-templates/create', [Admin\TaskTemplateController::class, 'create'])->name('task-templates.create');
@@ -109,6 +113,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/tasks', [Client\TaskController::class, 'index'])->name('client.tasks.index');
         Route::get('/tasks/create', [Client\TaskController::class, 'create'])->name('client.tasks.create');
+        Route::get('/tasks/scenarios', [Client\TaskController::class, 'scenarios'])->name('client.tasks.scenarios');
+        Route::post('/tasks/forms/{formTemplate}', [Client\TaskController::class, 'storeForm'])->name('client.tasks.forms.store');
         Route::post('/tasks/from-template/{template}', [Client\TaskController::class, 'applyTemplate'])->name('client.tasks.from-template');
         Route::post('/tasks', [Client\TaskController::class, 'store'])->name('client.tasks.store');
         Route::get('/tasks/{task}', [Client\TaskController::class, 'show'])->name('client.tasks.show');

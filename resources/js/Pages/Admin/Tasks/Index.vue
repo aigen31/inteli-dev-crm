@@ -59,10 +59,10 @@ function setStatus(value) {
 <template>
     <AdminLayout title="Задачи">
         <template #actions>
-            <Link :href="route('admin.task-templates.index')">
+            <Link :href="route('admin.forms.index')">
                 <Button variant="secondary">
                     <Squares2X2Icon class="h-4 w-4" />
-                    Шаблоны
+                    Формы
                 </Button>
             </Link>
             <Link :href="route('admin.tasks.create')">
@@ -99,7 +99,7 @@ function setStatus(value) {
                 <EmptyState title="Задач пока нет" text="Создайте задачу вручную или начните с шаблона — так описание будет понятным с первого раза.">
                     <div class="flex gap-2">
                         <Link :href="route('admin.tasks.create')"><Button size="sm">Создать задачу</Button></Link>
-                        <Link :href="route('admin.task-templates.index')"><Button size="sm" variant="secondary">Открыть шаблоны</Button></Link>
+                        <Link :href="route('admin.forms.index')"><Button size="sm" variant="secondary">Открыть формы</Button></Link>
                     </div>
                 </EmptyState>
             </div>

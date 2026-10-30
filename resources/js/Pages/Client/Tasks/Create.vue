@@ -3,178 +3,223 @@ import { computed, onMounted, ref } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Button from '@/Components/UI/Button.vue';
-import RichTextEditor from '@/Components/Form/RichTextEditor.vue';
+import FormTemplateCard from '@/Components/FormTemplates/FormTemplateCard.vue';
+import StructuredForm from '@/Components/FormTemplates/StructuredForm.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
+import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
-import CustomFieldsForm from '@/Components/CustomFields/CustomFieldsForm.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
-import { ArrowLeftIcon, CheckIcon, SparklesIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, ArrowRightIcon, RectangleStackIcon, SparklesIcon } from '@heroicons/vue/24/outline';
 import { useAssistant } from '@/Composables/useAssistant';
+
+const props = defineProps({
+    forms: { type: Array, default: () => [] },
+    scenariosCount: { type: Number, default: 0 },
+    priorities: { type: Array, default: () => [] },
+});
 
 const { open } = useAssistant();
 
-const props = defineProps({
-    priorities: Array,
-    templates: Array,
-    fields: Array,
-});
+const selectedKey = ref(props.forms[0]?.key || null);
+const freeform = ref(props.forms.length === 0);
+const selected = computed(() => props.forms.find((form) => form.key === selectedKey.value) || null);
 
-const selected = ref(null);
-const mode = ref('template');
+function emptyFormData(template) {
+    if (!template) return { fields: {}, groups: {} };
+    const schema = template.schema || {};
+    const fields = {};
+    (schema.fields || []).forEach((field) => {
+        fields[field.key] = field.type === 'checkbox' ? false : '';
+    });
+    const groups = {};
+    (schema.groups || []).forEach((group) => {
+        const count = Math.max(Number(group.min || 0), 0);
+        groups[group.key] = Array.from({ length: count }, () => {
+            const row = {};
+            (group.fields || []).forEach((field) => {
+                row[field.key] = field.type === 'checkbox' ? false : '';
+            });
+            return row;
+        });
+    });
+    return { fields, groups };
+}
 
 const form = useForm({
-    template_id: '',
-    title: '',
+    title: props.forms[0]?.name || '',
     description: '',
     priority: 'medium',
     deadline: '',
-    custom_fields: {},
+    form_data: emptyFormData(props.forms[0]),
 });
 
-const checklist = computed(() => selected.value?.checklist || []);
-
 function choose(template) {
-    selected.value = template;
-    mode.value = 'form';
-    form.template_id = template.id;
+    freeform.value = false;
+    selectedKey.value = template.key;
     form.title = template.name;
-    form.description = template.description || '';
-    form.priority = template.default_priority || 'medium';
+    form.form_data = emptyFormData(template);
     form.clearErrors();
 }
 
-function startBlank() {
-    selected.value = null;
-    mode.value = 'form';
-    form.template_id = '';
+function startFree() {
+    freeform.value = true;
+    selectedKey.value = null;
     form.title = '';
     form.description = '';
-    form.priority = 'medium';
+    form.form_data = { fields: {}, groups: {} };
     form.clearErrors();
-}
-
-function back() {
-    mode.value = 'template';
-    selected.value = null;
-    form.reset();
-}
-
-function submit() {
-    form.post(route('client.tasks.store'));
 }
 
 onMounted(() => {
-    const id = new URLSearchParams(window.location.search).get('template');
-    const template = props.templates.find((item) => item.id === id);
+    const key = new URLSearchParams(window.location.search).get('form');
+    const template = props.forms.find((form) => form.key === key);
     if (template) choose(template);
 });
+
+function submit() {
+    if (freeform.value) {
+        form.post(route('client.tasks.store'));
+        return;
+    }
+
+    if (selected.value) {
+        form.post(route('client.tasks.forms.store', selected.value.key));
+    }
+}
 </script>
 
 <template>
-    <ClientLayout :title="mode === 'form' ? 'Новая заявка' : 'Создать заявку'">
+    <ClientLayout title="Новая заявка">
         <template #actions>
-            <Button v-if="mode === 'form'" variant="ghost" size="sm" @click="back">
-                <ArrowLeftIcon class="h-4 w-4" />
-                К шаблонам
-            </Button>
+            <Link :href="route('client.tasks.index')" class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted transition hover:text-ink">
+                <ArrowLeftIcon class="h-3.5 w-3.5" />
+                Мои задачи
+            </Link>
         </template>
 
-        <template v-if="mode === 'template'">
-            <section class="surface-card mb-5 flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
-                <KikiAvatar :size="60" class="kiki-ring" />
-                <div class="min-w-0 flex-1">
-                    <p class="eyebrow">Быстрее, чем письмо</p>
-                    <h2 class="mt-1 font-display text-[20px] font-medium tracking-[-0.03em] text-ink">Выберите сценарий</h2>
-                    <p class="mt-1 text-[12px] leading-relaxed text-muted">Шаблон уже содержит структуру и чек-лист. Вы только уточняете детали.</p>
-                </div>
-                <Button variant="secondary" size="sm" @click="startBlank">Своими словами</Button>
-            </section>
+        <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <div>
+                <p class="eyebrow">Личный кабинет</p>
+                <p class="mt-2 max-w-[680px] text-[12px] leading-relaxed text-muted">
+                    Выберите форму — заявка соберётся из понятных полей. Никаких пустых листов и догадок.
+                </p>
+            </div>
+            <button type="button" class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-primary-700 hover:underline" @click="startFree">
+                Свободная заявка
+                <ArrowRightIcon class="h-3 w-3" />
+            </button>
+        </div>
 
-            <div v-if="templates.length" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div class="mb-5 flex flex-wrap items-center gap-2">
+            <div class="flex rounded-full border border-line bg-white/50 p-1">
+                <span class="rounded-full bg-ink px-3 py-1.5 text-[11px] font-semibold text-canvas">Формы заявок</span>
+                <Link :href="route('client.tasks.scenarios')" class="rounded-full px-3 py-1.5 text-[11px] font-semibold text-muted transition hover:text-ink">
+                    Сценарии
+                    <span class="ml-1 font-mono text-[9px] text-faint">{{ scenariosCount }}</span>
+                </Link>
+            </div>
+            <span class="ml-auto hidden text-[10px] text-faint sm:block">Поля с <span class="text-primary-600">*</span> обязательны</span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.15fr_.85fr]">
+            <div class="min-w-0">
+                <div class="mb-3 flex items-end justify-between gap-3">
+                    <div>
+                        <p class="eyebrow">Выберите форму</p>
+                        <p class="mt-1 text-[11px] text-muted">Шаблон — это набор полей под конкретную ситуацию.</p>
+                    </div>
+                    <span class="font-mono text-[9px] text-faint">{{ forms.length }} форм</span>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <FormTemplateCard
+                        v-for="template in forms"
+                        :key="template.key"
+                        :template="template"
+                        :selected="!freeform && selectedKey === template.key"
+                        @select="choose"
+                    />
+                </div>
+
                 <button
-                    v-for="template in templates"
-                    :key="template.id"
                     type="button"
-                    class="surface-card surface-card-hover group p-5 text-left"
-                    @click="choose(template)"
+                    :class="[
+                        'mt-3 flex w-full items-center gap-3 rounded-[20px] border px-4 py-3 text-left transition',
+                        freeform ? 'border-primary-300 bg-primary-50/50' : 'border-line bg-white/35 hover:border-line-strong',
+                    ]"
+                    @click="startFree"
                 >
-                    <div class="flex items-start justify-between gap-2">
-                        <span class="rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800">{{ template.default_due_days ? `${template.default_due_days} дн.` : 'срок обсуждается' }}</span>
-                        <CheckIcon class="h-4 w-4 text-primary-500 opacity-0 transition group-hover:opacity-100" />
-                    </div>
-                    <h3 class="mt-3 text-[14px] font-bold text-ink">{{ template.name }}</h3>
-                    <p class="mt-1 line-clamp-2 text-[11px] leading-relaxed text-muted">{{ template.summary || 'Готовый сценарий заявки' }}</p>
-                    <div class="mt-3 flex flex-wrap gap-1.5">
-                        <span v-for="item in (template.checklist || []).slice(0, 3)" :key="item.text" class="rounded-full bg-surface-2 px-2 py-0.5 text-[9px] text-ink-soft">{{ item.text }}</span>
-                        <span v-if="(template.checklist || []).length > 3" class="rounded-full bg-surface-2 px-2 py-0.5 text-[9px] text-muted">+{{ template.checklist.length - 3 }}</span>
-                    </div>
+                    <span class="flex h-9 w-9 items-center justify-center rounded-[12px] bg-surface-2 text-muted"><SparklesIcon class="h-4 w-4" /></span>
+                    <span class="min-w-0">
+                        <span class="block text-[12px] font-semibold text-ink">Свободная заявка</span>
+                        <span class="block text-[10px] text-muted">Если формы пока нет — опишите словами.</span>
+                    </span>
                 </button>
+
+                <Link :href="route('client.tasks.scenarios')" class="mt-3 flex items-center gap-3 rounded-[20px] border border-line bg-white/35 px-4 py-3 text-left transition hover:border-line-strong">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-[12px] bg-surface-2 text-muted"><RectangleStackIcon class="h-4 w-4" /></span>
+                    <span class="min-w-0">
+                        <span class="block text-[12px] font-semibold text-ink">Классические сценарии</span>
+                        <span class="block text-[10px] text-muted">Готовое описание и чек-лист — в отдельном разделе.</span>
+                    </span>
+                    <ArrowRightIcon class="ml-auto h-4 w-4 text-faint" />
+                </Link>
             </div>
 
-            <div v-else class="surface-card">
-                <div class="flex flex-col items-center px-6 py-12 text-center">
-                    <KikiAvatar :size="100" variant="flight" class="kiki-ring" />
-                    <h3 class="mt-4 font-display text-[19px] font-medium text-ink">Шаблонов пока нет</h3>
-                    <p class="mt-2 max-w-[360px] text-[12px] text-muted">Опишите заявку своими словами — владелец увидит её и поможет.</p>
-                    <Button class="mt-4" size="sm" @click="startBlank">Создать заявку</Button>
-                </div>
-            </div>
-        </template>
-
-        <template v-else>
-            <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_.7fr]">
-                <div class="space-y-5">
-                    <section v-if="selected" class="surface-card p-5">
-                        <div class="flex items-start gap-3">
-                            <KikiAvatar :size="40" />
+            <aside class="lg:sticky lg:top-6 lg:self-start">
+                <section class="surface-card overflow-hidden">
+                    <div class="border-b border-line/80 bg-surface-2/40 px-5 py-4">
+                        <div class="flex items-start justify-between gap-3">
                             <div>
-                                <p class="text-[11px] font-semibold text-ink">Шаблон: {{ selected.name }}</p>
-                                <p class="mt-1 text-[10px] leading-relaxed text-muted">Описание и чек-лист уже внутри. Можно дополнить своими словами.</p>
+                                <p class="eyebrow">{{ freeform ? 'Свободная заявка' : 'Форма' }}</p>
+                                <h2 class="mt-1 text-[17px] font-bold tracking-[-0.02em] text-ink">{{ freeform ? 'Опишите словами' : selected?.name }}</h2>
+                                <p class="mt-1 text-[10px] leading-relaxed text-muted">{{ freeform ? 'Мы уточним детали, если чего-то не хватит.' : selected?.description }}</p>
                             </div>
+                            <KikiAvatar :size="34" />
                         </div>
-                        <div v-if="checklist.length" class="mt-3 flex flex-wrap gap-1.5">
-                            <span v-for="item in checklist" :key="item.text" class="rounded-full bg-surface-2 px-2 py-1 text-[9px] text-ink-soft">{{ item.text }}</span>
-                        </div>
-                    </section>
+                    </div>
 
-                    <section class="surface-card p-5 sm:p-6">
-                        <p class="eyebrow">Заявка</p>
-                        <div class="mt-4 space-y-4">
-                            <TextInput v-model="form.title" label="Название" :error="form.errors.title" placeholder="Коротко: что нужно сделать" />
-                            <div>
-                                <p class="mb-1.5 text-[11px] font-semibold text-ink-soft">Описание</p>
-                                <RichTextEditor v-model="form.description" placeholder="Что важно учесть, какие материалы есть, какой результат нужен…" />
-                                <p v-if="form.errors.description" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.description }}</p>
-                            </div>
-                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" placeholder="Выберите приоритет" />
+                    <div class="p-5">
+                        <div class="space-y-4">
+                            <TextInput v-model="form.title" label="Название заявки" :error="form.errors.title" placeholder="Коротко: что нужно сделать" />
+
+                            <template v-if="freeform">
+                                <div>
+                                    <p class="mb-1.5 text-[11px] font-semibold text-ink-soft">Описание</p>
+                                    <TextArea v-model="form.description" :rows="6" placeholder="Что случилось, что уже пробовали, какой результат нужен…" :error="form.errors.description" />
+                                </div>
+                            </template>
+
+                            <StructuredForm
+                                v-else-if="selected"
+                                :template="selected"
+                                :model-value="form.form_data"
+                                :errors="form.errors"
+                            />
+
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" placeholder="Выберите приоритет" :error="form.errors.priority" />
                                 <TextInput v-model="form.deadline" label="Желаемый срок" type="date" :error="form.errors.deadline" />
                             </div>
-                            <CustomFieldsForm v-if="fields.length" v-model="form.custom_fields" :fields="fields" :errors="form.errors" />
-                            <div class="flex justify-end gap-2 pt-2">
-                                <Button variant="ghost" size="sm" @click="back">Отмена</Button>
-                                <Button size="sm" :disabled="form.processing" @click="submit">Отправить заявку</Button>
-                            </div>
                         </div>
-                    </section>
-                </div>
 
-                <aside class="space-y-4 lg:sticky lg:top-6 lg:self-start">
-                    <section class="surface-card p-5">
-                        <p class="eyebrow">Что дальше</p>
-                        <ol class="mt-3 space-y-3 text-[11px] leading-relaxed text-muted">
-                            <li><span class="font-semibold text-ink">1.</span> Заявка попадает владельцу.</li>
-                            <li><span class="font-semibold text-ink">2.</span> Он уточняет детали и берёт в работу.</li>
-                            <li><span class="font-semibold text-ink">3.</span> Вы видите статус и можете оставить комментарий.</li>
-                        </ol>
-                    </section>
-                    <button type="button" class="surface-card flex w-full items-center gap-3 p-4 text-left" @click="open">
-                        <SparklesIcon class="h-4 w-4 text-primary-600" />
-                        <span class="text-[11px] font-semibold text-ink">Помочь сформулировать?</span>
-                        <span class="ml-auto text-[10px] text-muted">Кики</span>
-                    </button>
-                </aside>
-            </div>
-        </template>
+                        <div class="mt-5 flex items-center justify-between gap-3 border-t border-line/70 pt-4">
+                            <button type="button" class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-primary-700 hover:underline" @click="open">
+                                <SparklesIcon class="h-3.5 w-3.5" />
+                                Помочь сформулировать
+                            </button>
+                            <Button size="sm" :disabled="form.processing" @click="submit">
+                                Отправить заявку
+                                <ArrowRightIcon class="h-3.5 w-3.5" />
+                            </Button>
+                        </div>
+                    </div>
+                </section>
+
+                <p class="mt-3 px-2 text-center text-[9px] leading-relaxed text-faint">
+                    Заявка попадёт владельцу. Он увидит все поля, а не сплошной текст.
+                </p>
+            </aside>
+        </div>
     </ClientLayout>
 </template>

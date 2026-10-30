@@ -8,6 +8,7 @@ import Card from '@/Components/UI/Card.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import CustomFieldsView from '@/Components/CustomFields/CustomFieldsView.vue';
+import StructuredFormSummary from '@/Components/FormTemplates/StructuredFormSummary.vue';
 import { invoiceStatusLabels, taskPriorityLabels, taskSourceLabels, taskStatusLabels, taskTypeLabels } from '@/Utils/constants.js';
 import { formatDate, formatDateTime, formatMoney } from '@/Utils/formatters.js';
 import { CheckIcon, PencilSquareIcon, PlusIcon } from '@heroicons/vue/24/outline';
@@ -72,6 +73,17 @@ function addReport() {
 
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.45fr_.75fr]">
             <div class="space-y-5">
+                <section v-if="task.form_template" class="surface-card p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="eyebrow">Структурированная заявка</p>
+                            <h2 class="mt-1 text-[15px] font-bold text-ink">{{ task.form_template.name }}</h2>
+                        </div>
+                        <span class="rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800">форма</span>
+                    </div>
+                    <StructuredFormSummary class="mt-4" :template="task.form_template" :data="task.form_data || {}" />
+                </section>
+
                 <section class="surface-card p-5 sm:p-6">
                     <p class="eyebrow">Описание</p>
                     <div v-if="task.description" class="prose-kiki mt-3" v-html="task.description"></div>

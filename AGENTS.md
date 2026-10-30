@@ -20,7 +20,8 @@ docker compose exec app php artisan db:seed --force
 |---|---|
 | Поднять окружение, env, миграции, тесты | [setup.md](docs/agents/setup.md) |
 | Слои, роли, статусы, оплаты, границы домена | [architecture.md](docs/agents/architecture.md) |
-| Шаблоны задач, WYSIWYG, чек-листы, ИИ-генерация | [project-management.md](docs/agents/project-management.md) |
+| Формы заявок: поля, обязательные, repeat-группы | [form-templates.md](docs/agents/form-templates.md) |
+| Классические сценарии, WYSIWYG, чек-листы, ИИ-генерация | [project-management.md](docs/agents/project-management.md) |
 | Пользовательские поля, типы, значения, API | [custom-fields.md](docs/agents/custom-fields.md) |
 | Кики: провайдер, инструменты, подтверждения, guardrails | [ai.md](docs/agents/ai.md) |
 | REST API v1, токены, примеры | [api.md](docs/agents/api.md) · [docs/api](docs/api/README.md) |

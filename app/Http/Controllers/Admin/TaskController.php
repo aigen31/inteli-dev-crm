@@ -106,6 +106,7 @@ class TaskController extends Controller
             'creator',
             'assignee',
             'template',
+            'formTemplate',
             'comments.author',
             'reports.author',
             'invoices',

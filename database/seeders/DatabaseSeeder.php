@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminSeeder::class,
             ProjectManagementSeeder::class,
+            FormTemplateSeeder::class,
         ]);
     }
 }

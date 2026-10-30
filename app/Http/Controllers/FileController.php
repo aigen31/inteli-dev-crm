@@ -24,7 +24,9 @@ class FileController extends Controller
         return response()->json([
             'id' => $attachment->id,
             'original_name' => $attachment->original_name,
+            'mime_type' => $attachment->mime_type,
             'size' => $attachment->size,
+            'url' => route('files.download', $attachment),
         ], 201);
     }
 

@@ -39,6 +39,13 @@ class TaskResource extends JsonResource
                 'id' => $this->template->id,
                 'name' => $this->template->name,
             ] : null),
+            'form_template' => $this->whenLoaded('formTemplate', fn () => $this->formTemplate ? [
+                'id' => $this->formTemplate->id,
+                'key' => $this->formTemplate->key,
+                'name' => $this->formTemplate->name,
+                'schema' => $this->formTemplate->normalizedSchema(),
+            ] : null),
+            'form_data' => $this->form_data,
             'custom_fields' => app(CustomFieldService::class)->customFieldsWithDefaults($this->resource),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

@@ -88,7 +88,7 @@ function deactivate() {
                     </template>
                     <div v-if="!tasks?.length" class="p-2">
                         <EmptyState compact title="Задач пока нет" text="Создайте задачу вручную или из шаблона.">
-                            <Link :href="route('admin.task-templates.index')"><Button size="sm" variant="secondary">Шаблоны</Button></Link>
+                            <Link :href="route('admin.forms.index')"><Button size="sm" variant="secondary">Формы</Button></Link>
                         </EmptyState>
                     </div>
                     <div v-else class="divide-y divide-line/60">

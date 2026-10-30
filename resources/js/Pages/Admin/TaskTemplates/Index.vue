@@ -5,7 +5,7 @@ import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
-import { PlusIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { PlusIcon, RectangleStackIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     templates: Object,
@@ -45,15 +45,29 @@ function toggle(template) {
 </script>
 
 <template>
-    <AdminLayout title="Шаблоны задач">
+    <AdminLayout title="Сценарии">
         <template #actions>
+            <Link :href="route('admin.forms.index')">
+                <Button variant="secondary" size="sm">
+                    <RectangleStackIcon class="h-4 w-4" />
+                    Формы
+                </Button>
+            </Link>
             <Link :href="route('admin.task-templates.create')">
                 <Button>
                     <PlusIcon class="h-4 w-4" />
-                    Создать шаблон
+                    Создать сценарий
                 </Button>
             </Link>
         </template>
+
+        <div class="mb-5 flex items-center gap-2">
+            <div class="flex rounded-full border border-line bg-white/50 p-1">
+                <Link :href="route('admin.forms.index')" class="rounded-full px-3 py-1.5 text-[11px] font-semibold text-muted transition hover:text-ink">Формы заявок</Link>
+                <span class="rounded-full bg-ink px-3 py-1.5 text-[11px] font-semibold text-canvas">Сценарии</span>
+            </div>
+            <p class="ml-auto hidden text-[10px] text-faint sm:block">Описание + чек-лист, без структурированных полей</p>
+        </div>
 
         <section class="surface-card mb-5 grid grid-cols-1 gap-4 overflow-hidden p-5 sm:p-6 lg:grid-cols-[1fr_300px] lg:items-center">
             <div class="min-w-0">

@@ -25,6 +25,8 @@ class Task extends Model
         'client_id',
         'created_by',
         'task_template_id',
+        'form_template_id',
+        'form_data',
         'assignee_id',
         'title',
         'description',
@@ -46,6 +48,7 @@ class Task extends Model
             'status' => TaskStatus::class,
             'priority' => TaskPriority::class,
             'checklist' => 'array',
+            'form_data' => 'array',
             'estimated_minutes' => 'integer',
             'deadline' => 'date',
             'completed_at' => 'datetime',
@@ -70,6 +73,11 @@ class Task extends Model
     public function template(): BelongsTo
     {
         return $this->belongsTo(TaskTemplate::class, 'task_template_id');
+    }
+
+    public function formTemplate(): BelongsTo
+    {
+        return $this->belongsTo(FormTemplate::class);
     }
 
     public function comments(): HasMany

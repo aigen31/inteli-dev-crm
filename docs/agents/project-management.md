@@ -1,4 +1,6 @@
-# Шаблоны задач и WYSIWYG
+# Классические сценарии и WYSIWYG
+
+> Это старый слой «готовый текст + чек-лист». Основной путь клиента теперь — структурированные **формы заявок**: см. [form-templates.md](form-templates.md).
 
 ## Зачем
 
@@ -23,7 +25,7 @@
 2. В редакторе: TipTap-описание + конструктор чек-листа + дефолты; справа живой предпросмотр.
 3. Применение: `/admin/task-templates` → «Применить» → клиент/название → `POST /admin/task-templates/{id}/apply`.
 4. `TaskTemplateService::apply()` создаёт задачу через `CreateTaskAction`, подставляет описание, чек-лист, срок (если задан `default_due_days`), исполнителя (если задан), ставит `source=template` и инкрементит `usage_count`.
-5. Клиент может выбрать шаблон в `/tasks/create`; создаётся заявка `pending_review`, `source=client`.
+5. Клиент открывает классические сценарии в `/tasks/scenarios`; создаётся заявка `pending_review`, `source=client`. Структурированные формы живут на `/tasks/create`.
 
 ## WYSIWYG и безопасность
 

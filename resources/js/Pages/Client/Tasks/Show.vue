@@ -7,6 +7,7 @@ import Button from '@/Components/UI/Button.vue';
 import Card from '@/Components/UI/Card.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import CustomFieldsView from '@/Components/CustomFields/CustomFieldsView.vue';
+import StructuredFormSummary from '@/Components/FormTemplates/StructuredFormSummary.vue';
 import { invoiceStatusLabels, taskPriorityLabels, taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate, formatDateTime, formatMoney } from '@/Utils/formatters.js';
 import { CheckIcon } from '@heroicons/vue/24/outline';
@@ -51,6 +52,17 @@ function addComment() {
 
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.45fr_.75fr]">
             <div class="space-y-5">
+                <section v-if="task.form_template" class="surface-card p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="eyebrow">Структурированная заявка</p>
+                            <h2 class="mt-1 text-[15px] font-bold text-ink">{{ task.form_template.name }}</h2>
+                        </div>
+                        <span class="rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800">форма</span>
+                    </div>
+                    <StructuredFormSummary class="mt-4" :template="task.form_template" :data="task.form_data || {}" />
+                </section>
+
                 <section v-if="canReview" class="surface-card border-warning/30 bg-warning/[0.05] p-5">
                     <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-warning">Работа ждёт вашей оценки</p>
                     <p class="mt-2 text-[12px] leading-relaxed text-ink-soft">Примите результат или верните с комментарием — что именно поправить.</p>

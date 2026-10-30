@@ -6,15 +6,16 @@ namespace App\Http\Controllers\Client;
 
 use App\Actions\Task\ChangeTaskStatusAction;
 use App\Actions\Task\CreateTaskAction;
-use App\Enums\CustomFieldEntity;
 use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ReviewTaskRequest;
 use App\Http\Requests\Client\StoreTaskRequest;
+use App\Models\FormTemplate;
 use App\Models\Task;
 use App\Models\TaskTemplate;
 use App\Services\CustomFieldService;
+use App\Services\FormTemplateService;
 use App\Services\TaskTemplateService;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
@@ -59,17 +60,54 @@ class TaskController extends Controller
 
     public function create(): Response
     {
+        $forms = FormTemplate::query()
+            ->active()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (FormTemplate $form) => $form->toLibraryArray())
+            ->values();
+
         return Inertia::render('Client/Tasks/Create', [
             'priorities' => Options::priorities(),
+            'forms' => $forms,
+            'scenariosCount' => TaskTemplate::query()
+                ->visibleTo(request()->user())
+                ->count(),
+        ]);
+    }
+
+    public function scenarios(): Response
+    {
+        return Inertia::render('Client/Tasks/Scenarios', [
             'templates' => TaskTemplate::query()
                 ->visibleTo(request()->user())
                 ->with('defaultAssignee:id,name')
                 ->orderByDesc('usage_count')
                 ->get(),
-            'fields' => collect($this->customFields->serializedDefinitions(CustomFieldEntity::Task))
-                ->filter(fn (array $field) => $field['client_editable'])
-                ->values(),
         ]);
+    }
+
+    public function storeForm(
+        Request $request,
+        FormTemplate $formTemplate,
+        FormTemplateService $forms,
+    ): RedirectResponse {
+        $task = $forms->createTask(
+            $formTemplate,
+            $request->user(),
+            [
+                'title' => $request->input('title'),
+                'priority' => $request->input('priority'),
+                'deadline' => $request->input('deadline') ?: null,
+                'form_data' => $request->input('form_data', []),
+            ],
+            $request->user(),
+        );
+
+        return redirect()
+            ->route('client.tasks.show', $task)
+            ->with('success', 'Заявка собрана из формы и отправлена.');
     }
 
     public function store(StoreTaskRequest $request, CreateTaskAction $action): RedirectResponse
@@ -130,6 +168,7 @@ class TaskController extends Controller
         $task->load([
             'assignee',
             'template',
+            'formTemplate',
             'comments.author',
             'reports.author',
             'invoices',
