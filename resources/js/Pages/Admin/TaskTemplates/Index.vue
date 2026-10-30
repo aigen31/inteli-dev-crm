@@ -69,9 +69,9 @@ function toggle(template) {
                 </div>
             </div>
             <img
-                src="/images/kiki/kiki-templates.webp"
-                alt="Кики собирает шаблоны задач"
-                class="pointer-events-none hidden h-[180px] w-full select-none object-contain object-right lg:block"
+                src="/images/kiki/kiki-seated.webp"
+                alt="Кики"
+                class="pointer-events-none hidden h-[200px] w-full select-none object-contain object-right lg:block"
             />
         </section>
 

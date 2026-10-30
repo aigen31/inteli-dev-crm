@@ -214,9 +214,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                 <div ref="scroller" class="flex-1 overflow-y-auto px-4 py-4">
                     <div v-if="!hasMessages && !loading" class="flex h-full flex-col items-center justify-center px-2 text-center">
                         <img
-                            src="/images/kiki/kiki-assistant.webp"
+                            src="/images/kiki/kiki-seated.webp"
                             alt="Кики — ассистент inteli dev"
-                            class="pointer-events-none h-[190px] w-full max-w-[330px] select-none object-contain"
+                            class="pointer-events-none h-[210px] w-full max-w-[330px] select-none object-contain"
                         />
                         <h2 class="mt-3 font-display text-[22px] font-medium tracking-[-0.03em] text-ink">Чем помочь?</h2>
                         <p class="mt-2 max-w-[300px] text-[13px] leading-relaxed text-muted">

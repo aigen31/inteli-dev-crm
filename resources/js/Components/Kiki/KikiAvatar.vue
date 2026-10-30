@@ -11,10 +11,10 @@ const props = defineProps({
 const sources = {
     avatar: '/images/kiki/kiki-flight-avatar.webp',
     hero: '/images/kiki/kiki-flight-portrait.webp',
-    empty: '/images/kiki/kiki-empty.webp',
+    empty: '/images/kiki/kiki-seated.webp',
     thinking: '/images/kiki/kiki-thinking.webp',
-    success: '/images/kiki/kiki-success-badge.webp',
     flight: '/images/kiki/kiki-flight-badge.webp',
+    seated: '/images/kiki/kiki-seated.webp',
     classic: '/images/kiki/kiki-avatar.webp',
 };
 
