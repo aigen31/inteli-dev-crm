@@ -35,8 +35,6 @@ function submit() {
 <template>
     <AdminLayout title="Создать счёт">
         <div class="max-w-2xl">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Создать счёт</h2>
-
             <Card>
                 <form @submit.prevent="submit" class="space-y-4">
                     <SelectInput v-model="form.task_id" label="Задача" :options="taskOptions" :error="form.errors.task_id" required />
@@ -48,9 +46,9 @@ function submit() {
                             v-model="form.is_recurring"
                             type="checkbox"
                             id="is_recurring"
-                            class="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                            class="h-4 w-4 rounded border-line-strong bg-surface-2 text-primary-500 focus:ring-primary-500/50"
                         />
-                        <label for="is_recurring" class="text-sm font-medium text-gray-700">Рекуррентный платёж</label>
+                        <label for="is_recurring" class="text-sm font-medium text-ink-soft">Рекуррентный платёж</label>
                     </div>
 
                     <SelectInput

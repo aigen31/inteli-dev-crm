@@ -34,8 +34,6 @@ function updatePassword() {
 
 <template>
     <ClientLayout title="Профиль">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Профиль</h2>
-
         <div class="max-w-2xl space-y-6">
             <Card title="Контактные данные">
                 <form @submit.prevent="updateProfile" class="space-y-4">

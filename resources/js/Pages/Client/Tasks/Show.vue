@@ -48,13 +48,11 @@ function addComment() {
 
 <template>
     <ClientLayout :title="task.title">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ task.title }}</h2>
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 space-y-6">
                 <!-- Description -->
                 <Card title="Описание">
-                    <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ task.description }}</p>
+                    <p class="text-sm text-ink-soft whitespace-pre-wrap">{{ task.description }}</p>
                 </Card>
 
                 <!-- Review action -->
@@ -78,33 +76,33 @@ function addComment() {
 
                 <!-- Reports -->
                 <Card v-if="task.reports?.length" title="Отчёты">
-                    <div class="divide-y divide-gray-100">
+                    <div class="divide-y divide-line">
                         <div v-for="report in task.reports" :key="report.id" class="py-3">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-sm font-medium text-gray-700">{{ report.author?.name }}</span>
-                                <span class="text-xs text-gray-400">{{ formatDateTime(report.created_at) }}</span>
+                                <span class="text-sm font-medium text-ink-soft">{{ report.author?.name }}</span>
+                                <span class="text-xs text-faint">{{ formatDateTime(report.created_at) }}</span>
                             </div>
-                            <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ report.content }}</p>
+                            <p class="text-sm text-ink-soft whitespace-pre-wrap">{{ report.content }}</p>
                         </div>
                     </div>
                 </Card>
 
                 <!-- Comments -->
                 <Card title="Комментарии">
-                    <div v-if="task.comments?.length" class="divide-y divide-gray-100 mb-4">
+                    <div v-if="task.comments?.length" class="divide-y divide-line mb-4">
                         <div v-for="comment in task.comments" :key="comment.id" class="py-3">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-sm font-medium text-gray-700">{{ comment.author?.name }}</span>
-                                <span class="text-xs text-gray-400">{{ formatDateTime(comment.created_at) }}</span>
+                                <span class="text-sm font-medium text-ink-soft">{{ comment.author?.name }}</span>
+                                <span class="text-xs text-faint">{{ formatDateTime(comment.created_at) }}</span>
                             </div>
-                            <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ comment.content }}</p>
+                            <p class="text-sm text-ink-soft whitespace-pre-wrap">{{ comment.content }}</p>
                         </div>
                     </div>
-                    <div v-else class="text-sm text-gray-400 mb-4">Нет комментариев</div>
+                    <div v-else class="text-sm text-faint mb-4">Нет комментариев</div>
 
                     <form v-if="task.status !== 'completed' && task.status !== 'rejected_by_admin'"
                         @submit.prevent="addComment"
-                        class="space-y-3 border-t border-gray-200 pt-4"
+                        class="space-y-3 border-t border-line pt-4"
                     >
                         <TextArea v-model="commentForm.content" placeholder="Добавить комментарий..." :error="commentForm.errors.content" :rows="3" />
                         <div class="flex justify-end">
@@ -121,20 +119,20 @@ function addComment() {
                 <Card title="Информация">
                     <dl class="space-y-3">
                         <div>
-                            <dt class="text-xs text-gray-500">Статус</dt>
+                            <dt class="text-xs text-muted">Статус</dt>
                             <dd><Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge></dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-gray-500">Приоритет</dt>
+                            <dt class="text-xs text-muted">Приоритет</dt>
                             <dd><Badge :status="task.priority" type="priority">{{ taskPriorityLabels[task.priority] }}</Badge></dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-gray-500">Дедлайн</dt>
-                            <dd class="text-sm text-gray-700">{{ formatDate(task.deadline) }}</dd>
+                            <dt class="text-xs text-muted">Дедлайн</dt>
+                            <dd class="text-sm text-ink-soft">{{ formatDate(task.deadline) }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-gray-500">Создана</dt>
-                            <dd class="text-sm text-gray-700">{{ formatDateTime(task.created_at) }}</dd>
+                            <dt class="text-xs text-muted">Создана</dt>
+                            <dd class="text-sm text-ink-soft">{{ formatDateTime(task.created_at) }}</dd>
                         </div>
                     </dl>
                 </Card>
@@ -146,9 +144,9 @@ function addComment() {
                             v-for="invoice in task.invoices"
                             :key="invoice.id"
                             :href="route('client.invoices.show', invoice.id)"
-                            class="flex items-center justify-between p-2 -mx-2 rounded hover:bg-gray-50 transition-colors"
+                            class="flex items-center justify-between p-2 -mx-2 rounded hover:bg-white/5 transition-colors"
                         >
-                            <span class="text-sm font-medium text-gray-700">{{ formatMoney(invoice.amount) }}</span>
+                            <span class="text-sm font-medium text-ink-soft">{{ formatMoney(invoice.amount) }}</span>
                             <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
                         </a>
                     </div>

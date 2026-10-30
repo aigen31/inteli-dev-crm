@@ -33,8 +33,6 @@ function submit() {
 <template>
     <AdminLayout title="Редактировать задачу">
         <div class="max-w-2xl">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Редактировать задачу</h2>
-
             <Card>
                 <form @submit.prevent="submit" class="space-y-4">
                     <SelectInput v-model="form.client_id" label="Клиент" :options="clientOptions" :error="form.errors.client_id" required />

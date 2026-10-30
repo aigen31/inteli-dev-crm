@@ -26,8 +26,6 @@ function submit() {
 <template>
     <ClientLayout title="Создать заявку">
         <div class="max-w-2xl">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Создать заявку</h2>
-
             <Card>
                 <form @submit.prevent="submit" class="space-y-4">
                     <TextInput v-model="form.title" label="Название" :error="form.errors.title" required />

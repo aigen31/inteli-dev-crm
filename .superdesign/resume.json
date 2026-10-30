@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "/admin/dashboard": {
+      "targetKind": "existing-ui",
+      "projectId": "cdadc30d-3c7d-4afc-b622-5afcdc1de499",
+      "baselineDraftId": "b5836d28-98ec-4c93-a947-bae8a1b1e26f",
+      "activeDraftId": "b5836d28-98ec-4c93-a947-bae8a1b1e26f",
+      "designSystemPath": ".superdesign/design-system.md",
+      "referenceIds": [
+        "8d7b9839-d25e-4774-9983-eefa0f7559b8",
+        "8a837438-b0f2-4ffd-8699-c7bce48f0d38"
+      ],
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "resources/js/Components/Layout/AdminLayout.vue",
+        "resources/js/Pages/Admin/Dashboard.vue",
+        "resources/js/Components/UI/Card.vue",
+        "resources/js/Components/UI/Badge.vue",
+        "resources/js/Components/UI/Button.vue",
+        "resources/css/app.css"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "0636baaa27f25d6c6abad26fe55b582947771f076927129879746828e1e0acef",
+        "resources/js/Components/Layout/AdminLayout.vue": "1213546a004c5b47b81d2195096daf24d49c363e220ba4716fea96d9809fbf53",
+        "resources/js/Pages/Admin/Dashboard.vue": "59b5bd3ffe711b190d7329b247893f7f3be8a6413b3a9525652b474bc5a552ee",
+        "resources/js/Components/UI/Card.vue": "8ad2833f76fb1209e679aa832e110db56a00942d74bf152c387998d1e26e93fa",
+        "resources/js/Components/UI/Badge.vue": "2d064963b32339d63752d1c0dd86dc88425f9d9e6d323d442f7a097ae1c2f6f1",
+        "resources/js/Components/UI/Button.vue": "238fbc32070f08c7732f7372126fc9bd677209c6ab6f1a9c5cb7fbcec335d9e3",
+        "resources/css/app.css": "cac3d831bc6165ddecc8bc0197621e0924b75a390f954b24e9bc01c09c024da2"
+      },
+      "drafts": {
+        "b5836d28-98ec-4c93-a947-bae8a1b1e26f": {
+          "title": "Current admin dashboard (baseline)",
+          "visualDirection": "light baseline reproduction",
+          "currentVersion": 1
+        },
+        "418db94f-4f94-46cd-940a-7d00517925ba": {
+          "title": "CRM Dashboard (inteli-dev Dark Violet)",
+          "visualDirection": "dark violet, fixed sidebar",
+          "parentDraftId": "b5836d28-98ec-4c93-a947-bae8a1b1e26f",
+          "currentVersion": 1
+        },
+        "65d9837f-7071-4fe7-b7bc-24cacad3719d": {
+          "title": "CRM Dashboard — Inteli Dev Brand (Dark Violet)",
+          "visualDirection": "dark violet, floating glass pill nav",
+          "parentDraftId": "b5836d28-98ec-4c93-a947-bae8a1b1e26f",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-10-30T16:59:24.360764+00:00"
+    }
+  }
+}

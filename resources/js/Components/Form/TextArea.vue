@@ -15,7 +15,7 @@ const inputId = computed(() => props.id || `textarea-${Math.random().toString(36
 
 <template>
     <div>
-        <label v-if="label" :for="inputId" class="block text-sm font-medium text-gray-700 mb-1">
+        <label v-if="label" :for="inputId" class="mb-1.5 block text-xs font-medium text-ink-soft">
             {{ label }}
         </label>
         <textarea
@@ -23,15 +23,15 @@ const inputId = computed(() => props.id || `textarea-${Math.random().toString(36
             :rows="rows"
             :value="modelValue"
             :class="[
-                'w-full rounded-md border shadow-sm px-3 py-2 text-sm text-gray-700 placeholder-gray-400',
-                'focus:ring-1 focus:outline-none resize-y min-h-[100px]',
+                'min-h-[100px] w-full resize-y rounded-[10px] border bg-surface-2 px-3 py-2.5 text-sm text-ink placeholder-faint shadow-sm',
+                'focus:outline-none focus:ring-1',
                 error
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500',
+                    ? 'border-danger focus:border-danger focus:ring-danger/40'
+                    : 'border-line focus:border-primary-500 focus:ring-primary-500/40',
             ]"
             @input="emit('update:modelValue', $event.target.value)"
             v-bind="$attrs"
         />
-        <p v-if="error" class="mt-1 text-xs text-red-600">{{ error }}</p>
+        <p v-if="error" class="mt-1 text-xs text-danger-ink">{{ error }}</p>
     </div>
 </template>

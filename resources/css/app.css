@@ -11,17 +11,71 @@
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-    --color-primary-50: #EEF2FF;
-    --color-primary-100: #E0E7FF;
-    --color-primary-200: #C7D2FE;
-    --color-primary-300: #A5B4FC;
-    --color-primary-400: #818CF8;
-    --color-primary-500: #6366F1;
-    --color-primary-600: #4F46E5;
-    --color-primary-700: #4338CA;
-    --color-primary-800: #3730A3;
-    --color-primary-900: #312E81;
-    --color-primary-950: #1E1B4B;
+    /* Brand palette — inteli-dev.ru (dark violet) */
+    --color-primary-50: #f2f0ff;
+    --color-primary-100: #e4e0ff;
+    --color-primary-200: #cfc9ff;
+    --color-primary-300: #b5acff;
+    --color-primary-400: #9d92fa;
+    --color-primary-500: #8b7ff5;
+    --color-primary-600: #7767ec;
+    --color-primary-700: #6353d6;
+    --color-primary-800: #5144ad;
+    --color-primary-900: #3b327e;
+    --color-primary-950: #241f52;
+
+    --color-canvas: #0a0a14;
+    --color-surface: #16133a;
+    --color-surface-2: #1b1845;
+    --color-line: rgba(255, 255, 255, 0.12);
+    --color-line-strong: rgba(255, 255, 255, 0.22);
+    --color-ink: #f4f4ff;
+    --color-ink-soft: #c6c5f2;
+    --color-muted: rgba(255, 255, 255, 0.66);
+    --color-faint: rgba(255, 255, 255, 0.4);
+    --color-primary-soft: rgba(139, 127, 245, 0.18);
+
+    --color-success: #4cd964;
+    --color-warning: #ffbd44;
+    --color-danger: #ff5f56;
+    --color-danger-ink: #ff7b7b;
+}
+
+@layer base {
+    html {
+        color-scheme: dark;
+        min-height: 100%;
+        background-color: var(--color-canvas);
+    }
+
+    body {
+        @apply bg-canvas text-ink antialiased;
+        background-image:
+            radial-gradient(900px 620px at 12% -8%, rgba(43, 44, 122, 0.55), transparent 62%),
+            radial-gradient(760px 520px at 88% -4%, rgba(139, 127, 245, 0.18), transparent 60%),
+            radial-gradient(900px 700px at 50% 110%, rgba(43, 44, 122, 0.22), transparent 65%);
+        background-attachment: fixed;
+    }
+
+    ::selection {
+        background: rgba(139, 127, 245, 0.4);
+        color: #fff;
+    }
+
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.14);
+        border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.24);
+    }
 }

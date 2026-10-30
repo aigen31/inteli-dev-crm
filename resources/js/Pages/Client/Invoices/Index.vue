@@ -23,8 +23,6 @@ function applyFilter(key, value) {
 
 <template>
     <ClientLayout title="Мои счета">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Мои счета</h2>
-
         <div class="flex gap-4 mb-4">
             <div class="w-48">
                 <SelectInput
@@ -36,30 +34,35 @@ function applyFilter(key, value) {
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+        <div class="bg-surface rounded-[14px] shadow-sm border border-line overflow-hidden">
+            <table class="min-w-full divide-y divide-line">
+                <thead class="bg-white/[0.03]">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Описание</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Задача</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Сумма</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
+                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Описание</th>
+                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Задача</th>
+                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Сумма</th>
+                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Статус</th>
+                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Дата</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="invoice in invoices.data" :key="invoice.id" class="hover:bg-gray-50 transition-colors">
+                <tbody class="bg-surface divide-y divide-line">
+                    <tr v-if="!invoices.data.length">
+                        <td colspan="5" class="px-6 py-10 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+                            Счетов пока нет
+                        </td>
+                    </tr>
+                    <tr v-for="invoice in invoices.data" :key="invoice.id" class="hover:bg-white/5 transition-colors">
                         <td class="px-6 py-4 text-sm">
-                            <Link :href="route('client.invoices.show', invoice.id)" class="font-medium text-primary-600 hover:text-primary-700">
+                            <Link :href="route('client.invoices.show', invoice.id)" class="font-medium text-primary-300 hover:text-primary-200">
                                 {{ invoice.description }}
                             </Link>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ invoice.task?.title }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">{{ formatMoney(invoice.amount) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ invoice.task?.title }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-ink-soft">{{ formatMoney(invoice.amount) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDateTime(invoice.created_at) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ formatDateTime(invoice.created_at) }}</td>
                     </tr>
                 </tbody>
             </table>

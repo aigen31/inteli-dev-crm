@@ -19,7 +19,10 @@ function submit() {
 
 <template>
     <GuestLayout title="Вход">
-        <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">Вход в систему</h2>
+        <div class="mb-8 text-center">
+            <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Вход в систему</p>
+            <h2 class="mt-2 text-xl font-semibold text-ink">CRM для самозанятого</h2>
+        </div>
 
         <form @submit.prevent="submit" class="space-y-4">
             <TextInput
@@ -42,11 +45,11 @@ function submit() {
             />
 
             <div class="flex items-center">
-                <label class="flex items-center gap-2 text-sm text-gray-600">
+                <label class="flex items-center gap-2 text-sm text-ink-soft">
                     <input
                         v-model="form.remember"
                         type="checkbox"
-                        class="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                        class="h-4 w-4 rounded border-line-strong bg-surface-2 text-primary-500 focus:ring-primary-500/50"
                     />
                     Запомнить меня
                 </label>

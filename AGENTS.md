@@ -69,10 +69,19 @@ composer dev     # serve + queue:listen + pail + vite concurrently
 ## Фронтенд
 
 - Inertia-страницы: `resources/js/Pages/Admin`, `resources/js/Pages/Client`; layouts и UI-кит — `resources/js/Components/{Layout,UI,Form}`.
-- Роутинг на клиенте — глобальный `route()` из Ziggy (`@routes` не нужен, данные приходят через `HandleInertiaRequests`).
+- Роутинг на клиенте — глобальный `route()` из Ziggy (`@routes` не нужен, данные приходят через `HandleInertiaRequests`). Активный пункт меню вычисляется от `page.url`, а не от `route().current()`.
 - Алиас `@` → `resources/js` (`vite.config.js`).
-- Tailwind 4: токены темы (`--color-primary-*`, шрифты) объявлены в `resources/css/app.css` через `@theme`; `tailwind.config.js` нет. Не создавайте его и не следуйте старым инструкциям про Tailwind 3.
-- Root-view — `resources/views/app.blade.php` (`@vite`, `@inertia`).
+- **Брендовая тема — тёмный фиолетовый inteli-dev.ru.** Токены в `resources/css/app.css` через `@theme`: `canvas`, `surface`, `surface-2`, `line`, `line-strong`, `ink`, `ink-soft`, `muted`, `faint`, `primary-soft`, `success`, `warning`, `danger`. Шрифты Inter (текст) + JetBrains Mono (метки, суммы, даты). `tailwind.config.js` нет — не создавайте его и не следуйте старым инструкциям про Tailwind 3 / светлую палитру.
+- Оболочка — плавающая стеклянная «пилюля» (`AdminLayout.vue`, `ClientLayout.vue`): бренд слева, nav-ссылки, справа пользователь и выход; на мобиле — выпадающая панель. Заголовок страницы и eyebrow рендерит layout, поэтому в страницах не дублируйте `<h2>` с тем же текстом. Кнопки действия страницы передавайте в слот:
+  ```vue
+  <AdminLayout title="Клиенты">
+      <template #actions><Link :href="..."><Button>Создать</Button></Link></template>
+      ...
+  </AdminLayout>
+  ```
+- Дизайн-система и исходные макеты — `.superdesign/design-system.md` и проект Superdesign `CRM — inteli-dev brand`; `.superdesign/init/` содержит снимок компонентов/страниц. При крупных UI-правках сверяйтесь с ними, а не с `.github/instructions/design.instructions.md` (он описывает прежнюю светлую тему).
+- Root-view — `resources/views/app.blade.php` (`@vite`, `@inertia`); фон страницы задан на `html`, чтобы длинные страницы не давали белых полос.
+- Кнопки/поля/бейджи/таблицы уже приведены к теме в `Components/UI` и `Components/Form` — переиспользуйте их вместо локальных стилей.
 
 ## Деплой
 
@@ -91,12 +100,14 @@ Entrypoint production-образа кеширует config/routes/views и вы�
 - Compose требует `ACME_EMAIL` и `DB_PASSWORD` даже для локального запуска: интерполяция выполняется до отключения Traefik профилем.
 - `bootstrap/cache/`, `storage/framework/{sessions,views}`, `storage/logs/` должны существовать в git (добавлены `.gitignore`-заглушки) — иначе сборка падает на `composer dump-autoload`, а Laravel не пишет кеш/логи.
 - nginx прокидывает `X-Forwarded-Proto` и вычисляет `HTTPS` из запроса. Не хардкодьте `fastcgi_param HTTPS on` — локально это уводит редиректы на несуществующий https.
-- `public/build` не коммитится и собирается внутри образа; локально его надо собирать самому.
+- `public/build` не коммитится и собирается внутри образа. Для быстрой итерации: `npm run build` → `docker compose cp public/build/. app:/var/www/public/build`; после любого рестарта контейнера entrypoint затрёт это старым `public-build` из образа, поэтому финальную версию закрепляйте через `docker compose build`.
+- Локальный `npm run build` требует `vendor/` (импорт `../../vendor/tightenco/ziggy`). Без composer берите его из контейнера: `docker compose cp app:/var/www/vendor ./vendor`.
+- PHP/blade-правки в запущенном контейнере не видны: код в образе, а opcache с `validate_timestamps=0`. Копируйте файл в контейнер и делайте `docker compose restart app` (либо пересобирайте образ).
 - Промо-лендинг (`promo/`) — отдельный статический сайт в том же compose, не часть Inertia-приложения.
 
 ## Документация
 
 - `.github/instructions/terms_of_reference.instructions.md` — ТЗ, роли, сущности, бизнес-правила. Читать перед изменением доменной логики.
 - `.github/instructions/project_strucrure.instructions.md` — карта каталогов и слоёв (с оговоркой про дрейф версий).
-- `.github/instructions/design.instructions.md` — палитра, типографика, компоненты UI. Читать перед правкой Vue-страниц и стилей.
+- `.github/instructions/design.instructions.md` — исторический UI-кит светлой темы; для текущего дизайна используйте `.superdesign/design-system.md`.
 - `.github/instructions/landing.instructions.md` — структура и тексты лендинга.

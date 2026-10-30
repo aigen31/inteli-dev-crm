@@ -47,6 +47,7 @@ class ClientController extends Controller
 
         return Inertia::render('Admin/Clients/Show', [
             'client' => $client,
+            'tasks' => $client->clientTasks,
         ]);
     }
 

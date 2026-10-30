@@ -16,18 +16,18 @@ const inputId = computed(() => props.id || `select-${Math.random().toString(36).
 
 <template>
     <div>
-        <label v-if="label" :for="inputId" class="block text-sm font-medium text-gray-700 mb-1">
+        <label v-if="label" :for="inputId" class="mb-1.5 block text-xs font-medium text-ink-soft">
             {{ label }}
         </label>
         <select
             :id="inputId"
             :value="modelValue"
             :class="[
-                'w-full rounded-md border shadow-sm px-3 py-2 text-sm text-gray-700',
-                'focus:ring-1 focus:outline-none',
+                'w-full rounded-[10px] border bg-surface-2 px-3 py-2.5 text-sm text-ink shadow-sm',
+                'focus:outline-none focus:ring-1',
                 error
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500',
+                    ? 'border-danger focus:border-danger focus:ring-danger/40'
+                    : 'border-line focus:border-primary-500 focus:ring-primary-500/40',
             ]"
             @change="emit('update:modelValue', $event.target.value)"
             v-bind="$attrs"
@@ -37,6 +37,6 @@ const inputId = computed(() => props.id || `select-${Math.random().toString(36).
                 {{ opt.label }}
             </option>
         </select>
-        <p v-if="error" class="mt-1 text-xs text-red-600">{{ error }}</p>
+        <p v-if="error" class="mt-1 text-xs text-danger-ink">{{ error }}</p>
     </div>
 </template>

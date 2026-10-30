@@ -24,12 +24,11 @@ function applyFilter(key, value) {
 
 <template>
     <ClientLayout title="Мои задачи">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Мои задачи</h2>
+        <template #actions>
             <Link :href="route('client.tasks.create')">
                 <Button>Создать заявку</Button>
             </Link>
-        </div>
+        </template>
 
         <div class="flex gap-4 mb-4">
             <div class="w-48">
@@ -42,26 +41,31 @@ function applyFilter(key, value) {
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+        <div class="bg-surface rounded-[14px] shadow-sm border border-line overflow-hidden">
+            <table class="min-w-full divide-y divide-line">
+                <thead class="bg-white/[0.03]">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Задача</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дедлайн</th>
+                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Задача</th>
+                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Статус</th>
+                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Дедлайн</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="task in tasks.data" :key="task.id" class="hover:bg-gray-50 transition-colors">
+                <tbody class="bg-surface divide-y divide-line">
+                    <tr v-if="!tasks.data.length">
+                        <td colspan="3" class="px-6 py-10 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+                            Заявок пока нет
+                        </td>
+                    </tr>
+                    <tr v-for="task in tasks.data" :key="task.id" class="hover:bg-white/5 transition-colors">
                         <td class="px-6 py-4 text-sm">
-                            <Link :href="route('client.tasks.show', task.id)" class="font-medium text-primary-600 hover:text-primary-700">
+                            <Link :href="route('client.tasks.show', task.id)" class="font-medium text-primary-300 hover:text-primary-200">
                                 {{ task.title }}
                             </Link>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(task.deadline) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ formatDate(task.deadline) }}</td>
                     </tr>
                 </tbody>
             </table>

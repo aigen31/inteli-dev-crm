@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
     show: { type: Boolean, default: false },
@@ -8,20 +8,23 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const maxWidthClass = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl',
-};
+const maxWidthClass = computed(
+    () =>
+        ({
+            sm: 'max-w-sm',
+            md: 'max-w-md',
+            lg: 'max-w-lg',
+            xl: 'max-w-xl',
+            '2xl': 'max-w-2xl',
+        })[props.maxWidth],
+);
 </script>
 
 <template>
     <Teleport to="body">
         <Transition leave-active-class="duration-200">
             <div v-show="show" class="fixed inset-0 z-40 overflow-y-auto" @click.self="emit('close')">
-                <div class="fixed inset-0 bg-gray-900/50 transition-opacity" />
+                <div class="fixed inset-0 bg-[#060512]/70 backdrop-blur-sm transition-opacity" />
                 <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <Transition
                         enter-active-class="transition-all duration-200 ease-out"
@@ -33,16 +36,19 @@ const maxWidthClass = {
                     >
                         <div
                             v-show="show"
-                            :class="['bg-white rounded-xl shadow-xl w-full max-h-[90vh] overflow-y-auto', maxWidthClass[maxWidth]]"
+                            :class="[
+                                'max-h-[90vh] w-full overflow-y-auto rounded-[20px] border border-line bg-surface shadow-[0_16px_40px_rgba(0,0,0,0.5)]',
+                                maxWidthClass,
+                            ]"
                             @click.stop
                         >
-                            <div v-if="$slots.header" class="px-6 py-4 border-b border-gray-200">
+                            <div v-if="$slots.header" class="border-b border-line px-6 py-4">
                                 <slot name="header" />
                             </div>
                             <div class="px-6 py-4">
                                 <slot />
                             </div>
-                            <div v-if="$slots.footer" class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                            <div v-if="$slots.footer" class="flex justify-end space-x-3 border-t border-line px-6 py-4">
                                 <slot name="footer" />
                             </div>
                         </div>
