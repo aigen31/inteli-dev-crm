@@ -5,7 +5,7 @@
       "targetKind": "existing-ui",
       "projectId": "cdadc30d-3c7d-4afc-b622-5afcdc1de499",
       "baselineDraftId": "b5836d28-98ec-4c93-a947-bae8a1b1e26f",
-      "activeDraftId": "b5836d28-98ec-4c93-a947-bae8a1b1e26f",
+      "activeDraftId": "65d9837f-7071-4fe7-b7bc-24cacad3719d",
       "designSystemPath": ".superdesign/design-system.md",
       "referenceIds": [
         "8d7b9839-d25e-4774-9983-eefa0f7559b8",
@@ -48,7 +48,7 @@
           "currentVersion": 1
         }
       },
-      "updatedAt": "2026-10-30T16:59:24.360764+00:00"
+      "updatedAt": "2026-10-30T17:14:15.063359+00:00"
     }
   }
 }
