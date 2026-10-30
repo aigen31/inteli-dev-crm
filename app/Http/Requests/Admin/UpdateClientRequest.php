@@ -17,7 +17,7 @@ class UpdateClientRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->route('client')->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$this->route('client')->id],
             'phone' => ['nullable', 'string', 'max:50'],
             'messenger_contacts' => ['nullable', 'array'],
         ];

@@ -2,50 +2,54 @@
 
 ## Поток запроса
 
-`routes/web.php` → Controller → FormRequest (валидация) → Action/Service (бизнес-логика) → Eloquent-модель → Event → Listener (уведомления, история).
+`routes/web.php` → Controller → FormRequest → Action/Service → Eloquent → Event → Listener.
 
-Контроллер тонкий: принимает запрос, авторизует через Policy и вызывает Action/Service. Бизнес-правила живут в Action/Service, а не в контроллере или Vue.
+Контроллер тонкий: принимает запрос, авторизует и делегирует. Бизнес-правила — в Action/Service, не в контроллере и не во Vue.
+
+API идёт отдельным контуром: `routes/api.php` → `api.token` → `api.ability` → API-контроллер → тот же Action/Service. MCP-сервер не ходит в БД: он вызывает REST API с токеном, поэтому права и валидация не дублируются.
 
 ## Слои
 
-- `app/Actions/` — одноразовые операции: `Client/`, `Invoice/` (создание, отмена, возврат, ручное подтверждение оплаты), `Payment/` (создание платежа, вебхук, рекуррент), `Task/`.
-- `app/Services/` — `TaskService`, `InvoiceService`, `FileUploadService`, `YooKassaService`, `SettingsService` (реквизиты прямого перевода).
-- `app/Http/Requests/` — вся валидация, включая проверки, зависящие от способа оплаты.
-- `app/Policies/` — авторизация по моделям; проверки ролей и владения счётом/задачей не дублируются в контроллерах.
-- `app/Enums/` — `UserRole`, `TaskStatus`, `TaskType`, `TaskPriority`, `InvoiceStatus`, `PaymentMethod`, `RecurringInterval`; в БД хранятся строковые значения.
-- `app/Events` + `app/Listeners` — побочные эффекты: уведомления, `TaskStatusHistory`, клонирование maintenance-задачи, отмена счетов. Регистрация автоматическая (discovery), без провайдера.
+- `app/Actions/` — операции: клиенты, задачи, счета, платежи, ручное подтверждение перевода.
+- `app/Services/` — доменные сервисы (`TaskService`, `InvoiceService`, `SettingsService`, `YooKassaService`), новые: `TaskTemplateService`, `CustomFieldService`, `HtmlSanitizer`, `ApiTokenService`.
+- `app/Services/Ai/` — `AgentService`, `CrmToolbox`, `OpenAiClient`, `ContextBuilder`, `PromptFactory`, `TemplateGenerator`, `AiSettingsService`.
+- `app/Http/Requests/` — валидация web-форм; API валидирует в контроллерах, потому что правила часто зависят от роли.
+- `app/Http/Resources/` — стабильные ответы API v1 (`ClientResource`, `TaskResource`, `TaskTemplateResource`, `InvoiceResource`, `CustomFieldResource`).
+- `app/Policies/` — авторизация по моделям; API дополнительно скоупит клиентские токены.
+- `app/Enums/` — `UserRole`, `TaskStatus`, `TaskType`, `TaskPriority`, `TaskSource`, `InvoiceStatus`, `PaymentMethod`, `CustomFieldEntity`, `CustomFieldType`, `AiActionStatus`, `AiMessageRole`, `ApiAbility`.
+- `app/Events` + `app/Listeners` — уведомления, история статусов, клонирование maintenance-задачи, отмена счетов.
 
 ## Роли и доступ
 
-- `admin` — клиенты, задачи, счета, настройки; `client` — только свои задачи, счета и профиль.
-- Middleware-алиасы в `bootstrap/app.php`: `is_admin`, `is_active`, `yookassa_webhook`.
-- Клиентские маршруты: `/dashboard`, `/tasks`, `/invoices`, `/profile`. Админские: `/admin/*`.
+- `admin` — клиенты, задачи, шаблоны, счета, настройки, API-токены, Кики.
+- `client` — только свои задачи/счета/поля, создание заявки, оценка работы, оплата; Кики видит только его данные.
+- Middleware: `is_admin`, `is_active`, `api.token`, `api.ability`, `yookassa_webhook`.
+- Админские маршруты `/admin/*`; клиентские `/dashboard`, `/tasks`, `/invoices`, `/profile`; API `/api/v1/*`; MCP — отдельный Node-процесс.
 
 ## Домен
 
-- Задача (`one_time` / `maintenance`) проходит `pending_review → queued → in_progress → awaiting_review → completed` с ветками отклонения.
-- Счёт: `pending → paid | cancelled | refunded`; суммы `decimal(10,2)` в рублях.
-- `payment_method` у счёта:
-  - `yookassa` — онлайн-оплата, вебхук обновляет статус, рекуррент разрешён;
-  - `transfer` — прямой перевод на реквизиты, оплата вне кассы, рекуррент запрещён, оплату админ подтверждает вручную.
-- Ручное подтверждение: `PATCH /admin/invoices/{invoice}/mark-paid` → `MarkInvoiceAsPaidAction` → `InvoicePaid`.
-- Реквизиты перевода — таблица `settings` (модель `Setting`, доступ `SettingsService`), редактируются на `/admin/settings`.
-- Webhook ЮКассы: `POST /webhooks/yookassa` без auth, защищён `VerifyYooKassaWebhook`; ключи — `YOOKASSA_SHOP_ID`, `YOOKASSA_SECRET_KEY` (`config/services.php`).
+- Задача проходит `pending_review → queued → in_progress → awaiting_review → completed` с ветками отклонения. `source` показывает происхождение: `manual`, `template`, `client`, `ai`, `api`.
+- Шаблон задачи хранит HTML-описание, чек-лист, тип/приоритет/статус по умолчанию, необязательные исполнителя и срок. Применение создаёт задачу с чек-листом и увеличивает `usage_count`.
+- Пользовательские поля — `custom_fields` + типизированные `custom_field_values` (text/number/date/boolean/json), с дефолтами и API-представлением.
+- Счёт: `pending → paid | cancelled | refunded`; `payment_method`:
+  - `yookassa` — онлайн-оплата, вебхук, рекуррент;
+  - `transfer` — реквизиты из `settings`, оплата вне кассы, рекуррент запрещён, подтверждение вручную.
+- Кики: диалоги (`ai_conversations`), сообщения (`ai_messages`), журнал действий (`ai_actions`). Финансовые инструменты создают `proposed`-действие и выполняются только после confirm; права перепроверяются.
+- API-токены: `api_tokens` (SHA-256 хеш, префикс, abilities, expiry). Токен наследует роль пользователя.
 
-## Планировщик
+## Где что искать
 
-`routes/console.php`:
-
-- `payments:process-recurring` — ежедневно 09:00;
-- `invoices:send-reminders` — ежедневно 12:00;
-- `invoices:cancel-expired` — понедельник 03:00.
+- Шаблоны и WYSIWYG — [project-management.md](project-management.md).
+- Поля и API-значения — [custom-fields.md](custom-fields.md).
+- Ассистент — [ai.md](ai.md).
+- REST — [api.md](api.md), MCP — [mcp.md](mcp.md).
+- Решения — [docs/adr](../adr/README.md).
 
 ## Куда добавлять фичу
 
-1. Маршрут в `routes/web.php` в нужную группу (`admin`, client, webhook).
-2. FormRequest с правилами.
-3. Action или Service с бизнес-логикой.
-4. Тонкий контроллер + Policy при необходимости.
-5. Страница в `resources/js/Pages/{Admin,Client}/…` и ссылка в layout.
-
-Бизнес-требования и описания сущностей — `.github/instructions/terms_of_reference.instructions.md` (читать перед изменением доменной логики; см. оговорку о дрейфе в [gotchas.md](gotchas.md)).
+1. Маршрут в `routes/web.php` или `routes/api.php` в нужную группу.
+2. FormRequest (web) или валидация в контроллере (API).
+3. Action/Service с бизнес-логикой.
+4. Тонкий контроллер + Policy/скоуп.
+5. Страница в `resources/js/Pages/{Admin,Client}/…`; переиспользуйте `Components/UI`, `Components/Form`, `Components/CustomFields`.
+6. Тест в `tests/Feature` и, если меняется контракт, `mcp/src/tools.mjs` + `mcp/test`.

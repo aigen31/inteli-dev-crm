@@ -15,7 +15,7 @@ class YooKassaService
 
     public function __construct()
     {
-        $this->client = new Client();
+        $this->client = new Client;
 
         $shopId = (string) config('services.yookassa.shop_id');
         $secretKey = (string) config('services.yookassa.secret_key');

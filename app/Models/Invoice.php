@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\RecurringInterval;
+use App\Models\Concerns\HasCustomFields;
 use Database\Factories\InvoiceFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Invoice extends Model
 {
     /** @use HasFactory<InvoiceFactory> */
-    use HasFactory, HasUuids;
+    use HasCustomFields, HasFactory, HasUuids;
 
     protected $fillable = [
         'task_id',

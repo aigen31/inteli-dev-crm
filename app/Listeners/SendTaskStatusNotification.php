@@ -6,10 +6,11 @@ namespace App\Listeners;
 
 use App\Enums\TaskStatus;
 use App\Events\Task\TaskStatusChanged;
-use App\Notifications\TaskReviewRequired;
-use App\Notifications\TaskStatusUpdated;
+use App\Models\User;
 use App\Notifications\TaskAcceptedByClient;
 use App\Notifications\TaskRejectedByClient;
+use App\Notifications\TaskReviewRequired;
+use App\Notifications\TaskStatusUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class SendTaskStatusNotification implements ShouldQueue
@@ -18,7 +19,7 @@ class SendTaskStatusNotification implements ShouldQueue
     {
         $task = $event->task;
         $client = $task->client;
-        $admin = \App\Models\User::where('role', 'admin')->first();
+        $admin = User::where('role', 'admin')->first();
 
         match ($event->newStatus) {
             TaskStatus::AwaitingReview => $client->notify(new TaskReviewRequired($task)),

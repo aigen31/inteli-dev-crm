@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Models\FileAttachment;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class FileUploadService
 {
@@ -45,7 +44,7 @@ class FileUploadService
     private function validate(UploadedFile $file): void
     {
         if (! in_array($file->getMimeType(), self::ALLOWED_MIMES, true)) {
-            throw new \InvalidArgumentException('Недопустимый тип файла: ' . $file->getMimeType());
+            throw new \InvalidArgumentException('Недопустимый тип файла: '.$file->getMimeType());
         }
 
         if ($file->getSize() > self::MAX_SIZE) {

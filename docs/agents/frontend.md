@@ -4,47 +4,47 @@
 
 - Inertia 3 + Vue 3.5 + Vite 8 + Tailwind 4, без Vue Router.
 - Страницы: `resources/js/Pages/Admin`, `resources/js/Pages/Client`.
-- Оболочка: `Components/Layout/{AdminLayout,ClientLayout,GuestLayout}.vue`.
-- UI-кит: `Components/UI` (Button, Card, Badge, Modal, Pagination), формы: `Components/Form`.
-- Утилиты: `Utils/constants.js` (лейблы статусов и способов оплаты), `Utils/formatters.js` (даты, деньги).
+- Оболочка: `Components/Layout/AppShell.vue`; `AdminLayout` и `ClientLayout` — тонкие обёртки с ролью.
+- UI: `Components/UI` (Button, Card, Badge, StatCard, EmptyState, Segmented, Pagination); формы: `Components/Form` (TextInput, SelectInput, TextArea, RichTextEditor).
+- Домен: `Components/Task/TaskFormFields.vue`, `Components/CustomFields/*`, `Components/Assistant/AssistantPanel.vue`, `Components/Kiki/KikiAvatar.vue`.
+- Утилиты: `Utils/constants.js`, `Utils/formatters.js`, `Composables/useAssistant.js`.
 
-Переиспользуйте существующие компоненты вместо локальных стилей: кнопки, поля, бейджи и таблицы уже приведены к теме.
+## Навигация
 
-## Роутинг и ссылки
+Короткая: 4 раздела у админа (Обзор, Задачи, Клиенты, Счета) и 3 у клиента (Обзор, Задачи, Счета). Настройки/Профиль — внизу. Шаблоны живут внутри «Задач» и на дашборде, а не отдельным пунктом. Мобильная навигация — нижний бар, assistant — кнопка «Кики».
 
-- Глобальный `route()` из Ziggy; данные приходят через `HandleInertiaRequests`, `@routes` не нужен.
-- Активный пункт меню считайте от `page.url`, а не от `route().current()`: на полной перезагрузке Ziggy `current()` не всегда инициализирован.
-- Алиас `@` → `resources/js` (`vite.config.js`).
+Активный пункт считайте от `page.url`, а не `route().current()`: на полной перезагрузке Ziggy `current()` не всегда инициализирован.
 
-## Тема
+## Тема и дизайн
 
-Бренд — тёмный фиолетовый `inteli-dev.ru`. Токены объявлены в `resources/css/app.css` через `@theme`:
+Светлая «бумажная» тема inteli-dev: тёплый canvas, белые карточки, фиолетовый акцент, крупные радиусы, много воздуха. Токены — в `resources/css/app.css` (`canvas`, `surface`, `surface-2`, `paper`, `line`, `ink`, `muted`, `primary-*`, `accent`, `sage`, `sky`).
 
-`canvas`, `surface`, `surface-2`, `line`, `line-strong`, `ink`, `ink-soft`, `muted`, `faint`, `primary-soft`, `success`, `warning`, `danger`.
+Шрифты: Manrope (текст), Unbounded (заголовки/цифры), JetBrains Mono (метки, ID, суммы). Дизайн-система — [.superdesign/design-system.md](../../.superdesign/design-system.md).
 
-Шрифты: Inter (текст), JetBrains Mono (метки, суммы, даты). `tailwind.config.js` в проекте нет — тему задают токены `@theme` и утилиты.
+## Заголовки и действия
 
-## Оболочка и заголовки
-
-Плавающая стеклянная «пилюля»: бренд, nav-ссылки, пользователь, выход; на мобиле — выпадающая панель. Заголовок страницы и eyebrow рендерит layout. Действия страницы передавайте слотом, а не отдельной строкой под заголовком:
+Заголовок и eyebrow рендерит `AppShell`; страница передаёт действия слотом:
 
 ```vue
 <AdminLayout title="Клиенты">
     <template #actions>
-        <Link :href="route('admin.clients.create')"><Button>Создать клиента</Button></Link>
+        <Link :href="route('admin.clients.create')"><Button>Новый клиент</Button></Link>
     </template>
     ...
 </AdminLayout>
 ```
 
-Не дублируйте заголовок страницы внутри контента (`<h2>` с тем же текстом): layout уже его вывел.
+Не дублируйте заголовок внутри контента.
 
-## Таблицы, пустые состояния, статусы
+## WYSIWYG
 
-- Шапки таблиц — моноширинные, верхний регистр.
-- Для пустого списка добавляйте строку с `colspan` и моно-надписью («Записей пока нет»).
-- Статусы и способ оплаты — только через `Badge` (`type="task" | "invoice" | "payment" | "priority"`), цвета берутся из карт компонента.
-- `Badge` должен оставаться реактивным: его цвета вычисляются от props через `computed`, чтобы статус менялся без перезагрузки.
+`RichTextEditor.vue` — TipTap. `StarterKit` уже включает Link/Underline; не подключайте их повторно. Сервер санитайзит HTML через `HtmlSanitizer`; на клиенте HTML из БД выводится через `v-html`, но только после серверной очистки. Превью в редакторе шаблона — локальное, без сохранения.
+
+## Поля и Кики
+
+- `CustomFieldsForm` / `CustomFieldsView` / `CustomFieldInput` — единый рендер типов; не пишите отдельные поля под каждый тип.
+- `AssistantPanel` — глобальная панель (Teleport), открывается из сайдбара, `⌘K` или мобильной кнопки. Состояние — `useAssistant`.
+- `KikiAvatar` — варианты `avatar`, `hero`, `empty`, `thinking`; файлы в `public/images/kiki/`. Не рисуйте маскота заново CSS-ом.
 
 ## Сборка
 
@@ -53,10 +53,4 @@ npm run build   # public/build, не коммитится
 npm run dev     # Vite dev server
 ```
 
-После правок Vue/CSS пересоберите ассеты. В Docker они раздаются из общего volume; финальную версию закрепляйте пересборкой образа (см. [deployment.md](deployment.md)).
-
-Root-view — `resources/views/app.blade.php` (`@vite`, `@inertia`); фон задан на `html`, чтобы длинные страницы не давали белых полос. В `<head>` используйте `<title data-inertia>` — в Inertia 3 старый атрибут `inertia` больше не работает.
-
-## Дизайн-источник
-
-`.superdesign/design-system.md` — актуальная дизайн-система и токены; `.superdesign/init/` — снимок компонентов и страниц для Superdesign. `.github/instructions/design.instructions.md` описывает прежнюю светлую тему — для новых работ не используйте.
+В Docker ассеты раздаются из общего volume; после рестарта `app` они затираются версией из образа — финальную версию закрепляйте пересборкой (см. [deployment.md](deployment.md)). Root-view — `resources/views/app.blade.php`; в `<head>` обязателен `<title data-inertia>` (Inertia 3).

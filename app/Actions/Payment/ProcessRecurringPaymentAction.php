@@ -24,6 +24,7 @@ class ProcessRecurringPaymentAction
     {
         if (! $originalInvoice->yookassa_payment_method_id) {
             Log::warning("Recurring payment skipped: no payment method for invoice {$originalInvoice->id}");
+
             return;
         }
 

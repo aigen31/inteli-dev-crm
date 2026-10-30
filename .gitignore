@@ -25,3 +25,10 @@ Homestead.yaml
 Thumbs.db
 
 .superdesign/tmp/
+
+/bootstrap/cache/*.php
+/.playwright-mcp
+/qa-*.png
+/.npm-cache
+/.npm-logs
+/.composer-home

@@ -17,8 +17,8 @@ class FileAttachmentFactory extends Factory
     {
         return [
             'uploaded_by' => User::factory(),
-            'original_name' => fake()->word() . '.pdf',
-            'stored_path' => 'attachments/' . fake()->uuid() . '.pdf',
+            'original_name' => fake()->word().'.pdf',
+            'stored_path' => 'attachments/'.fake()->uuid().'.pdf',
             'mime_type' => 'application/pdf',
             'size' => fake()->numberBetween(1024, 20 * 1024 * 1024),
         ];

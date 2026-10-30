@@ -19,9 +19,11 @@ class StoreTaskRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'min:3', 'max:255'],
-            'description' => ['required', 'string', 'min:10'],
+            'description' => ['nullable', 'string', 'max:60000'],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
-            'deadline' => ['nullable', 'date', 'after:today'],
+            'deadline' => ['nullable', 'date', 'after_or_equal:today'],
+            'template_id' => ['nullable', 'uuid', 'exists:task_templates,id'],
+            'custom_fields' => ['nullable', 'array'],
         ];
     }
 }

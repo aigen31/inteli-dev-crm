@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreInvoiceRequest;
 use App\Models\Invoice;
 use App\Models\Task;
+use App\Services\CustomFieldService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,6 +21,10 @@ use Inertia\Response;
 
 class InvoiceController extends Controller
 {
+    public function __construct(
+        private readonly CustomFieldService $customFields,
+    ) {}
+
     public function index(Request $request): Response
     {
         $invoices = Invoice::with(['task', 'client'])
@@ -33,6 +38,14 @@ class InvoiceController extends Controller
             'invoices' => $invoices,
             'filters' => $request->only('status', 'client_id'),
             'statuses' => collect(InvoiceStatus::cases())->map(fn ($s) => ['value' => $s->value, 'label' => $s->label()]),
+            'summary' => [
+                'pending' => (float) Invoice::query()->where('status', InvoiceStatus::Pending)->sum('amount'),
+                'paid_month' => (float) Invoice::query()
+                    ->where('status', InvoiceStatus::Paid)
+                    ->whereMonth('paid_at', now()->month)
+                    ->whereYear('paid_at', now()->year)
+                    ->sum('amount'),
+            ],
         ]);
     }
 
@@ -50,7 +63,12 @@ class InvoiceController extends Controller
 
     public function store(StoreInvoiceRequest $request, CreateInvoiceAction $action): RedirectResponse
     {
-        $invoice = $action->execute($request->validated());
+        $data = $request->validated();
+        $customValues = $data['custom_fields'] ?? [];
+        unset($data['custom_fields']);
+
+        $invoice = $action->execute($data);
+        $this->customFields->sync($invoice, $customValues, $request->user());
 
         return redirect()->route('admin.invoices.show', $invoice)
             ->with('success', 'Счёт создан.');
@@ -58,10 +76,11 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice): Response
     {
-        $invoice->load(['task', 'client']);
+        $invoice->load(['task', 'client', 'customFieldValues.customField']);
 
         return Inertia::render('Admin/Invoices/Show', [
             'invoice' => $invoice,
+            'customFields' => $this->customFields->serializedValues($invoice),
         ]);
     }
 

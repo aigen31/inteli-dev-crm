@@ -2,11 +2,10 @@
 import { computed, watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
-import Card from '@/Components/UI/Card.vue';
+import Button from '@/Components/UI/Button.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
-import Button from '@/Components/UI/Button.vue';
 
 const props = defineProps({
     tasks: Array,
@@ -22,7 +21,7 @@ const form = useForm({
     recurring_interval: '',
 });
 
-const taskOptions = props.tasks.map(t => ({ value: t.id, label: `${t.title} (${t.client?.name || ''})` }));
+const taskOptions = props.tasks.map((task) => ({ value: task.id, label: `${task.title} (${task.client?.name || ''})` }));
 const intervalOptions = [
     { value: 'monthly', label: 'Ежемесячно' },
     { value: 'quarterly', label: 'Ежеквартально' },
@@ -48,62 +47,46 @@ function submit() {
 </script>
 
 <template>
-    <AdminLayout title="Создать счёт">
-        <div class="max-w-2xl">
-            <Card>
-                <form @submit.prevent="submit" class="space-y-4">
-                    <SelectInput v-model="form.task_id" label="Задача" :options="taskOptions" :error="form.errors.task_id" required />
-                    <TextInput v-model="form.amount" label="Сумма (₽)" type="number" step="0.01" min="0.01" :error="form.errors.amount" required />
-                    <TextArea v-model="form.description" label="Описание" :error="form.errors.description" required />
+    <AdminLayout title="Новый счёт">
+        <template #actions>
+            <Link :href="route('admin.invoices.index')"><Button variant="ghost" size="sm">Назад</Button></Link>
+            <Button size="sm" :disabled="form.processing" @click="submit">Создать счёт</Button>
+        </template>
 
-                    <div class="space-y-1.5">
-                        <SelectInput
-                            v-model="form.payment_method"
-                            label="Способ оплаты"
-                            :options="paymentOptions"
-                            :error="form.errors.payment_method"
-                            required
-                        />
-                        <p class="text-xs text-faint">
-                            <template v-if="isTransfer">
-                                Клиент увидит реквизиты из
-                                <Link :href="route('admin.settings.edit')" class="text-primary-300 hover:text-primary-200">настроек</Link>
-                                и переведёт оплату напрямую. Поступление вы подтвердите вручную на странице счёта.
-                            </template>
-                            <template v-else>
-                                Клиент оплатит картой на стороне ЮКассы, статус обновится автоматически.
-                            </template>
-                        </p>
-                    </div>
-
+        <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.2fr_.8fr]">
+            <section class="surface-card p-5 sm:p-6">
+                <p class="eyebrow">Основание</p>
+                <div class="mt-4 space-y-4">
+                    <SelectInput v-model="form.task_id" label="Задача" :options="taskOptions" :error="form.errors.task_id" placeholder="Выберите задачу" />
+                    <TextInput v-model="form.amount" label="Сумма, ₽" type="number" step="0.01" min="0.01" :error="form.errors.amount" />
+                    <TextArea v-model="form.description" label="Назначение" :error="form.errors.description" placeholder="За что выставлен счёт" />
+                    <SelectInput v-model="form.payment_method" label="Способ оплаты" :options="paymentOptions" :error="form.errors.payment_method" placeholder="Выберите способ" />
+                    <p class="text-[10px] leading-relaxed text-muted">
+                        <template v-if="isTransfer">Клиент увидит реквизиты из <Link :href="route('admin.settings.edit', { tab: 'payments' })" class="text-primary-700 underline">настроек</Link>. Поступление подтвердите вручную.</template>
+                        <template v-else>Клиент оплатит картой на стороне ЮКассы, статус обновится автоматически.</template>
+                    </p>
                     <template v-if="!isTransfer">
-                        <div class="flex items-center gap-2">
-                            <input
-                                v-model="form.is_recurring"
-                                type="checkbox"
-                                id="is_recurring"
-                                class="h-4 w-4 rounded border-line-strong bg-surface-2 text-primary-500 focus:ring-primary-500/50"
-                            />
-                            <label for="is_recurring" class="text-sm font-medium text-ink-soft">Рекуррентный платёж</label>
-                        </div>
-
-                        <SelectInput
-                            v-if="form.is_recurring"
-                            v-model="form.recurring_interval"
-                            label="Интервал"
-                            :options="intervalOptions"
-                            :error="form.errors.recurring_interval"
-                        />
+                        <label class="flex items-center gap-2 text-[12px] text-ink-soft">
+                            <input v-model="form.is_recurring" type="checkbox" class="h-4 w-4 rounded border-line-strong text-primary-500 focus:ring-primary-500/30" />
+                            Рекуррентный платёж
+                        </label>
+                        <SelectInput v-if="form.is_recurring" v-model="form.recurring_interval" label="Интервал" :options="intervalOptions" :error="form.errors.recurring_interval" />
                     </template>
+                    <p v-if="form.errors.is_recurring" class="text-[10px] text-danger-ink">{{ form.errors.is_recurring }}</p>
+                </div>
+            </section>
 
-                    <p v-if="form.errors.is_recurring" class="text-xs text-danger-ink">{{ form.errors.is_recurring }}</p>
-
-                    <div class="flex justify-end space-x-3 pt-4">
-                        <Button variant="secondary" :href="route('admin.invoices.index')">Отмена</Button>
-                        <Button type="submit" :disabled="form.processing">Создать</Button>
-                    </div>
-                </form>
-            </Card>
+            <aside class="space-y-4">
+                <section class="surface-card p-5">
+                    <p class="eyebrow">Подсказка</p>
+                    <p class="mt-2 text-[11px] leading-relaxed text-muted">Счёт привязан к задаче и клиенту. После оплаты статус можно подтвердить вручную — для прямого перевода это нормальный путь.</p>
+                </section>
+                <section class="surface-card p-5">
+                    <p class="eyebrow">Итого</p>
+                    <p class="mt-2 font-display text-[26px] font-medium tracking-[-0.04em] text-ink">{{ form.amount ? `${Number(form.amount).toLocaleString('ru-RU')} ₽` : '—' }}</p>
+                    <p class="mt-1 text-[10px] text-muted">{{ isTransfer ? 'прямой перевод' : 'ЮКасса' }}</p>
+                </section>
+            </aside>
         </div>
     </AdminLayout>
 </template>

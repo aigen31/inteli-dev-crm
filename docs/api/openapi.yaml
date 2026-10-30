@@ -1,0 +1,803 @@
+openapi: 3.1.0
+info:
+  title: inteli-dev CRM API
+  version: 1.0.0
+  description: |
+    REST API для CRM самозанятого: клиенты, задачи, шаблоны, счета,
+    пользовательские поля и ассистент Кики. Токен наследует роль пользователя.
+servers:
+  - url: http://localhost:8099/api/v1
+    description: Локальная разработка
+  - url: https://crm.inteli-dev.ru/api/v1
+    description: Production
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Clients
+  - name: Tasks
+  - name: Templates
+  - name: Invoices
+  - name: Custom Fields
+  - name: Assistant
+paths:
+  /me:
+    get:
+      tags: [Auth]
+      summary: Текущий пользователь и права токена
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    allOf:
+                      - $ref: '#/components/schemas/Client'
+                      - type: object
+                        properties:
+                          token:
+                            type: object
+                            properties:
+                              name: { type: string }
+                              abilities:
+                                type: array
+                                items: { type: string }
+                              expires_at: { type: string, nullable: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /meta/overview:
+    get:
+      tags: [Auth]
+      summary: Сводка по CRM
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    additionalProperties: true
+
+  /clients:
+    get:
+      tags: [Clients]
+      summary: Список клиентов
+      parameters:
+        - $ref: '#/components/parameters/Query'
+        - $ref: '#/components/parameters/PerPage'
+        - name: active
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagination'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Client' }
+    post:
+      tags: [Clients]
+      summary: Создать клиента (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string, nullable: true }
+                password: { type: string, minLength: 8 }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Client' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/Validation' }
+
+  /clients/{client}:
+    parameters:
+      - name: client
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Clients]
+      summary: Карточка клиента
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Client' }
+    put:
+      tags: [Clients]
+      summary: Обновить клиента (admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string, nullable: true }
+                is_active: { type: boolean }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Client' }
+
+  /tasks:
+    get:
+      tags: [Tasks]
+      summary: Список задач
+      parameters:
+        - $ref: '#/components/parameters/Query'
+        - $ref: '#/components/parameters/PerPage'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending_review, queued, in_progress, awaiting_review, rejected_by_client, completed, rejected_by_admin]
+        - name: client_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: filter
+          in: query
+          description: 'Пользовательское поле: filter[acceptance_criteria]=...'
+          schema: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagination'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Task' }
+    post:
+      tags: [Tasks]
+      summary: Создать задачу
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string }
+                description: { type: string, nullable: true }
+                client_id: { type: string, format: uuid, description: 'Обязателен для admin' }
+                template_id: { type: string, format: uuid }
+                priority: { type: string, enum: [low, medium, high] }
+                deadline: { type: string, format: date }
+                assignee_id: { type: string, format: uuid, nullable: true }
+                checklist:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      text: { type: string }
+                      done: { type: boolean }
+                custom_fields:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Task' }
+        '422': { $ref: '#/components/responses/Validation' }
+
+  /tasks/{task}:
+    parameters:
+      - name: task
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Tasks]
+      summary: Задача
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Task' }
+    put:
+      tags: [Tasks]
+      summary: Обновить задачу (admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                priority: { type: string, enum: [low, medium, high] }
+                deadline: { type: string, format: date, nullable: true }
+                assignee_id: { type: string, format: uuid, nullable: true }
+                checklist:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      text: { type: string }
+                      done: { type: boolean }
+                custom_fields:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Task' }
+
+  /tasks/{task}/status:
+    parameters:
+      - name: task
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Tasks]
+      summary: Сменить статус (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [pending_review, queued, in_progress, awaiting_review, rejected_by_client, completed, rejected_by_admin]
+                comment: { type: string, nullable: true }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Task' }
+
+  /task-templates:
+    get:
+      tags: [Templates]
+      summary: Шаблоны задач
+      parameters:
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagination'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/TaskTemplate' }
+    post:
+      tags: [Templates]
+      summary: Создать шаблон (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskTemplateInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/TaskTemplate' }
+
+  /task-templates/{template}:
+    parameters:
+      - name: template
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Templates]
+      summary: Шаблон
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/TaskTemplate' }
+    put:
+      tags: [Templates]
+      summary: Обновить шаблон (admin)
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskTemplateInput' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/TaskTemplate' }
+
+  /task-templates/{template}/apply:
+    parameters:
+      - name: template
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Templates]
+      summary: Создать задачу из шаблона (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [client_id]
+              properties:
+                client_id: { type: string, format: uuid }
+                title: { type: string, nullable: true }
+                deadline: { type: string, format: date, nullable: true }
+                assignee_id: { type: string, format: uuid, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      task_id: { type: string, format: uuid }
+
+  /invoices:
+    get:
+      tags: [Invoices]
+      summary: Список счетов
+      parameters:
+        - $ref: '#/components/parameters/PerPage'
+        - name: status
+          in: query
+          schema: { type: string, enum: [pending, paid, cancelled, refunded] }
+        - name: client_id
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagination'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Invoice' }
+    post:
+      tags: [Invoices]
+      summary: Создать счёт (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task_id, amount, description, payment_method]
+              properties:
+                task_id: { type: string, format: uuid }
+                amount: { type: number, minimum: 0.01 }
+                description: { type: string }
+                payment_method: { type: string, enum: [yookassa, transfer] }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Invoice' }
+
+  /invoices/{invoice}:
+    parameters:
+      - name: invoice
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Invoices]
+      summary: Счёт
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Invoice' }
+
+  /invoices/{invoice}/mark-paid:
+    parameters:
+      - name: invoice
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Invoices]
+      summary: Подтвердить прямой перевод (admin)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Invoice' }
+        '422': { $ref: '#/components/responses/Validation' }
+
+  /custom-fields:
+    get:
+      tags: [Custom Fields]
+      summary: Определения полей
+      parameters:
+        - name: entity_type
+          in: query
+          schema: { type: string, enum: [client, task, invoice] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/CustomField' }
+
+  /custom-fields/{entity}/{id}/values:
+    parameters:
+      - name: entity
+        in: path
+        required: true
+        schema: { type: string, enum: [client, task, invoice] }
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Custom Fields]
+      summary: Значения полей
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      entity_type: { type: string }
+                      entity_id: { type: string }
+                      fields:
+                        type: array
+                        items: { $ref: '#/components/schemas/CustomFieldValue' }
+    put:
+      tags: [Custom Fields]
+      summary: Записать значения (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fields]
+              properties:
+                fields:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      fields:
+                        type: array
+                        items: { $ref: '#/components/schemas/CustomFieldValue' }
+
+  /assistant/chat:
+    post:
+      tags: [Assistant]
+      summary: Сообщение Кики (нужно право write)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message: { type: string, maxLength: 4000 }
+                conversation_id: { type: string, format: uuid, nullable: true }
+                context: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Токен из Настройки → API и MCP, префикс crm_'
+  parameters:
+    Query:
+      name: q
+      in: query
+      schema: { type: string }
+    PerPage:
+      name: per_page
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+  responses:
+    Unauthorized:
+      description: Нет или просрочен токен
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Нет права или чужой объект
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Validation:
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Error'
+              - type: object
+                properties:
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items: { type: string }
+  schemas:
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+        code: { type: string }
+    Pagination:
+      type: object
+      properties:
+        links: { type: object, additionalProperties: true }
+        meta: { type: object, additionalProperties: true }
+    CustomField:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        entity_type: { type: string, enum: [client, task, invoice] }
+        key: { type: string }
+        label: { type: string }
+        type: { type: string }
+        type_label: { type: string }
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              value: { type: string }
+              label: { type: string }
+              color: { type: string }
+        default_value: {}
+        is_required: { type: boolean }
+        is_active: { type: boolean }
+        show_in_list: { type: boolean }
+        client_editable: { type: boolean }
+        help_text: { type: string, nullable: true }
+        placeholder: { type: string, nullable: true }
+    CustomFieldValue:
+      allOf:
+        - $ref: '#/components/schemas/CustomField'
+        - type: object
+          properties:
+            value: {}
+            display: {}
+    Client:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: string, nullable: true }
+        is_active: { type: boolean }
+        custom_fields:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: true
+        tasks_count: { type: integer }
+        invoices_count: { type: integer }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Task:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        checklist:
+          type: array
+          items:
+            type: object
+            properties:
+              text: { type: string }
+              done: { type: boolean }
+        status: { type: string }
+        status_label: { type: string }
+        priority: { type: string }
+        priority_label: { type: string }
+        type: { type: string }
+        source: { type: string }
+        deadline: { type: string, format: date, nullable: true }
+        client: { $ref: '#/components/schemas/Client' }
+        template:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+        custom_fields: { type: object, additionalProperties: true }
+        created_at: { type: string, format: date-time }
+    TaskTemplate:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        summary: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        checklist:
+          type: array
+          items:
+            type: object
+            properties:
+              text: { type: string }
+              done: { type: boolean }
+        default_type: { type: string }
+        default_priority: { type: string }
+        default_status: { type: string }
+        default_due_days: { type: integer, nullable: true }
+        estimated_minutes: { type: integer, nullable: true }
+        is_active: { type: boolean }
+        is_shared: { type: boolean }
+        usage_count: { type: integer }
+    TaskTemplateInput:
+      type: object
+      required: [name, default_type, default_priority, default_status]
+      properties:
+        name: { type: string }
+        summary: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        checklist:
+          type: array
+          items:
+            type: object
+            properties:
+              text: { type: string }
+              done: { type: boolean }
+        default_type: { type: string, enum: [one_time, maintenance] }
+        default_priority: { type: string, enum: [low, medium, high] }
+        default_status: { type: string, enum: [pending_review, queued] }
+        default_assignee_id: { type: string, format: uuid, nullable: true }
+        default_due_days: { type: integer, nullable: true }
+        estimated_minutes: { type: integer, nullable: true }
+        client_id: { type: string, format: uuid, nullable: true }
+        is_active: { type: boolean }
+        is_shared: { type: boolean }
+    Invoice:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        number: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        description: { type: string }
+        status: { type: string }
+        status_label: { type: string }
+        payment_method: { type: string }
+        payment_method_label: { type: string }
+        is_recurring: { type: boolean }
+        paid_at: { type: string, format: date-time, nullable: true }
+        client: { $ref: '#/components/schemas/Client' }
+        task:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            title: { type: string }
+        custom_fields: { type: object, additionalProperties: true }
+        created_at: { type: string, format: date-time }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Models\Concerns\HasCustomFields;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasUuids, Notifiable;
+    use HasCustomFields, HasFactory, HasUuids, Notifiable;
 
     protected $fillable = [
         'role',
@@ -75,5 +76,25 @@ class User extends Authenticatable
     public function fileAttachments(): HasMany
     {
         return $this->hasMany(FileAttachment::class, 'uploaded_by');
+    }
+
+    public function assignedTasks(): HasMany
+    {
+        return $this->hasMany(Task::class, 'assignee_id');
+    }
+
+    public function taskTemplates(): HasMany
+    {
+        return $this->hasMany(TaskTemplate::class, 'created_by');
+    }
+
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(ApiToken::class);
+    }
+
+    public function aiConversations(): HasMany
+    {
+        return $this->hasMany(AiConversation::class);
     }
 }

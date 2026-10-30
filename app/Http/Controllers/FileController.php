@@ -8,6 +8,7 @@ use App\Models\FileAttachment;
 use App\Services\FileUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FileController extends Controller
@@ -32,7 +33,7 @@ class FileController extends Controller
         $this->authorize('download', $file);
 
         return response()->streamDownload(function () use ($file) {
-            echo \Illuminate\Support\Facades\Storage::get($file->stored_path);
+            echo Storage::get($file->stored_path);
         }, $file->original_name, [
             'Content-Type' => $file->mime_type,
         ]);

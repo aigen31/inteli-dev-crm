@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AiAction;
+use App\Models\ApiToken;
+use App\Models\CustomField;
+use App\Services\Ai\AiSettingsService;
+use App\Services\CustomFieldService;
 use App\Services\SettingsService;
+use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,14 +19,55 @@ use Inertia\Response;
 
 class SettingsController extends Controller
 {
-    public function edit(SettingsService $settings): Response
-    {
+    public function edit(
+        Request $request,
+        SettingsService $settings,
+        CustomFieldService $customFields,
+        AiSettingsService $aiSettings,
+    ): Response {
+        $fields = CustomField::query()
+            ->orderBy('entity_type')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (CustomField $field) => $customFields->serializeDefinition($field))
+            ->values();
+
+        $tokens = ApiToken::query()
+            ->where('user_id', $request->user()->id)
+            ->latest()
+            ->get(['id', 'name', 'prefix', 'abilities', 'last_used_at', 'expires_at', 'created_at']);
+
+        $actions = AiAction::query()
+            ->latest()
+            ->limit(12)
+            ->get(['id', 'tool_name', 'arguments', 'status', 'created_at'])
+            ->map(fn (AiAction $action) => [
+                'id' => $action->id,
+                'tool_name' => $action->tool_name,
+                'status' => $action->status->value,
+                'status_label' => $action->status->label(),
+                'arguments' => $action->arguments,
+                'created_at' => $action->created_at?->toIso8601String(),
+            ]);
+
         return Inertia::render('Admin/Settings/Index', [
+            'tab' => $request->query('tab', 'payments'),
             'yookassa' => [
-                'shop_id' => config('services.yookassa.shop_id') ? '••••' . substr((string) config('services.yookassa.shop_id'), -4) : null,
+                'shop_id' => config('services.yookassa.shop_id') ? '••••'.substr((string) config('services.yookassa.shop_id'), -4) : null,
                 'is_configured' => (bool) config('services.yookassa.shop_id'),
             ],
             'transfer' => $settings->transferFields(),
+            'customFields' => $fields,
+            'customFieldEntities' => Options::customFieldEntities(),
+            'customFieldTypes' => Options::customFieldTypes(),
+            'apiTokens' => $tokens,
+            'ai' => $aiSettings->publicSettings(),
+            'aiActions' => $actions,
+            'mcp' => [
+                'api_url' => rtrim((string) config('app.url'), '/').'/api/v1',
+                'command' => 'node mcp/src/server.mjs',
+                'docs' => 'docs/api/README.md',
+            ],
         ]);
     }
 
@@ -39,6 +86,8 @@ class SettingsController extends Controller
 
         $settings->saveTransfer($data);
 
-        return back()->with('success', 'Реквизиты для прямого перевода сохранены.');
+        return redirect()
+            ->route('admin.settings.edit', ['tab' => 'payments'])
+            ->with('success', 'Реквизиты для прямого перевода сохранены.');
     }
 }

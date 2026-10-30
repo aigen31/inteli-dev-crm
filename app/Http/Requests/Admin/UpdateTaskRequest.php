@@ -20,10 +20,16 @@ class UpdateTaskRequest extends FormRequest
     {
         return [
             'title' => ['sometimes', 'string', 'min:3', 'max:255'],
-            'description' => ['sometimes', 'string', 'min:10'],
+            'description' => ['sometimes', 'string', 'min:3'],
             'type' => ['sometimes', Rule::enum(TaskType::class)],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
+            'estimated_minutes' => ['nullable', 'integer', 'min:5', 'max:10000'],
+            'assignee_id' => ['nullable', 'uuid', 'exists:users,id'],
             'deadline' => ['nullable', 'date'],
+            'checklist' => ['nullable', 'array', 'max:100'],
+            'checklist.*.text' => ['nullable', 'string', 'max:500'],
+            'checklist.*.done' => ['sometimes', 'boolean'],
+            'custom_fields' => ['nullable', 'array'],
         ];
     }
 }

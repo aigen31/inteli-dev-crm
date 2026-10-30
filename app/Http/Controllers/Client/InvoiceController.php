@@ -9,6 +9,7 @@ use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Services\CustomFieldService;
 use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,17 +35,18 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function show(Invoice $invoice, SettingsService $settings): Response
+    public function show(Invoice $invoice, SettingsService $settings, CustomFieldService $customFields): Response
     {
         $this->authorize('view', $invoice);
 
-        $invoice->load('task');
+        $invoice->load(['task', 'customFieldValues.customField']);
 
         return Inertia::render('Client/Invoices/Show', [
             'invoice' => $invoice,
             'transfer' => $invoice->payment_method === PaymentMethod::Transfer
                 ? $settings->transferDetails()
                 : null,
+            'customFields' => $customFields->serializedValues($invoice),
         ]);
     }
 

@@ -1,21 +1,22 @@
 <script setup>
 defineProps({
     title: { type: String, default: null },
+    padded: { type: Boolean, default: true },
 });
 </script>
 
 <template>
-    <div class="rounded-[14px] border border-line bg-surface shadow-[0_6px_16px_rgba(0,0,0,0.3)]">
-        <div v-if="title || $slots.header" class="border-b border-line px-6 py-4">
+    <section class="surface-card overflow-hidden">
+        <div v-if="title || $slots.header" class="flex items-center justify-between gap-4 border-b border-line/80 px-5 py-4 sm:px-6">
             <slot name="header">
-                <h3 class="text-base font-semibold text-ink">{{ title }}</h3>
+                <h3 class="text-[14px] font-bold tracking-[-0.01em] text-ink">{{ title }}</h3>
             </slot>
         </div>
-        <div class="p-6">
+        <div :class="padded ? 'p-5 sm:p-6' : ''">
             <slot />
         </div>
-        <div v-if="$slots.footer" class="border-t border-line px-6 py-4">
+        <div v-if="$slots.footer" class="border-t border-line/80 px-5 py-4 sm:px-6">
             <slot name="footer" />
         </div>
-    </div>
+    </section>
 </template>

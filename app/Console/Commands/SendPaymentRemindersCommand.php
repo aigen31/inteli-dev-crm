@@ -6,9 +6,7 @@ namespace App\Console\Commands;
 
 use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
-use App\Notifications\PaymentReceived;
-use App\Models\User;
-use App\Enums\UserRole;
+use App\Notifications\InvoiceCreated;
 use Illuminate\Console\Command;
 
 class SendPaymentRemindersCommand extends Command
@@ -27,7 +25,7 @@ class SendPaymentRemindersCommand extends Command
         $this->info("Неоплаченных счетов для напоминания: {$invoices->count()}");
 
         foreach ($invoices as $invoice) {
-            $invoice->client->notify(new \App\Notifications\InvoiceCreated($invoice));
+            $invoice->client->notify(new InvoiceCreated($invoice));
             $this->line("  → Напоминание отправлено: {$invoice->client->email} (счёт #{$invoice->id})");
         }
 

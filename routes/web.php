@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\Auth;
 use App\Http\Controllers\Client;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\Webhook\YooKassaWebhookController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 // Guest
@@ -17,6 +21,16 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [Auth\LogoutController::class, 'destroy'])->name('logout');
     Route::put('/password', [Auth\PasswordController::class, 'update'])->name('password.update');
+
+    // Kiki assistant (both roles)
+    Route::middleware(['is_active', 'throttle:assistant'])->group(function () {
+        Route::get('/assistant', [AssistantController::class, 'show'])->name('assistant.show');
+        Route::post('/assistant/chat', [AssistantController::class, 'chat'])->name('assistant.chat');
+        Route::post('/assistant/actions/{action}/confirm', [AssistantController::class, 'confirm'])->name('assistant.confirm');
+        Route::post('/assistant/actions/{action}/reject', [AssistantController::class, 'reject'])->name('assistant.reject');
+        Route::delete('/assistant', [AssistantController::class, 'clear'])->name('assistant.clear');
+        Route::get('/assistant/suggestions', [AssistantController::class, 'suggestions'])->name('assistant.suggestions');
+    });
 
     // Files
     Route::middleware('is_active')->group(function () {
@@ -35,7 +49,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/clients/{client}', [Admin\ClientController::class, 'show'])->name('clients.show');
         Route::get('/clients/{client}/edit', [Admin\ClientController::class, 'edit'])->name('clients.edit');
         Route::put('/clients/{client}', [Admin\ClientController::class, 'update'])->name('clients.update');
+        Route::put('/clients/{client}/custom-fields', [Admin\ClientController::class, 'updateCustomFields'])->name('clients.custom-fields');
         Route::patch('/clients/{client}/deactivate', [Admin\ClientController::class, 'deactivate'])->name('clients.deactivate');
+
+        // Task templates
+        Route::get('/task-templates', [Admin\TaskTemplateController::class, 'index'])->name('task-templates.index');
+        Route::get('/task-templates/create', [Admin\TaskTemplateController::class, 'create'])->name('task-templates.create');
+        Route::post('/task-templates', [Admin\TaskTemplateController::class, 'store'])->name('task-templates.store');
+        Route::post('/task-templates/generate', [Admin\TaskTemplateController::class, 'generate'])->name('task-templates.generate');
+        Route::get('/task-templates/{taskTemplate}/edit', [Admin\TaskTemplateController::class, 'edit'])->name('task-templates.edit');
+        Route::put('/task-templates/{taskTemplate}', [Admin\TaskTemplateController::class, 'update'])->name('task-templates.update');
+        Route::patch('/task-templates/{taskTemplate}/toggle', [Admin\TaskTemplateController::class, 'toggle'])->name('task-templates.toggle');
+        Route::post('/task-templates/{taskTemplate}/apply', [Admin\TaskTemplateController::class, 'apply'])->name('task-templates.apply');
+        Route::delete('/task-templates/{taskTemplate}', [Admin\TaskTemplateController::class, 'destroy'])->name('task-templates.destroy');
 
         // Tasks
         Route::get('/tasks', [Admin\TaskController::class, 'index'])->name('tasks.index');
@@ -45,6 +71,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/tasks/{task}/edit', [Admin\TaskController::class, 'edit'])->name('tasks.edit');
         Route::put('/tasks/{task}', [Admin\TaskController::class, 'update'])->name('tasks.update');
         Route::patch('/tasks/{task}/status', [Admin\TaskController::class, 'updateStatus'])->name('tasks.status');
+        Route::patch('/tasks/{task}/checklist', [Admin\TaskController::class, 'updateChecklist'])->name('tasks.checklist');
         Route::post('/tasks/{task}/comments', [Admin\TaskCommentController::class, 'store'])->name('tasks.comments.store');
         Route::post('/tasks/{task}/reports', [Admin\TaskReportController::class, 'store'])->name('tasks.reports.store');
 
@@ -57,6 +84,20 @@ Route::middleware('auth')->group(function () {
         Route::patch('/invoices/{invoice}/mark-paid', [Admin\InvoiceController::class, 'markPaid'])->name('invoices.mark-paid');
         Route::post('/invoices/{invoice}/refund', [Admin\InvoiceController::class, 'refund'])->name('invoices.refund');
 
+        // Custom fields
+        Route::post('/custom-fields', [Admin\CustomFieldController::class, 'store'])->name('custom-fields.store');
+        Route::post('/custom-fields/reorder', [Admin\CustomFieldController::class, 'reorder'])->name('custom-fields.reorder');
+        Route::put('/custom-fields/{customField}', [Admin\CustomFieldController::class, 'update'])->name('custom-fields.update');
+        Route::delete('/custom-fields/{customField}', [Admin\CustomFieldController::class, 'destroy'])->name('custom-fields.destroy');
+
+        // API tokens
+        Route::post('/api-tokens', [Admin\ApiTokenController::class, 'store'])->name('api-tokens.store');
+        Route::delete('/api-tokens/{apiToken}', [Admin\ApiTokenController::class, 'destroy'])->name('api-tokens.destroy');
+
+        // AI settings
+        Route::put('/ai-settings', [Admin\AiSettingsController::class, 'update'])->name('ai-settings.update');
+        Route::post('/ai-settings/test', [Admin\AiSettingsController::class, 'test'])->name('ai-settings.test');
+
         // Settings
         Route::get('/settings', [Admin\SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
@@ -68,6 +109,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/tasks', [Client\TaskController::class, 'index'])->name('client.tasks.index');
         Route::get('/tasks/create', [Client\TaskController::class, 'create'])->name('client.tasks.create');
+        Route::post('/tasks/from-template/{template}', [Client\TaskController::class, 'applyTemplate'])->name('client.tasks.from-template');
         Route::post('/tasks', [Client\TaskController::class, 'store'])->name('client.tasks.store');
         Route::get('/tasks/{task}', [Client\TaskController::class, 'show'])->name('client.tasks.show');
         Route::patch('/tasks/{task}/review', [Client\TaskController::class, 'review'])->name('client.tasks.review');
@@ -85,7 +127,7 @@ Route::middleware('auth')->group(function () {
 // Webhook (no auth, verify middleware)
 Route::post('/webhooks/yookassa', [YooKassaWebhookController::class, 'handle'])
     ->middleware('yookassa_webhook')
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->withoutMiddleware([VerifyCsrfToken::class])
     ->name('webhooks.yookassa');
 
 // Redirect root

@@ -21,7 +21,7 @@ class HandleWebhookAction
 
     public function execute(array $data): void
     {
-        $factory = new NotificationFactory();
+        $factory = new NotificationFactory;
         $notification = $factory->factory($data);
         $payment = $notification->getObject();
 
@@ -29,6 +29,7 @@ class HandleWebhookAction
 
         if (! $invoiceId) {
             Log::warning('Webhook received without invoice_id in metadata');
+
             return;
         }
 
@@ -36,6 +37,7 @@ class HandleWebhookAction
 
         if (! $invoice) {
             Log::warning("Webhook: Invoice not found: {$invoiceId}");
+
             return;
         }
 

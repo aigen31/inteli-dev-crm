@@ -1,12 +1,13 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
-import Card from '@/Components/UI/Card.vue';
-import TextInput from '@/Components/Form/TextInput.vue';
 import Button from '@/Components/UI/Button.vue';
+import TextInput from '@/Components/Form/TextInput.vue';
+import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     client: Object,
+    customFields: Array,
 });
 
 const form = useForm({
@@ -21,20 +22,20 @@ function submit() {
 </script>
 
 <template>
-    <AdminLayout title="Редактировать клиента">
-        <div class="max-w-2xl">
-            <Card>
-                <form @submit.prevent="submit" class="space-y-4">
-                    <TextInput v-model="form.name" label="Имя / Название" :error="form.errors.name" required />
-                    <TextInput v-model="form.email" label="Email" type="email" :error="form.errors.email" required />
-                    <TextInput v-model="form.phone" label="Телефон" :error="form.errors.phone" />
+    <AdminLayout title="Изменить клиента">
+        <template #actions>
+            <Link :href="route('admin.clients.show', client.id)"><Button variant="ghost" size="sm"><ArrowLeftIcon class="h-4 w-4" />К карточке</Button></Link>
+            <Button size="sm" :disabled="form.processing" @click="submit">Сохранить</Button>
+        </template>
 
-                    <div class="flex justify-end space-x-3 pt-4">
-                        <Button variant="secondary" :href="route('admin.clients.show', client.id)">Отмена</Button>
-                        <Button type="submit" :disabled="form.processing">Сохранить</Button>
-                    </div>
-                </form>
-            </Card>
-        </div>
+        <section class="surface-card max-w-2xl p-5 sm:p-6">
+            <p class="eyebrow">Основное</p>
+            <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div class="sm:col-span-2"><TextInput v-model="form.name" label="Имя / название" :error="form.errors.name" /></div>
+                <TextInput v-model="form.email" label="Email" type="email" :error="form.errors.email" />
+                <TextInput v-model="form.phone" label="Телефон" :error="form.errors.phone" />
+            </div>
+            <p class="mt-4 text-[10px] leading-relaxed text-muted">Поля клиента и статус приёма заявок редактируются в карточке клиента.</p>
+        </section>
     </AdminLayout>
 </template>

@@ -19,7 +19,7 @@ class ReviewTaskRequest extends FormRequest
     {
         return [
             'status' => ['required', Rule::in([TaskStatus::Completed->value, TaskStatus::RejectedByClient->value])],
-            'comment' => ['required_if:status,' . TaskStatus::RejectedByClient->value, 'nullable', 'string', 'max:1000'],
+            'comment' => ['required_if:status,'.TaskStatus::RejectedByClient->value, 'nullable', 'string', 'max:1000'],
         ];
     }
 }

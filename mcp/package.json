@@ -1,0 +1,18 @@
+{
+  "name": "inteli-dev-crm-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server for inteli-dev CRM: clients, tasks, templates, invoices, custom fields and Kiki assistant.",
+  "bin": {
+    "inteli-dev-crm-mcp": "src/server.mjs"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "start:http": "node src/server.mjs --http 7331",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

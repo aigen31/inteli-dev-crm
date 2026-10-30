@@ -9,43 +9,49 @@
 @source '../**/*.vue';
 
 @theme {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-display: 'Unbounded', 'Manrope', ui-sans-serif, system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-    /* Brand palette — inteli-dev.ru (dark violet) */
-    --color-primary-50: #f2f0ff;
-    --color-primary-100: #e4e0ff;
-    --color-primary-200: #cfc9ff;
-    --color-primary-300: #b5acff;
-    --color-primary-400: #9d92fa;
-    --color-primary-500: #8b7ff5;
-    --color-primary-600: #7767ec;
-    --color-primary-700: #6353d6;
-    --color-primary-800: #5144ad;
-    --color-primary-900: #3b327e;
-    --color-primary-950: #241f52;
+    /* inteli-dev — light paper & violet */
+    --color-primary-50: #f5f2ff;
+    --color-primary-100: #ebe5ff;
+    --color-primary-200: #d9d0ff;
+    --color-primary-300: #c3b5ff;
+    --color-primary-400: #a493fb;
+    --color-primary-500: #6d5ae6;
+    --color-primary-600: #5b48d6;
+    --color-primary-700: #4b3ab8;
+    --color-primary-800: #3d3094;
+    --color-primary-900: #302672;
+    --color-primary-950: #1e1848;
 
-    --color-canvas: #0a0a14;
-    --color-surface: #16133a;
-    --color-surface-2: #1b1845;
-    --color-line: rgba(255, 255, 255, 0.12);
-    --color-line-strong: rgba(255, 255, 255, 0.22);
-    --color-ink: #f4f4ff;
-    --color-ink-soft: #c6c5f2;
-    --color-muted: rgba(255, 255, 255, 0.66);
-    --color-faint: rgba(255, 255, 255, 0.4);
-    --color-primary-soft: rgba(139, 127, 245, 0.18);
+    --color-canvas: #f6f3ec;
+    --color-surface: #fffdf8;
+    --color-surface-2: #f2ece1;
+    --color-paper: #eee7da;
+    --color-line: #e4ddcf;
+    --color-line-strong: #cfc4b1;
+    --color-ink: #1c1823;
+    --color-ink-soft: #4d4656;
+    --color-muted: #7d7484;
+    --color-faint: #a89fae;
+    --color-primary-soft: #ece6fd;
 
-    --color-success: #4cd964;
-    --color-warning: #ffbd44;
-    --color-danger: #ff5f56;
-    --color-danger-ink: #ff7b7b;
+    --color-accent: #e9956f;
+    --color-peach: #f4cdb8;
+    --color-sage: #8fb89a;
+    --color-sky: #8db8d8;
+
+    --color-success: #2f8f62;
+    --color-warning: #b7791f;
+    --color-danger: #c2453d;
+    --color-danger-ink: #a33a33;
 }
 
 @layer base {
     html {
-        color-scheme: dark;
+        color-scheme: light;
         min-height: 100%;
         background-color: var(--color-canvas);
     }
@@ -53,15 +59,15 @@
     body {
         @apply bg-canvas text-ink antialiased;
         background-image:
-            radial-gradient(900px 620px at 12% -8%, rgba(43, 44, 122, 0.55), transparent 62%),
-            radial-gradient(760px 520px at 88% -4%, rgba(139, 127, 245, 0.18), transparent 60%),
-            radial-gradient(900px 700px at 50% 110%, rgba(43, 44, 122, 0.22), transparent 65%);
+            radial-gradient(1100px 720px at 88% -12%, rgba(109, 90, 230, 0.13), transparent 62%),
+            radial-gradient(900px 620px at -8% 102%, rgba(233, 149, 111, 0.14), transparent 62%),
+            radial-gradient(700px 500px at 55% 40%, rgba(255, 253, 248, 0.65), transparent 70%);
         background-attachment: fixed;
     }
 
     ::selection {
-        background: rgba(139, 127, 245, 0.4);
-        color: #fff;
+        background: rgba(109, 90, 230, 0.22);
+        color: var(--color-ink);
     }
 
     ::-webkit-scrollbar {
@@ -72,10 +78,197 @@
         background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.14);
+        background: rgba(28, 24, 35, 0.16);
         border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.24);
+        background: rgba(28, 24, 35, 0.28);
+    }
+
+    [x-cloak] {
+        display: none;
+    }
+}
+
+@layer components {
+    .surface-card {
+        border-radius: 24px;
+        border: 1px solid var(--color-line);
+        background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+        box-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.7) inset,
+            0 18px 45px rgba(28, 24, 35, 0.055);
+    }
+
+    .surface-card-hover {
+        transition:
+            transform 180ms ease,
+            box-shadow 180ms ease,
+            border-color 180ms ease;
+    }
+
+    .surface-card-hover:hover {
+        transform: translateY(-2px);
+        border-color: var(--color-line-strong);
+        box-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.8) inset,
+            0 24px 55px rgba(28, 24, 35, 0.08);
+    }
+
+    .eyebrow {
+        @apply font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted;
+    }
+
+    .page-title {
+        @apply font-display text-[30px] font-medium leading-[1.08] tracking-[-0.03em] text-ink sm:text-[36px];
+    }
+
+    .soft-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--color-line), transparent);
+    }
+
+    .kiki-ring {
+        box-shadow:
+            0 0 0 1px rgba(109, 90, 230, 0.16),
+            0 0 0 8px rgba(109, 90, 230, 0.05),
+            0 18px 40px rgba(109, 90, 230, 0.18);
+    }
+
+    .prose-kiki {
+        @apply text-[14px] leading-[1.65] text-ink-soft;
+    }
+
+    .prose-kiki p {
+        @apply my-2;
+    }
+
+    .prose-kiki strong {
+        @apply font-semibold text-ink;
+    }
+
+    .prose-kiki em {
+        @apply italic;
+    }
+
+    .prose-kiki ul,
+    .prose-kiki ol {
+        @apply my-2 space-y-1 pl-5;
+    }
+
+    .prose-kiki ul {
+        list-style: disc;
+    }
+
+    .prose-kiki ol {
+        list-style: decimal;
+    }
+
+    .prose-kiki a {
+        @apply text-primary-700 underline decoration-primary-300 underline-offset-2;
+    }
+
+    .prose-kiki code {
+        @apply rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[12px] text-ink;
+    }
+
+    .prose-kiki pre {
+        @apply my-3 overflow-x-auto rounded-2xl bg-ink p-4 font-mono text-[12px] text-canvas;
+    }
+
+    .prose-kiki blockquote {
+        @apply my-3 border-l-2 border-primary-300 pl-4 text-muted;
+    }
+
+    .prose-kiki h2,
+    .prose-kiki h3 {
+        @apply mt-4 mb-2 font-semibold text-ink;
+    }
+
+    .prose-kiki h2 {
+        @apply text-[17px];
+    }
+
+    .prose-kiki h3 {
+        @apply text-[15px];
+    }
+
+    .prose-kiki table {
+        @apply my-3 w-full border-collapse text-left text-[13px];
+    }
+
+    .prose-kiki th,
+    .prose-kiki td {
+        @apply border-b border-line px-2 py-1.5;
+    }
+
+    .prose-kiki th {
+        @apply font-semibold text-ink;
+    }
+
+    .rich-editor .ProseMirror {
+        min-height: var(--editor-min-height, 180px);
+        outline: none;
+        padding: 16px 18px;
+        color: var(--color-ink);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .rich-editor .ProseMirror > * + * {
+        margin-top: 0.7em;
+    }
+
+    .rich-editor .ProseMirror p.is-editor-empty:first-child::before {
+        content: attr(data-placeholder);
+        float: left;
+        height: 0;
+        color: var(--color-faint);
+        pointer-events: none;
+    }
+
+    .rich-editor .ProseMirror h2 {
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .rich-editor .ProseMirror h3 {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .rich-editor .ProseMirror ul {
+        list-style: disc;
+        padding-left: 1.3rem;
+    }
+
+    .rich-editor .ProseMirror ol {
+        list-style: decimal;
+        padding-left: 1.3rem;
+    }
+
+    .rich-editor .ProseMirror blockquote {
+        border-left: 2px solid var(--color-primary-300);
+        padding-left: 1rem;
+        color: var(--color-muted);
+    }
+
+    .rich-editor .ProseMirror a {
+        color: var(--color-primary-700);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .rich-editor .ProseMirror code {
+        background: var(--color-surface-2);
+        border-radius: 6px;
+        padding: 1px 5px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+    }
+
+    .rich-editor .ProseMirror p.is-editor-empty:first-child::before {
+        color: var(--color-faint);
     }
 }

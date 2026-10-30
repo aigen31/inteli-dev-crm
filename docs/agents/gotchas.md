@@ -1,13 +1,19 @@
 # Подводные камни
 
-- **Документация дрейфует.** `.github/instructions/*.md` полезны как бизнес-требования и UI-описание, но там Laravel 11, Inertia 1, Tailwind 3 и несуществующие файлы (`AuthServiceProvider`, `EventServiceProvider`, `RetryFailedPaymentsCommand`). Источник истины — код.
-- **Compose требует `ACME_EMAIL` и `DB_PASSWORD`** даже для локального запуска: интерполяция выполняется до отключения Traefik профилем.
-- **Каталоги должны быть в git:** `bootstrap/cache/`, `storage/framework/{sessions,views}`, `storage/logs/`. Без них падает `composer dump-autoload` или Laravel не пишет кеш/логи.
-- **nginx и HTTPS.** Не хардкодьте `fastcgi_param HTTPS on`: локально это уводит редиректы на несуществующий https. nginx передаёт `X-Forwarded-Proto`; за Traefik протокол приходит в заголовке.
-- **502 после пересоздания `app`.** nginx кеширует IP контейнера при старте. Перезапустите `nginx` после `docker compose up`, если upstream connection refused.
-- **Ассеты и opcache.** `public/build` и PHP-код живут в образе; рестарт `app` возвращает версию из образа, а opcache не видит правок на лету. Подробности — [deployment.md](deployment.md).
-- **Уведомления и UUID.** Пользователи используют UUID, поэтому `notifications.notifiable_id` — `uuidMorphs`, а не `morphs` (bigint). При добавлении новых морф-связей к пользователю проверяйте тип.
-- **ЮКасса требует числовой shopId.** SDK присваивает его в типизированное `?int`; `YooKassaService` приводит значение и терпит пустые ключи, отдавая понятную ошибку вместо 500.
-- **Прямой перевод — только ручное подтверждение.** Он не создаёт платёж в ЮКассе, не поддерживает рекуррент и не должен попадать в `pay`-роут.
-- **`settings` — key-value таблица без кеша.** `SettingsService` читает значения в рамках запроса; при добавлении кеша не забудьте инвалидацию.
-- **Промо-лендинг отдельный.** `promo/` — статический сайт в том же compose (порт 8080), не часть Inertia-приложения.
+- **`bootstrap/cache/*.php` нельзя в образ.** Host-кеш содержит dev-провайдер Pail, production-vendor его не знает → контейнер падает в рестарт-луп. Файлы исключены в `.dockerignore`; перед сборкой можно `rm -f bootstrap/cache/*.php`.
+- **Оpcache `validate_timestamps=0`.** PHP-правки в контейнере не подхватываются без рестарта `app`; ассеты после рестарта затираются образом.
+- **502 после пересоздания `app`.** nginx кеширует IP upstream; перезапустите nginx.
+- **Inertia 3 title.** В `<head>` нужен `<title data-inertia>`; старый атрибут `inertia` не работает.
+- **TipTap StarterKit уже содержит Link/Underline.** Повторное подключение даёт warning `Duplicate extension names`.
+- **HTML из WYSIWYG и ИИ.** Храните и выводите только после `HtmlSanitizer`; `v-html` без санитайза — XSS.
+- **Custom fields: дефолты ≠ значения.** `customFieldsData()` возвращает только сохранённые значения; для API/карточек используйте `CustomFieldService::customFieldsWithDefaults()` / `serializedValues()`.
+- **Custom fields: типизированные колонки.** Не складывайте всё в `value_json`: фильтры и API зависят от `value_text/number/date/boolean/json`.
+- **API-токен = роль пользователя.** Клиентский токен видит только свои данные; `read` не даёт `POST /assistant/chat` и другие write-маршруты.
+- **Кики и деньги.** `create_invoice`/`mark_invoice_paid` создают `proposed`-действие; confirm перепроверяет роль и скоуп. Не выполняйте финансовые tool calls в обход `AgentService`.
+- **AI-ключ.** Хранится зашифрованным в `settings`; не логируйте его и не отдавайте во фронтенд. Без ключа Кики отвечает понятной ошибкой, шаблонный генератор уходит в fallback.
+- **MCP и stdio.** Сервер пишет в stdout только JSON-RPC; логи — в stderr. Иначе клиент ломает протокол.
+- **ЮКасса shopId.** SDK ждёт `?int`; сервис приводит значение и терпит пустые ключи.
+- **Прямой перевод.** Только ручное подтверждение, без рекуррента и без `pay`-роута.
+- **UUID и morph.** Пользователи/задачи/счёта — UUID; `custom_field_values` использует `entity_type` + `entity_id`, morph-map задан в `AppServiceProvider`. `notifications.notifiable_id` — `uuidMorphs`.
+- **`settings` без кеша.** `SettingsService` читает в рамках запроса; при добавлении кеша нужна инвалидация.
+- **Промо-лендинг отдельный.** `promo/` — статический сайт в compose, не часть Inertia-приложения.

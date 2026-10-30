@@ -2,10 +2,10 @@
 import { Link, router } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
+import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
-import SelectInput from '@/Components/Form/SelectInput.vue';
 import { invoiceStatusLabels } from '@/Utils/constants.js';
-import { formatMoney, formatDateTime } from '@/Utils/formatters.js';
+import { formatDateTime, formatMoney } from '@/Utils/formatters.js';
 
 const props = defineProps({
     invoices: Object,
@@ -13,60 +13,54 @@ const props = defineProps({
     statuses: Array,
 });
 
-function applyFilter(key, value) {
-    router.get(route('client.invoices.index'), {
-        ...props.filters,
-        [key]: value || undefined,
-    }, { preserveState: true });
+const filters = [
+    { value: '', label: 'Все' },
+    { value: 'pending', label: 'К оплате' },
+    { value: 'paid', label: 'Оплачены' },
+];
+
+function setStatus(value) {
+    router.get(route('client.invoices.index'), { status: value || undefined }, { preserveState: true, replace: true });
 }
 </script>
 
 <template>
     <ClientLayout title="Мои счета">
-        <div class="flex gap-4 mb-4">
-            <div class="w-48">
-                <SelectInput
-                    :model-value="filters.status || ''"
-                    :options="statuses"
-                    placeholder="Все статусы"
-                    @update:model-value="applyFilter('status', $event)"
-                />
-            </div>
+        <div class="mb-4 inline-flex flex-wrap gap-1 rounded-full border border-line bg-white/50 p-1">
+            <button
+                v-for="item in filters"
+                :key="item.value"
+                type="button"
+                :class="[
+                    'rounded-full px-3 py-1.5 text-[11px] font-semibold transition',
+                    (props.filters?.status || '') === item.value ? 'bg-ink text-canvas' : 'text-muted hover:text-ink',
+                ]"
+                @click="setStatus(item.value)"
+            >
+                {{ item.label }}
+            </button>
         </div>
 
-        <div class="bg-surface rounded-[14px] shadow-sm border border-line overflow-hidden">
-            <table class="min-w-full divide-y divide-line">
-                <thead class="bg-white/[0.03]">
-                    <tr>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Описание</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Задача</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Сумма</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Статус</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Дата</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-surface divide-y divide-line">
-                    <tr v-if="!invoices.data.length">
-                        <td colspan="5" class="px-6 py-10 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
-                            Счетов пока нет
-                        </td>
-                    </tr>
-                    <tr v-for="invoice in invoices.data" :key="invoice.id" class="hover:bg-white/5 transition-colors">
-                        <td class="px-6 py-4 text-sm">
-                            <Link :href="route('client.invoices.show', invoice.id)" class="font-medium text-primary-300 hover:text-primary-200">
-                                {{ invoice.description }}
-                            </Link>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ invoice.task?.title }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-ink-soft">{{ formatMoney(invoice.amount) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ formatDateTime(invoice.created_at) }}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <Pagination :links="invoices" />
+        <div v-if="!invoices.data.length" class="surface-card">
+            <EmptyState title="Счетов пока нет" text="Когда работа будет оценена, владелец выставит счёт — он появится здесь." />
         </div>
+
+        <div v-else class="space-y-2.5">
+            <Link
+                v-for="invoice in invoices.data"
+                :key="invoice.id"
+                :href="route('client.invoices.show', invoice.id)"
+                class="surface-card surface-card-hover flex flex-wrap items-center gap-3 p-4 sm:p-5"
+            >
+                <span class="min-w-0 flex-1">
+                    <span class="block truncate text-[13px] font-bold text-ink">{{ invoice.description }}</span>
+                    <span class="mt-1 block text-[10px] text-muted">{{ invoice.task?.title || 'без задачи' }} · {{ formatDateTime(invoice.created_at) }}</span>
+                </span>
+                <span class="font-mono text-[14px] font-semibold text-ink">{{ formatMoney(invoice.amount) }}</span>
+                <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
+            </Link>
+        </div>
+
+        <Pagination :links="invoices" />
     </ClientLayout>
 </template>

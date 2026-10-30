@@ -1,84 +1,79 @@
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
-import Button from '@/Components/UI/Button.vue';
 import Badge from '@/Components/UI/Badge.vue';
+import Button from '@/Components/UI/Button.vue';
+import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
-import SelectInput from '@/Components/Form/SelectInput.vue';
+import StatCard from '@/Components/UI/StatCard.vue';
 import { invoiceStatusLabels, paymentMethodLabels } from '@/Utils/constants.js';
-import { formatMoney, formatDateTime } from '@/Utils/formatters.js';
+import { formatDateTime, formatMoney } from '@/Utils/formatters.js';
+import { BanknotesIcon, PlusIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     invoices: Object,
     filters: Object,
     statuses: Array,
+    summary: Object,
 });
 
-function applyFilter(key, value) {
-    router.get(route('admin.invoices.index'), {
-        ...props.filters,
-        [key]: value || undefined,
-    }, { preserveState: true });
+const chips = [
+    { value: '', label: 'Все' },
+    { value: 'pending', label: 'Ждут оплаты' },
+    { value: 'paid', label: 'Оплачены' },
+    { value: 'cancelled', label: 'Отменены' },
+];
+
+function setStatus(value) {
+    router.get(route('admin.invoices.index'), { status: value || undefined }, { preserveState: true, replace: true });
 }
 </script>
 
 <template>
     <AdminLayout title="Счета">
         <template #actions>
-            <Link :href="route('admin.invoices.create')">
-                <Button>Создать счёт</Button>
-            </Link>
+            <Link :href="route('admin.invoices.create')"><Button><PlusIcon class="h-4 w-4" />Создать счёт</Button></Link>
         </template>
 
-        <div class="flex gap-4 mb-4">
-            <div class="w-48">
-                <SelectInput
-                    :model-value="filters.status || ''"
-                    :options="statuses"
-                    placeholder="Все статусы"
-                    @update:model-value="applyFilter('status', $event)"
-                />
-            </div>
+        <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <StatCard label="Ждут оплаты" :value="formatMoney(summary?.pending ?? 0)" hint="сумма по pending" :icon="BanknotesIcon" tone="peach" mono />
+            <StatCard label="Оплачено за месяц" :value="formatMoney(summary?.paid_month ?? 0)" hint="подтверждённые поступления" :icon="BanknotesIcon" tone="sage" mono />
+            <StatCard label="Всего счетов" :value="invoices.total" hint="во всех статусах" tone="violet" />
         </div>
 
-        <div class="bg-surface rounded-[14px] shadow-sm border border-line overflow-hidden">
-            <table class="min-w-full divide-y divide-line">
-                <thead class="bg-white/[0.03]">
-                    <tr>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Описание</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Клиент</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Задача</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Сумма</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Статус</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Оплата</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Дата</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-surface divide-y divide-line">
-                    <tr v-if="!invoices.data.length">
-                        <td colspan="7" class="px-6 py-10 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
-                            Счетов пока нет
-                        </td>
-                    </tr>
-                    <tr v-for="invoice in invoices.data" :key="invoice.id" class="hover:bg-white/5 transition-colors">
-                        <td class="px-6 py-4 text-sm">
-                            <Link :href="route('admin.invoices.show', invoice.id)" class="font-medium text-primary-300 hover:text-primary-200">
-                                {{ invoice.description }}
-                            </Link>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ invoice.client?.name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ invoice.task?.title }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-ink-soft">{{ formatMoney(invoice.amount) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <Badge :status="invoice.payment_method" type="payment">{{ paymentMethodLabels[invoice.payment_method] }}</Badge>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ formatDateTime(invoice.created_at) }}</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="mb-4 inline-flex flex-wrap gap-1 rounded-full border border-line bg-white/50 p-1">
+            <button
+                v-for="chip in chips"
+                :key="chip.value"
+                type="button"
+                :class="['rounded-full px-3 py-1.5 text-[11px] font-semibold transition', (props.filters?.status || '') === chip.value ? 'bg-ink text-canvas' : 'text-muted hover:text-ink']"
+                @click="setStatus(chip.value)"
+            >
+                {{ chip.label }}
+            </button>
+        </div>
+
+        <div v-if="!invoices.data.length" class="surface-card">
+            <EmptyState title="Счетов пока нет" text="Счёт создаётся по задаче. Выберите задачу, сумму и способ оплаты.">
+                <Link :href="route('admin.invoices.create')"><Button size="sm">Создать счёт</Button></Link>
+            </EmptyState>
+        </div>
+
+        <div v-else class="surface-card overflow-hidden">
+            <div class="divide-y divide-line/60">
+                <Link v-for="invoice in invoices.data" :key="invoice.id" :href="route('admin.invoices.show', invoice.id)" class="grid grid-cols-1 gap-3 px-5 py-4 transition hover:bg-ink/[0.025] sm:grid-cols-[1.5fr_.9fr_.6fr_auto] sm:items-center sm:px-6">
+                    <div class="min-w-0">
+                        <p class="truncate text-[13px] font-semibold text-ink">{{ invoice.description }}</p>
+                        <p class="mt-0.5 truncate text-[10px] text-muted">{{ invoice.client?.name }} · {{ invoice.task?.title }}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
+                        <Badge :status="invoice.payment_method" type="payment">{{ paymentMethodLabels[invoice.payment_method] }}</Badge>
+                    </div>
+                    <p class="font-mono text-[13px] font-semibold text-ink">{{ formatMoney(invoice.amount) }}</p>
+                    <p class="font-mono text-[9px] text-faint">{{ formatDateTime(invoice.created_at) }}</p>
+                </Link>
+            </div>
             <Pagination :links="invoices" />
         </div>
     </AdminLayout>

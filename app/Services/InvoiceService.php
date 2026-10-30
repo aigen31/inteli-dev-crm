@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Enums\RecurringInterval;
 use App\Models\Invoice;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 
 class InvoiceService
 {
@@ -21,7 +22,7 @@ class InvoiceService
         };
     }
 
-    public function getDueRecurringInvoices(): \Illuminate\Database\Eloquent\Collection
+    public function getDueRecurringInvoices(): Collection
     {
         return Invoice::where('is_recurring', true)
             ->where('status', 'paid')

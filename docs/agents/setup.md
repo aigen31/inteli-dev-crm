@@ -2,7 +2,7 @@
 
 ## Docker (основной путь)
 
-Нужны Docker и Docker Compose. Проект поднимается вместе с PostgreSQL 16, Redis 7, nginx, queue worker и scheduler.
+Нужны Docker и Docker Compose. Поднимаются app (PHP-FPM), nginx, PostgreSQL 16, Redis 7, queue worker и scheduler.
 
 ```bash
 cp .env.example .env
@@ -16,33 +16,50 @@ docker compose up -d --wait
 docker compose exec app php artisan db:seed --force
 ```
 
-- `APP_KEY`, `DB_PASSWORD` и `ACME_EMAIL` обязательны: compose подставляет их до того, как отключит Traefik профилем.
-- `APP_PORT` — свободный порт на хосте (в этом workspace занят 8099); `DB_FORWARD_PORT` — порт Postgres на `127.0.0.1`.
+- `APP_KEY`, `DB_PASSWORD`, `ACME_EMAIL` обязательны: compose интерполирует их до отключения Traefik профилем.
 - Приложение: `http://localhost:${APP_PORT}`, healthcheck `/up`.
-- Админ из `database/seeders/AdminSeeder.php`: `admin@inteli-dev.ru` / `eJUzCT693su%`.
-- Миграции выполняет entrypoint при старте `app`; вручную — `docker compose exec app php artisan migrate`.
+- Админ из `AdminSeeder`: `admin@inteli-dev.ru` / `eJUzCT693su%`. Демо-клиент: `test@client.ru` / `secret123`.
+- `ProjectManagementSeeder` создаёт 5 шаблонов задач и пользовательские поля (включая `intake_status`). Сидер идемпотентен.
+- Миграции выполняет entrypoint; вручную — `docker compose exec app php artisan migrate`.
 - Логи: `docker compose logs -f app nginx worker scheduler`.
-- Остановка: `docker compose down`; с данными — `docker compose down -v`.
 
-`docker-compose.override.yml` отключает Traefik (профиль `production`), публикует nginx на `APP_PORT` и Postgres на `DB_FORWARD_PORT`.
+`docker-compose.override.yml` отключает Traefik, публикует nginx на `APP_PORT`, Postgres на `DB_FORWARD_PORT`.
 
-Если `~/.docker` недоступен для записи (песочница), скопируйте его в `.docker-config/` и запускайте команды с `DOCKER_CONFIG=$PWD/.docker-config`.
+Если `~/.docker` недоступен для записи, используйте `DOCKER_CONFIG=$PWD/.docker-config`.
 
 ## Без Docker
 
-Нужны PHP 8.4+, Composer, Node 24+, локальные PostgreSQL и Redis.
+Нужны PHP 8.5+, Composer, Node 24+, PostgreSQL и Redis.
 
 ```bash
 composer setup   # install, .env, key, migrate, npm install, npm run build
-composer dev     # serve + queue:listen + pail + vite concurrently
+composer dev     # serve + queue:listen + pail + vite
 ```
 
-Точечные команды: `php artisan migrate`, `php artisan queue:work`, `npm run dev`, `npm run build`.
+`npm run build` читает `vendor/tightenco/ziggy`; без Composer возьмите `vendor/` из контейнера.
 
-Локальный `npm run build` читает `vendor/tightenco/ziggy`; без Composer возьмите `vendor/` из контейнера: `docker compose cp app:/var/www/vendor ./vendor`.
+## Тесты
+
+В репозитории есть `tests/`. Production-образ без dev-зависимостей, поэтому тесты запускайте отдельным контейнером с host-`vendor/`:
+
+```bash
+rm -f bootstrap/cache/*.php
+docker run --rm --network inteli-dev-crm_crm --env-file .env \
+  -v "$PWD":/var/www -w /var/www --entrypoint php inteli-dev-crm-app \
+  artisan test --compact
+```
+
+MCP-тесты — `cd mcp && npm test` (Node 20+, без зависимостей).
+
+## ИИ и MCP
+
+- Кики настраивается в UI: **Настройки → Кики** (Base URL, модель, ключ). Ключ хранится зашифрованным в `settings`.
+- Альтернатива — env `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL`; UI-настройки имеют приоритет.
+- MCP-сервер запускается отдельно: `cd mcp && CRM_API_URL=... CRM_API_TOKEN=... npm start`.
+- API-токен создаётся в **Настройки → API и MCP**; он показывается один раз.
 
 ## После изменений
 
 - Vue/CSS: `npm run build` (или `npm run dev`).
-- PHP/blade: пересоберите образ или скопируйте файл в контейнер и перезапустите `app` — см. [deployment.md](deployment.md).
-- Если после пересоздания `app` nginx отдаёт 502, перезапустите `nginx` — см. [gotchas.md](gotchas.md).
+- PHP/blade: пересоберите образ или скопируйте файл и перезапустите `app` (opcache).
+- После пересоздания `app` nginx может отдавать 502 — перезапустите `nginx`.

@@ -26,6 +26,7 @@ class StoreInvoiceRequest extends FormRequest
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
             'is_recurring' => ['sometimes', 'boolean'],
             'recurring_interval' => ['required_if:is_recurring,true', 'nullable', Rule::enum(RecurringInterval::class)],
+            'custom_fields' => ['nullable', 'array'],
         ];
     }
 

@@ -36,3 +36,11 @@ export const paymentMethodLabels = {
     yookassa: 'ЮКасса',
     transfer: 'Прямой перевод',
 };
+
+export const taskSourceLabels = {
+    manual: 'Вручную',
+    template: 'Из шаблона',
+    client: 'Заявка клиента',
+    ai: 'Кики',
+    api: 'API',
+};

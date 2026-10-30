@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\Task;
-use App\Models\TaskComment;
 use App\Models\User;
 
 class TaskCommentPolicy

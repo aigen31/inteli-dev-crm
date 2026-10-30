@@ -6,7 +6,7 @@ const props = defineProps({
     label: { type: String, default: null },
     error: { type: String, default: null },
     options: { type: Array, default: () => [] },
-    placeholder: { type: String, default: 'Выберите...' },
+    placeholder: { type: String, default: 'Выберите…' },
     id: { type: String, default: null },
 });
 
@@ -16,27 +16,27 @@ const inputId = computed(() => props.id || `select-${Math.random().toString(36).
 
 <template>
     <div>
-        <label v-if="label" :for="inputId" class="mb-1.5 block text-xs font-medium text-ink-soft">
+        <label v-if="label" :for="inputId" class="mb-1.5 block text-[11px] font-semibold text-ink-soft">
             {{ label }}
         </label>
         <select
             :id="inputId"
             :value="modelValue"
             :class="[
-                'w-full rounded-[10px] border bg-surface-2 px-3 py-2.5 text-sm text-ink shadow-sm',
-                'focus:outline-none focus:ring-1',
+                'h-10 w-full rounded-[13px] border bg-white/70 px-3.5 text-[13px] text-ink transition',
+                'focus:outline-none focus:ring-2',
                 error
-                    ? 'border-danger focus:border-danger focus:ring-danger/40'
-                    : 'border-line focus:border-primary-500 focus:ring-primary-500/40',
+                    ? 'border-danger focus:border-danger focus:ring-danger/15'
+                    : 'border-line focus:border-primary-400 focus:ring-primary-500/10',
             ]"
             @change="emit('update:modelValue', $event.target.value)"
             v-bind="$attrs"
         >
-            <option value="" disabled>{{ placeholder }}</option>
+            <option value="">{{ placeholder }}</option>
             <option v-for="opt in options" :key="opt.value" :value="opt.value">
                 {{ opt.label }}
             </option>
         </select>
-        <p v-if="error" class="mt-1 text-xs text-danger-ink">{{ error }}</p>
+        <p v-if="error" class="mt-1 text-[10px] text-danger-ink">{{ error }}</p>
     </div>
 </template>

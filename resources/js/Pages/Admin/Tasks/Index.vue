@@ -1,88 +1,139 @@
 <script setup>
+import { reactive } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
-import Button from '@/Components/UI/Button.vue';
 import Badge from '@/Components/UI/Badge.vue';
+import Button from '@/Components/UI/Button.vue';
+import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
+import Segmented from '@/Components/UI/Segmented.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
-import { taskStatusLabels, taskTypeLabels } from '@/Utils/constants.js';
+import { taskPriorityLabels, taskStatusLabels, taskTypeLabels } from '@/Utils/constants.js';
 import { formatDate } from '@/Utils/formatters.js';
+import { MagnifyingGlassIcon, PlusIcon, Squares2X2Icon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     tasks: Object,
     filters: Object,
     statuses: Array,
     types: Array,
+    clients: Array,
+    counts: Object,
 });
 
-function applyFilter(key, value) {
-    router.get(route('admin.tasks.index'), {
-        ...props.filters,
-        [key]: value || undefined,
-    }, { preserveState: true });
+const local = reactive({
+    q: props.filters?.q || '',
+    status: props.filters?.status || '',
+    type: props.filters?.type || '',
+    client_id: props.filters?.client_id || '',
+});
+
+const quickStatuses = [
+    { value: '', label: 'Все', count: props.counts?.all },
+    { value: 'pending_review', label: 'Новые' },
+    { value: 'in_progress', label: 'В работе' },
+    { value: 'awaiting_review', label: 'Ждут оценки', count: props.counts?.awaiting_review },
+];
+
+function apply(extra = {}) {
+    router.get(
+        route('admin.tasks.index'),
+        {
+            ...local,
+            ...extra,
+            status: local.status || undefined,
+            type: local.type || undefined,
+            client_id: local.client_id || undefined,
+            q: local.q || undefined,
+        },
+        { preserveState: true, preserveScroll: true, replace: true },
+    );
+}
+
+function setStatus(value) {
+    local.status = value;
+    apply({ status: value || undefined });
 }
 </script>
 
 <template>
     <AdminLayout title="Задачи">
         <template #actions>
+            <Link :href="route('admin.task-templates.index')">
+                <Button variant="secondary">
+                    <Squares2X2Icon class="h-4 w-4" />
+                    Шаблоны
+                </Button>
+            </Link>
             <Link :href="route('admin.tasks.create')">
-                <Button>Создать задачу</Button>
+                <Button>
+                    <PlusIcon class="h-4 w-4" />
+                    Новая задача
+                </Button>
             </Link>
         </template>
 
-        <!-- Filters -->
-        <div class="flex gap-4 mb-4">
-            <div class="w-48">
-                <SelectInput
-                    :model-value="filters.status || ''"
-                    :options="statuses"
-                    placeholder="Все статусы"
-                    @update:model-value="applyFilter('status', $event)"
-                />
-            </div>
-            <div class="w-48">
-                <SelectInput
-                    :model-value="filters.type || ''"
-                    :options="types"
-                    placeholder="Все типы"
-                    @update:model-value="applyFilter('type', $event)"
-                />
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <Segmented :model-value="local.status" :options="quickStatuses" @update:model-value="setStatus" />
+            <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{{ tasks.total }} задач</p>
+        </div>
+
+        <div class="surface-card mb-4 p-3">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_170px_170px]">
+                <form class="relative" @submit.prevent="apply()">
+                    <MagnifyingGlassIcon class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                    <input
+                        v-model="local.q"
+                        type="search"
+                        placeholder="Найти задачу…"
+                        class="h-10 w-full rounded-[13px] border border-line bg-white/70 pl-10 pr-3 text-[12px] text-ink placeholder-faint focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/10"
+                    />
+                </form>
+                <SelectInput v-model="local.type" :options="types" placeholder="Все типы" @update:model-value="apply()" />
+                <SelectInput v-model="local.client_id" :options="clients.map((c) => ({ value: c.id, label: c.name }))" placeholder="Все клиенты" @update:model-value="apply()" />
             </div>
         </div>
 
-        <div class="bg-surface rounded-[14px] shadow-sm border border-line overflow-hidden">
-            <table class="min-w-full divide-y divide-line">
-                <thead class="bg-white/[0.03]">
-                    <tr>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Задача</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Клиент</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Тип</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Статус</th>
-                        <th class="px-6 py-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Дедлайн</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-surface divide-y divide-line">
-                    <tr v-if="!tasks.data.length">
-                        <td colspan="5" class="px-6 py-10 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
-                            Задач пока нет
-                        </td>
-                    </tr>
-                    <tr v-for="task in tasks.data" :key="task.id" class="hover:bg-white/5 transition-colors">
-                        <td class="px-6 py-4 text-sm">
-                            <Link :href="route('admin.tasks.show', task.id)" class="font-medium text-primary-300 hover:text-primary-200">
-                                {{ task.title }}
-                            </Link>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ task.client?.name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ taskTypeLabels[task.type] }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted">{{ formatDate(task.deadline) }}</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="surface-card overflow-hidden">
+            <div v-if="!tasks.data.length" class="p-2">
+                <EmptyState title="Задач пока нет" text="Создайте задачу вручную или начните с шаблона — так описание будет понятным с первого раза.">
+                    <div class="flex gap-2">
+                        <Link :href="route('admin.tasks.create')"><Button size="sm">Создать задачу</Button></Link>
+                        <Link :href="route('admin.task-templates.index')"><Button size="sm" variant="secondary">Открыть шаблоны</Button></Link>
+                    </div>
+                </EmptyState>
+            </div>
+
+            <div v-else class="divide-y divide-line/70">
+                <Link
+                    v-for="task in tasks.data"
+                    :key="task.id"
+                    :href="route('admin.tasks.show', task.id)"
+                    class="group grid grid-cols-1 gap-3 px-5 py-4 transition hover:bg-ink/[0.025] sm:grid-cols-[1.6fr_.8fr_.7fr_auto] sm:items-center sm:px-6"
+                >
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <p class="truncate text-[13px] font-semibold text-ink group-hover:text-primary-800">{{ task.title }}</p>
+                            <span v-if="task.template" class="rounded-full bg-primary-soft px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-primary-700">шаблон</span>
+                        </div>
+                        <p class="mt-1 truncate text-[11px] text-muted">
+                            {{ task.client?.name || 'Без клиента' }}
+                            <span v-if="task.assignee"> · {{ task.assignee.name }}</span>
+                            <span v-if="task.checklist?.length"> · {{ task.checklist.length }} шагов</span>
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 text-[11px] text-muted">
+                        <span class="sm:hidden">Статус:</span>
+                        <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
+                    </div>
+                    <div class="flex items-center gap-2 text-[11px] text-muted">
+                        <span class="font-mono text-[10px]">{{ formatDate(task.deadline) }}</span>
+                        <span v-if="task.priority === 'high'" class="rounded-full bg-danger/10 px-2 py-0.5 text-[9px] font-semibold text-danger-ink">{{ taskPriorityLabels[task.priority] }}</span>
+                    </div>
+                    <div class="hidden font-mono text-[9px] uppercase tracking-[0.08em] text-faint sm:block">{{ taskTypeLabels[task.type] }}</div>
+                </Link>
+            </div>
+
             <Pagination :links="tasks" />
         </div>
     </AdminLayout>
