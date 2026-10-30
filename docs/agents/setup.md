@@ -30,7 +30,7 @@ docker compose exec app php artisan db:seed --force
 
 ## Без Docker
 
-Нужны PHP 8.3+, Composer, Node 22+, локальные PostgreSQL и Redis.
+Нужны PHP 8.4+, Composer, Node 24+, локальные PostgreSQL и Redis.
 
 ```bash
 composer setup   # install, .env, key, migrate, npm install, npm run build

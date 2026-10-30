@@ -61,7 +61,10 @@ class InvoiceController extends Controller
         $this->authorize('pay', $invoice);
 
         try {
-            $confirmationUrl = app(CreatePaymentAction::class)->execute($invoice);
+            $confirmationUrl = app(CreatePaymentAction::class)->execute(
+                $invoice,
+                route('client.invoices.show', $invoice),
+            );
         } catch (\Throwable $e) {
             report($e);
 

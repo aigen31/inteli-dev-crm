@@ -8,7 +8,7 @@
 
 ## Когда добавляете тесты
 
-- Фреймворк — Pest 4 (`pestphp/pest`, `pest-plugin-laravel`) поверх PHPUnit 12.
+- Фреймворк — Pest 5 (`pestphp/pest`, `pest-plugin-laravel`) поверх PHPUnit 13.
 - Создайте `tests/bootstrap.php`, `tests/Pest.php`, `tests/TestCase.php` вместе с первым тестом — без них `php artisan test` не стартует.
 - Тестовая БД — sqlite `:memory:`, очереди/кэш/сессии — array/sync (см. `phpunit.xml`).
 - Тесты запускайте в окружении с dev-зависимостями (`composer install`), не в production-образе.

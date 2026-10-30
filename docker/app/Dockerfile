@@ -1,4 +1,4 @@
-FROM php:8.4-fpm-bookworm AS base
+FROM php:8.5-fpm-bookworm AS base
 
 # Use faster Debian mirror
 RUN sed -i 's|deb.debian.org|mirror.yandex.ru|g' /etc/apt/sources.list.d/debian.sources
@@ -34,7 +34,7 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 # ─── Node build stage ────────────────────────────────────────────
-FROM node:22-alpine AS node
+FROM node:24-alpine AS node
 
 WORKDIR /var/www
 COPY package.json package-lock.json ./

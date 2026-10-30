@@ -2,7 +2,7 @@
 
 Single-tenant CRM: админ ведёт клиентов, задачи, счета и оплаты, клиент видит свои задачи и счета и платит через ЮКассу или прямым переводом. Регистрации нет — аккаунты клиентов создаёт админ.
 
-Стек: Laravel 13 · PHP 8.4 · Inertia 3 · Vue 3.5 · Vite 8 · Tailwind 4 · PostgreSQL 16 · Redis 7 · Pest 4 · Pint. Локально и в проде — Docker Compose.
+Стек: Laravel 13 · PHP 8.5 · Inertia 3 · Vue 3.5 · Vite 8 · Tailwind 4 · PostgreSQL 16 · Redis 7 · Pest 5 · Pint. Локально и в проде — Docker Compose.
 
 ## Быстрый старт
 

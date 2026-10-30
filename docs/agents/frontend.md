@@ -55,7 +55,7 @@ npm run dev     # Vite dev server
 
 После правок Vue/CSS пересоберите ассеты. В Docker они раздаются из общего volume; финальную версию закрепляйте пересборкой образа (см. [deployment.md](deployment.md)).
 
-Root-view — `resources/views/app.blade.php` (`@vite`, `@inertia`); фон задан на `html`, чтобы длинные страницы не давали белых полос.
+Root-view — `resources/views/app.blade.php` (`@vite`, `@inertia`); фон задан на `html`, чтобы длинные страницы не давали белых полос. В `<head>` используйте `<title data-inertia>` — в Inertia 3 старый атрибут `inertia` больше не работает.
 
 ## Дизайн-источник
 
