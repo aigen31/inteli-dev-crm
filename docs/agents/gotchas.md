@@ -2,7 +2,7 @@
 
 - **`bootstrap/cache/*.php` нельзя в образ.** Host-кеш содержит dev-провайдер Pail, production-vendor его не знает → контейнер падает в рестарт-луп. Файлы исключены в `.dockerignore`; перед сборкой можно `rm -f bootstrap/cache/*.php`.
 - **Оpcache `validate_timestamps=0`.** PHP-правки в контейнере не подхватываются без рестарта `app`; ассеты после рестарта затираются образом.
-- **502 после пересоздания `app`.** nginx кеширует IP upstream; перезапустите nginx.
+- **502 после пересоздания `app`.** nginx теперь переразрешает `app` через Docker DNS (`resolver 127.0.0.11 valid=10s` + `fastcgi_pass $php_upstream`). Если конфиг старый/заменён — перезапустите nginx. Короткий 502 возможен, пока PHP-FPM ещё стартует.
 - **Inertia 3 title.** В `<head>` нужен `<title data-inertia>`; старый атрибут `inertia` не работает.
 - **TipTap StarterKit уже содержит Link/Underline.** Повторное подключение даёт warning `Duplicate extension names`.
 - **HTML из WYSIWYG и ИИ.** Храните и выводите только после `HtmlSanitizer`; `v-html` без санитайза — XSS.
