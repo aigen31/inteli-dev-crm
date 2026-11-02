@@ -333,6 +333,7 @@ class AgentService
 
         $messages = $conversation->messages
             ->whereIn('role', [AiMessageRole::User, AiMessageRole::Assistant])
+            ->reject(fn (AiMessage $message) => $message->role === AiMessageRole::Assistant && trim((string) $message->content) === '')
             ->map(fn (AiMessage $message) => [
                 'id' => $message->id,
                 'role' => $message->role->value,

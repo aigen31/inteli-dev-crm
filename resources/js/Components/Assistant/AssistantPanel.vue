@@ -50,7 +50,9 @@ function scrollToBottom() {
 }
 
 function applyPayload(data) {
-    messages.value = data.messages ?? [];
+    messages.value = (data.messages ?? []).filter(
+        (message) => message.role !== 'assistant' || String(message.content ?? '').trim() !== '',
+    );
     pendingActions.value = data.pending_actions ?? [];
     suggestions.value = data.suggestions ?? suggestions.value;
     conversationId.value = data.conversation_id ?? conversationId.value;

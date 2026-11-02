@@ -234,6 +234,12 @@ test('assistant proposes financial action and executes it after confirmation', f
         ->assertOk()
         ->assertJsonPath('pending_action.tool_name', 'create_invoice');
 
+    $messages = collect($response->json('messages'));
+
+    expect($messages->contains(
+        fn (array $message) => $message['role'] === 'assistant' && trim((string) $message['content']) === '',
+    ))->toBeFalse();
+
     $actionId = $response->json('pending_action.id');
 
     $this->assertDatabaseHas('ai_actions', [
