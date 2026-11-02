@@ -1,3 +1,6 @@
+> **Статус:** Superseded by ADR в `inteli-dev-kiki-assistant-kernel-api/docs/ADR-001-assistant-kernel.md`.
+> Модель, история и tool loop вынесены в центральное ядро. Ниже — исходное решение, сохранённое для истории.
+
 # ADR-0003: Tool-calling агент с подтверждением финансовых действий
 
 ## Статус

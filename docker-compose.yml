@@ -49,6 +49,7 @@ services:
       - ./promo:/var/www/promo:ro
     networks:
       - crm
+      - assistant
 
   # ── Nginx web-server ─────────────────────────────────
   nginx:
@@ -94,6 +95,7 @@ services:
     networks:
       - crm
       - traefik-public
+      - assistant
 
   # ── Queue worker ─────────────────────────────────────
   worker:
@@ -177,5 +179,8 @@ volumes:
 networks:
   crm:
     driver: bridge
+  assistant:
+    external: true
+    name: inteli-dev-assistant
   traefik-public:
     external: true

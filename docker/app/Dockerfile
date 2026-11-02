@@ -4,7 +4,8 @@ FROM php:8.5-fpm-bookworm AS base
 RUN sed -i 's|deb.debian.org|mirror.yandex.ru|g' /etc/apt/sources.list.d/debian.sources
 
 # Install PHP extensions via install-php-extensions
-ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/install-php-extensions
+RUN chmod +x /usr/local/bin/install-php-extensions
 RUN install-php-extensions \
     intl \
     pdo_pgsql \
@@ -64,7 +65,8 @@ RUN mkdir -p /var/www/storage/logs \
              /var/www/storage/app/attachments \
     && chown -R app:app /var/www/storage /var/www/bootstrap/cache
 
-COPY --chmod=755 docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 USER app
 

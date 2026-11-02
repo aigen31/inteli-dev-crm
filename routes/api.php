@@ -3,7 +3,16 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1;
+use App\Http\Controllers\Internal\AssistantToolController;
 use Illuminate\Support\Facades\Route;
+
+// Internal contract for the central Kiki assistant kernel. Service token only.
+Route::prefix('internal/assistant')
+    ->middleware('kernel.token')
+    ->group(function (): void {
+        Route::get('/profile', [AssistantToolController::class, 'profile']);
+        Route::post('/tools/{tool}', [AssistantToolController::class, 'tool']);
+    });
 
 Route::get('/v1/ping', fn () => response()->json([
     'data' => ['status' => 'ok', 'version' => 'v1'],

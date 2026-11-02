@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AuthenticateApiToken;
+use App\Http\Middleware\AuthenticateKernel;
 use App\Http\Middleware\EnsureApiAbility;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'is_admin' => EnsureUserIsAdmin::class,
             'yookassa_webhook' => VerifyYooKassaWebhook::class,
             'api.token' => AuthenticateApiToken::class,
+            'kernel.token' => AuthenticateKernel::class,
             'api.ability' => EnsureApiAbility::class,
         ]);
     })

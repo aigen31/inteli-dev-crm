@@ -14,24 +14,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * CRM adapter for the central Kiki assistant kernel.
+ *
+ * The kernel owns model calls, tool loop, conversation memory and safety
+ * policy. CRM keeps the user-facing audit mirror, pending actions and the
+ * confirmation flow, because those are domain state.
+ */
 class AgentService
 {
-    private const WRITE_TOOLS = [
-        'create_client',
-        'create_task',
-        'update_task_status',
-        'apply_task_template',
-        'create_task_template',
-        'create_invoice',
-        'mark_invoice_paid',
-        'set_custom_field',
-    ];
-
     public function __construct(
-        private readonly OpenAiClient $client,
+        private readonly KernelClient $kernel,
         private readonly CrmToolbox $toolbox,
-        private readonly ContextBuilder $context,
-        private readonly PromptFactory $prompts,
     ) {}
 
     /**
@@ -58,154 +52,49 @@ class AgentService
             'content' => $message,
         ]);
 
-        $messages = [
-            ['role' => 'system', 'content' => $this->prompts->system($user)],
-            ['role' => 'system', 'content' => $this->context->for($user, $pageContext)],
-            ...$this->historyMessages($conversation),
-        ];
-
-        $tools = $this->toolbox->definitions($user);
-        $pendingAction = null;
-
-        for ($step = 0; $step < 6; $step++) {
-            try {
-                $response = $this->client->chat($messages, $tools);
-            } catch (AiException $exception) {
-                $assistant = AiMessage::create([
-                    'conversation_id' => $conversation->id,
-                    'role' => AiMessageRole::Assistant,
-                    'content' => $exception->getMessage(),
-                ]);
-
-                return $this->payload($conversation, $assistant, null, $exception->status);
-            }
-
-            $assistantMessage = $response['message'];
-            $toolCalls = $assistantMessage['tool_calls'] ?? [];
-            $content = $assistantMessage['content'] ?? null;
-
-            if (! is_array($toolCalls) || $toolCalls === []) {
-                $assistant = AiMessage::create([
-                    'conversation_id' => $conversation->id,
-                    'role' => AiMessageRole::Assistant,
-                    'content' => (string) ($content ?? ''),
-                    'tokens_in' => $response['usage']['prompt_tokens'] ?? 0,
-                    'tokens_out' => $response['usage']['completion_tokens'] ?? 0,
-                ]);
-
-                return $this->payload($conversation, $assistant);
-            }
-
-            AiMessage::create([
+        try {
+            $result = $this->kernel->chat($user, $conversation->id, $message, $pageContext);
+        } catch (AiException $exception) {
+            $assistant = AiMessage::create([
                 'conversation_id' => $conversation->id,
                 'role' => AiMessageRole::Assistant,
-                'content' => $content,
-                'tool_calls' => $toolCalls,
-                'tokens_in' => $response['usage']['prompt_tokens'] ?? 0,
-                'tokens_out' => $response['usage']['completion_tokens'] ?? 0,
+                'content' => $exception->getMessage(),
             ]);
 
-            $messages[] = [
-                'role' => 'assistant',
-                'content' => $content,
-                'tool_calls' => $toolCalls,
-            ];
+            return $this->payload($conversation, $assistant, null, $exception->status);
+        }
 
-            foreach ($toolCalls as $call) {
-                $name = (string) ($call['function']['name'] ?? '');
-                $callId = (string) ($call['id'] ?? '');
-                $arguments = $this->decodeArguments($call['function']['arguments'] ?? '{}');
+        $answer = trim((string) ($result['answer'] ?? ''));
+        $pending = null;
 
-                if ($this->toolbox->requiresConfirmation($name)) {
-                    $action = AiAction::create([
-                        'conversation_id' => $conversation->id,
-                        'user_id' => $user->id,
-                        'tool_name' => $name,
-                        'arguments' => $arguments,
-                        'status' => AiActionStatus::Proposed,
-                        'requires_confirmation' => true,
-                    ]);
-
-                    $pendingAction ??= $action;
-
-                    $toolResult = ['status' => 'awaiting_confirmation', 'action_id' => $action->id];
-                    AiMessage::create([
-                        'conversation_id' => $conversation->id,
-                        'role' => AiMessageRole::Tool,
-                        'tool_call_id' => $callId,
-                        'content' => json_encode($toolResult, JSON_UNESCAPED_UNICODE),
-                    ]);
-                    $messages[] = [
-                        'role' => 'tool',
-                        'tool_call_id' => $callId,
-                        'content' => json_encode($toolResult, JSON_UNESCAPED_UNICODE),
-                    ];
-
-                    continue;
-                }
-
-                try {
-                    $toolResult = $this->toolbox->execute($name, $user, $arguments);
-                    $status = AiActionStatus::Executed;
-                } catch (\Throwable $exception) {
-                    $toolResult = ['error' => $exception->getMessage()];
-                    $status = AiActionStatus::Failed;
-                    Log::warning('AI tool failed', [
-                        'tool' => $name,
-                        'user_id' => $user->id,
-                        'error' => $exception->getMessage(),
-                    ]);
-                }
-
-                if (in_array($name, self::WRITE_TOOLS, true)) {
-                    AiAction::create([
-                        'conversation_id' => $conversation->id,
-                        'user_id' => $user->id,
-                        'tool_name' => $name,
-                        'arguments' => $arguments,
-                        'result' => $toolResult,
-                        'status' => $status,
-                        'requires_confirmation' => false,
-                        'executed_at' => $status === AiActionStatus::Executed ? now() : null,
-                        'error' => $status === AiActionStatus::Failed ? ($toolResult['error'] ?? null) : null,
-                    ]);
-                }
-
-                $encoded = json_encode($toolResult, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-                AiMessage::create([
-                    'conversation_id' => $conversation->id,
-                    'role' => AiMessageRole::Tool,
-                    'tool_call_id' => $callId,
-                    'content' => $encoded,
-                ]);
-
-                $messages[] = [
-                    'role' => 'tool',
-                    'tool_call_id' => $callId,
-                    'content' => $encoded,
-                ];
+        $pendingId = $result['pending_action']['id'] ?? null;
+        if (is_string($pendingId) && $pendingId !== '') {
+            $candidate = AiAction::query()->find($pendingId);
+            if ($candidate instanceof AiAction && $candidate->user_id === $user->id) {
+                $pending = $candidate;
             }
+        }
 
-            if ($pendingAction !== null) {
-                $summary = $this->toolbox->summarize($pendingAction->tool_name, $pendingAction->arguments);
-                $assistant = AiMessage::create([
-                    'conversation_id' => $conversation->id,
-                    'role' => AiMessageRole::Assistant,
-                    'content' => "Я подготовила действие: **{$summary}**.\n\nПроверьте детали и подтвердите — тогда я выполню его.",
-                ]);
-
-                return $this->payload($conversation, $assistant, $pendingAction);
+        if ($pending !== null) {
+            $summary = $this->toolbox->summarize($pending->tool_name, $pending->arguments);
+            if ($answer === '') {
+                $answer = "Я подготовила действие: **{$summary}**.\n\nПроверьте детали и подтвердите — тогда я выполню его.";
             }
+        }
+
+        if ($answer === '') {
+            $answer = 'Не удалось получить ответ. Попробуйте переформулировать вопрос.';
         }
 
         $assistant = AiMessage::create([
             'conversation_id' => $conversation->id,
             'role' => AiMessageRole::Assistant,
-            'content' => 'Я сделала несколько шагов, но задача оказалась сложнее. Уточните, пожалуйста, что важнее сделать в первую очередь?',
+            'content' => $answer,
+            'tokens_in' => (int) ($result['usage']['prompt_tokens'] ?? 0),
+            'tokens_out' => (int) ($result['usage']['completion_tokens'] ?? 0),
         ]);
 
-        return $this->payload($conversation, $assistant);
+        return $this->payload($conversation, $assistant, $pending);
     }
 
     /**
@@ -243,6 +132,7 @@ class AgentService
                 'role' => AiMessageRole::Assistant,
                 'content' => $this->formatActionResult($action->tool_name, $result),
             ]);
+            $this->kernel->appendNote($conversation->id, (string) $assistant->content);
         }
 
         return $this->payload($conversation, $assistant);
@@ -269,6 +159,7 @@ class AgentService
                 'role' => AiMessageRole::Assistant,
                 'content' => 'Хорошо, действие отменено. Ничего не изменилось.',
             ]);
+            $this->kernel->appendNote($conversation->id, (string) $assistant->content);
         }
 
         return $this->payload($conversation, $assistant);
@@ -289,9 +180,15 @@ class AgentService
 
     public function clear(User $user): void
     {
+        $ids = AiConversation::query()->where('user_id', $user->id)->pluck('id')->all();
+
         DB::transaction(function () use ($user): void {
             AiConversation::query()->where('user_id', $user->id)->delete();
         });
+
+        foreach ($ids as $id) {
+            $this->kernel->delete((string) $id);
+        }
     }
 
     /**
@@ -377,59 +274,6 @@ class AgentService
         ];
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
-    private function historyMessages(AiConversation $conversation): array
-    {
-        return $conversation->messages()
-            ->latest()
-            ->limit(40)
-            ->get()
-            ->reverse()
-            ->map(function (AiMessage $message): ?array {
-                return match ($message->role) {
-                    AiMessageRole::User => ['role' => 'user', 'content' => $message->content],
-                    AiMessageRole::Assistant => [
-                        'role' => 'assistant',
-                        'content' => $message->content,
-                        ...($message->tool_calls !== null ? ['tool_calls' => $message->tool_calls] : []),
-                    ],
-                    AiMessageRole::Tool => [
-                        'role' => 'tool',
-                        'tool_call_id' => $message->tool_call_id,
-                        'content' => $message->content,
-                    ],
-                    default => null,
-                };
-            })
-            ->filter()
-            ->values()
-            ->all();
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function decodeArguments(mixed $arguments): array
-    {
-        if (is_array($arguments)) {
-            return $arguments;
-        }
-
-        if (! is_string($arguments) || trim($arguments) === '') {
-            return [];
-        }
-
-        try {
-            $decoded = json_decode($arguments, true, 512, JSON_THROW_ON_ERROR);
-
-            return is_array($decoded) ? $decoded : [];
-        } catch (\JsonException) {
-            return [];
-        }
-    }
-
     private function conversation(User $user, ?string $id, string $message): AiConversation
     {
         if ($id !== null && $id !== '') {
@@ -444,7 +288,7 @@ class AgentService
 
         return AiConversation::create([
             'user_id' => $user->id,
-            'title' => $this->prompts->conversationTitle($message),
+            'title' => mb_substr(trim(preg_replace('/\s+/u', ' ', $message) ?? $message), 0, 80) ?: 'Новый диалог',
             'last_message_at' => now(),
         ]);
     }
