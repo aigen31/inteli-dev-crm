@@ -13,7 +13,6 @@ import {
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
-import KikiChatAvatar from '@/Components/Kiki/KikiChatAvatar.vue';
 import { useAssistant } from '@/Composables/useAssistant';
 
 const page = usePage();
@@ -193,7 +192,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                 <header class="relative shrink-0 overflow-hidden border-b border-line px-4 pb-3.5 pt-4">
                     <div class="absolute inset-0 bg-gradient-to-br from-primary-50 via-surface to-surface"></div>
                     <div class="relative flex items-center gap-3">
-                        <KikiChatAvatar :size="42" />
+                        <KikiAvatar variant="face" fit="contain" :size="42" />
                         <div class="min-w-0">
                             <div class="flex items-center gap-1.5">
                                 <p class="text-[14px] font-bold text-ink">Кики</p>
@@ -244,7 +243,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                                 </div>
                             </div>
                             <div v-else class="flex items-start gap-2.5">
-                                <KikiChatAvatar :size="28" class="mt-0.5" />
+                                <KikiAvatar variant="face" fit="contain" :size="28" class="mt-0.5" />
                                 <div class="min-w-0 max-w-[86%]">
                                     <div class="prose-kiki rounded-[20px] rounded-tl-md border border-line bg-white/60 px-4 py-2.5" v-html="renderMarkdown(message.content)"></div>
                                     <p v-if="message.created_at" class="mt-1 pl-1 font-mono text-[9px] text-faint">{{ formatTime(message.created_at) }}</p>
@@ -282,7 +281,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                         </div>
 
                         <div v-if="loading" class="flex items-center gap-2.5">
-                            <KikiChatAvatar :size="28" />
+                            <KikiAvatar variant="face" fit="contain" :size="28" />
                             <div class="flex items-center gap-1 rounded-full border border-line bg-white/60 px-4 py-3">
                                 <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-primary-400 [animation-delay:-0.2s]"></span>
                                 <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-primary-400 [animation-delay:-0.1s]"></span>

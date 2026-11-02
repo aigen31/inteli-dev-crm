@@ -33,7 +33,7 @@
 | `kiki-empty.webp` | 640×480, RGBA | старый empty-кадр (резерв) |
 | `kiki-thinking.webp` | 384×512, RGBA | размышление |
 | `kiki-avatar.webp` | 640×640, RGBA | классический аватар (резерв) |
-| `kiki-chat-placeholder.png` | 1024×1024, RGB | сгенерированная в Qwen t2i иконка-заглушка: только высокая шляпа Кики на лавандовом диске, без метлы/лица; `object-contain` |
+| `kiki-avatar-face.png` | 576×704, RGB | сгенерированный в Qwen i2i аватар с лицом Кики: полная высокая шляпа, лавандовый медальон, искры; `object-contain` |
 
 Все файлы — в `public/images/kiki/`.
 
@@ -54,8 +54,8 @@
 - `resources/js/Pages/Admin/TaskTemplates/Index.vue` — `kiki-seated.webp`.
 - `resources/js/Pages/Admin/Invoices/Index.vue` — `kiki-flight-portrait.webp`.
 - `resources/js/Pages/Client/Dashboard.vue` — `kiki-desk.webp` в рамке.
-- `resources/js/Components/Assistant/AssistantPanel.vue` — `kiki-seated.webp` в приветствии, `KikiChatAvatar` в шапке и сообщениях.
-- `resources/js/Components/Layout/AppShell.vue` — `KikiChatAvatar` в кнопке «Спросить Кики», мобильной шапке и нижней навигации.
+- `resources/js/Components/Assistant/AssistantPanel.vue` — `kiki-seated.webp` в приветствии, `KikiAvatar variant="face"` в шапке и сообщениях.
+- `resources/js/Components/Layout/AppShell.vue` — `KikiAvatar variant="face"` в кнопке «Спросить Кики», мобильной шапке и нижней навигации.
 - `resources/js/Components/Kiki/KikiChatAvatar.vue` — заглушка: пунктирное кольцо, бейдж `?`, `object-contain`, полная шляпа.
 
 Дизайн-токены и правила — [.superdesign/design-system.md](../../.superdesign/design-system.md).
