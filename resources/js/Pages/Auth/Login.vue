@@ -1,7 +1,10 @@
 <script setup>
+import { ref } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { ArrowRightIcon, CheckCircleIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
+import { ArrowRightIcon, CheckCircleIcon, EyeIcon, EyeSlashIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
+
+const showPassword = ref(false);
 
 const form = useForm({
     email: '',
@@ -62,15 +65,27 @@ function submit() {
 
                         <div>
                             <label for="password" class="mb-1.5 block text-[11px] font-semibold text-ink-soft">Пароль</label>
-                            <input
-                                id="password"
-                                v-model="form.password"
-                                type="password"
-                                autocomplete="current-password"
-                                required
-                                class="h-11 w-full rounded-[14px] border border-line bg-white/75 px-4 text-[13px] text-ink placeholder-faint transition focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/10"
-                                placeholder="••••••••"
-                            />
+                            <div class="relative">
+                                <input
+                                    id="password"
+                                    v-model="form.password"
+                                    :type="showPassword ? 'text' : 'password'"
+                                    autocomplete="current-password"
+                                    required
+                                    class="h-11 w-full rounded-[14px] border border-line bg-white/75 px-4 pr-11 text-[13px] text-ink placeholder-faint transition focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/10"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    class="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-[10px] text-muted transition hover:bg-ink/[0.05] hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
+                                    :aria-label="showPassword ? 'Скрыть пароль' : 'Показать пароль'"
+                                    :title="showPassword ? 'Скрыть пароль' : 'Показать пароль'"
+                                    @click="showPassword = !showPassword"
+                                >
+                                    <EyeSlashIcon v-if="showPassword" class="h-[17px] w-[17px]" />
+                                    <EyeIcon v-else class="h-[17px] w-[17px]" />
+                                </button>
+                            </div>
                             <p v-if="form.errors.password" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.password }}</p>
                         </div>
 
