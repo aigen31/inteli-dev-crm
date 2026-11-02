@@ -33,7 +33,7 @@
 | `kiki-empty.webp` | 640×480, RGBA | старый empty-кадр (резерв) |
 | `kiki-thinking.webp` | 384×512, RGBA | размышление |
 | `kiki-avatar.webp` | 640×640, RGBA | классический аватар (резерв) |
-| `kiki-chat-placeholder.webp` | 640×640, RGB | заглушка аватара в чате: только высокая шляпа Кики, без метлы и лица; полная шляпа с запасом, `object-contain` |
+| `kiki-chat-placeholder.png` | 1024×1024, RGB | сгенерированная в Qwen t2i иконка-заглушка: только высокая шляпа Кики на лавандовом диске, без метлы/лица; `object-contain` |
 
 Все файлы — в `public/images/kiki/`.
 
