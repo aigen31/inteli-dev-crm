@@ -37,6 +37,7 @@ const style = computed(() => ({
             'shrink-0',
             fitClass,
             rounded === 'full' ? 'rounded-full' : 'rounded-[22px]',
+            variant === 'face' ? 'p-[3px]' : '',
         ]"
         loading="lazy"
         draggable="false"
