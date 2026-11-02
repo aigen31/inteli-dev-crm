@@ -17,7 +17,7 @@ const sources = {
     flight: '/images/kiki/kiki-flight-badge.webp',
     seated: '/images/kiki/kiki-seated.webp',
     classic: '/images/kiki/kiki-avatar.webp',
-    face: '/images/kiki/kiki-avatar-face.png?v=2',
+    face: '/images/kiki/kiki-avatar-face.png?v=3',
 };
 
 const src = computed(() => sources[props.variant] ?? sources.avatar);
@@ -34,10 +34,10 @@ const style = computed(() => ({
         :alt="alt"
         :style="style"
         :class="[
-            'shrink-0',
+            'block shrink-0',
             fitClass,
             rounded === 'full' ? 'rounded-full' : 'rounded-[22px]',
-            variant === 'face' ? 'p-[3px]' : '',
+            variant === 'face' ? 'p-[4px]' : '',
         ]"
         loading="lazy"
         draggable="false"
