@@ -31,6 +31,7 @@ function submit() {
                 <div class="flex items-center gap-2">
                     <span class="font-display text-[18px] font-medium tracking-[-0.04em] text-ink">inteli dev</span>
                     <span class="rounded-full border border-line bg-white/60 px-2 py-[3px] font-mono text-[8px] uppercase tracking-[0.18em] text-muted">crm</span>
+                    <span class="rounded-full border border-warning/25 bg-warning/10 px-2 py-[3px] font-mono text-[8px] uppercase tracking-[0.14em] text-warning">beta</span>
                 </div>
 
                 <div class="mx-auto w-full max-w-[380px] py-10">
@@ -104,7 +105,13 @@ function submit() {
                         </button>
                     </form>
 
-                    <div class="mt-6 flex items-center gap-2 text-[10px] text-muted">
+                    <div class="mt-5 rounded-[12px] border border-warning/20 bg-warning/[0.07] px-3 py-2.5 text-[10px] leading-relaxed text-ink-soft">
+                        <span class="font-semibold text-ink">Ранний доступ.</span>
+                        Приложение в бете — возможны ошибки. Если что-то сломалось, напишите на
+                        <a href="mailto:info@inteli-dev.ru?subject=%D0%9E%D1%88%D0%B8%D0%B1%D0%BA%D0%B0%20%D0%B2%20CRM" class="font-semibold text-warning underline decoration-warning/40 underline-offset-2">info@inteli-dev.ru</a>.
+                    </div>
+
+                    <div class="mt-4 flex items-center gap-2 text-[10px] text-muted">
                         <LockClosedIcon class="h-3.5 w-3.5" />
                         Данные видны только вам и вашим клиентам.
                     </div>

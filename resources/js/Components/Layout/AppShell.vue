@@ -17,6 +17,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import AssistantPanel from '@/Components/Assistant/AssistantPanel.vue';
+import EarlyAccessBanner from '@/Components/UI/EarlyAccessBanner.vue';
 import { useAssistant } from '@/Composables/useAssistant';
 
 const props = defineProps({
@@ -87,9 +88,10 @@ function logout() {
 
         <!-- Desktop sidebar -->
         <aside class="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-line/80 bg-surface/60 px-4 py-6 backdrop-blur-xl lg:flex">
-            <Link :href="isAdmin ? route('admin.dashboard') : route('client.dashboard')" class="flex items-center gap-2 px-3">
-                <span class="font-display text-[17px] font-medium tracking-[-0.04em] text-ink">inteli dev</span>
+            <Link :href="isAdmin ? route('admin.dashboard') : route('client.dashboard')" class="flex items-center gap-1.5 px-3">
+                <span class="shrink-0 whitespace-nowrap font-display text-[17px] font-medium tracking-[-0.04em] text-ink">inteli dev</span>
                 <span class="rounded-full border border-line bg-white/50 px-2 py-[2px] font-mono text-[8px] uppercase tracking-[0.18em] text-muted">crm</span>
+                <span class="rounded-full border border-warning/25 bg-warning/10 px-2 py-[2px] font-mono text-[8px] uppercase tracking-[0.14em] text-warning">beta</span>
             </Link>
 
             <p class="eyebrow mt-10 px-3">Рабочее пространство</p>
@@ -160,8 +162,9 @@ function logout() {
                 <Bars3Icon v-else class="h-5 w-5" />
             </button>
             <Link :href="isAdmin ? route('admin.dashboard') : route('client.dashboard')" class="flex items-center gap-1.5">
-                <span class="font-display text-[15px] font-medium tracking-[-0.04em]">inteli dev</span>
+                <span class="shrink-0 whitespace-nowrap font-display text-[15px] font-medium tracking-[-0.04em]">inteli dev</span>
                 <span class="font-mono text-[8px] uppercase tracking-[0.16em] text-muted">crm</span>
+                <span class="rounded-full border border-warning/25 bg-warning/10 px-1.5 py-[1px] font-mono text-[7px] uppercase tracking-[0.12em] text-warning">beta</span>
             </Link>
             <div class="ml-auto flex items-center gap-1">
                 <button type="button" class="rounded-xl p-2 text-muted" @click="open">
@@ -228,6 +231,8 @@ function logout() {
             </div>
 
             <main class="mx-auto w-full max-w-[1280px] px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-16 lg:pt-7">
+                <EarlyAccessBanner />
+
                 <div class="mb-7 flex flex-wrap items-end justify-between gap-5">
                     <div class="min-w-0">
                         <p class="eyebrow">{{ eyebrow || (isAdmin ? 'Рабочий стол' : 'Личный кабинет') }}</p>

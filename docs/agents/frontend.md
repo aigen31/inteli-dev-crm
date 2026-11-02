@@ -5,8 +5,9 @@
 - Inertia 3 + Vue 3.5 + Vite 8 + Tailwind 4, без Vue Router.
 - Страницы: `resources/js/Pages/Admin`, `resources/js/Pages/Client`.
 - Оболочка: `Components/Layout/AppShell.vue`; `AdminLayout` и `ClientLayout` — тонкие обёртки с ролью.
-- UI: `Components/UI` (Button, Card, Badge, StatCard, EmptyState, Segmented, Pagination); формы: `Components/Form` (TextInput, SelectInput, TextArea, RichTextEditor).
+- UI: `Components/UI` (Button, Card, Badge, StatCard, EmptyState, Segmented, Pagination, EarlyAccessBanner); формы: `Components/Form` (TextInput, SelectInput, TextArea, RichTextEditor).
 - Домен: `Components/Task/TaskFormFields.vue`, `Components/CustomFields/*`, `Components/FormTemplates/*`, `Components/Assistant/AssistantPanel.vue`, `Components/Kiki/KikiAvatar.vue`.
+- Early access: `EarlyAccessBanner` в `AppShell` (dismissible, localStorage), бейдж `beta` в шапке/сайдбаре, статичная заметка на `/login`.
 - Формы заявок: `Pages/Client/Tasks/Create.vue` (библиотека + live-форма), `Pages/Client/Tasks/Scenarios.vue` (классические сценарии), `Pages/Admin/Forms/Index.vue` (библиотека форм).
 - Утилиты: `Utils/constants.js`, `Utils/formatters.js`, `Composables/useAssistant.js`.
 
