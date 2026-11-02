@@ -55,6 +55,7 @@
 - `resources/js/Pages/Admin/Invoices/Index.vue` — `kiki-flight-portrait.webp`.
 - `resources/js/Pages/Client/Dashboard.vue` — `kiki-desk.webp` в рамке.
 - `resources/js/Components/Assistant/AssistantPanel.vue` — `kiki-seated.webp` в приветствии, `KikiChatAvatar` в шапке и сообщениях.
+- `resources/js/Components/Layout/AppShell.vue` — `KikiChatAvatar` в кнопке «Спросить Кики», мобильной шапке и нижней навигации.
 - `resources/js/Components/Kiki/KikiChatAvatar.vue` — заглушка: пунктирное кольцо, бейдж `?`, `object-contain`, полная шляпа.
 
 Дизайн-токены и правила — [.superdesign/design-system.md](../../.superdesign/design-system.md).

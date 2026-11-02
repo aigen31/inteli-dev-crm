@@ -15,7 +15,7 @@ import {
     UsersIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
-import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
+import KikiChatAvatar from '@/Components/Kiki/KikiChatAvatar.vue';
 import AssistantPanel from '@/Components/Assistant/AssistantPanel.vue';
 import { useAssistant } from '@/Composables/useAssistant';
 
@@ -116,7 +116,7 @@ function logout() {
                 class="mt-6 flex w-full items-center gap-3 rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-surface px-3 py-3 text-left transition hover:border-primary-300"
                 @click="open"
             >
-                <KikiAvatar :size="38" class="kiki-ring" />
+                <KikiChatAvatar :size="38" />
                 <span class="min-w-0">
                     <span class="block text-[13px] font-semibold text-ink">Спросить Кики</span>
                     <span class="block truncate text-[11px] text-muted">задачи, счета, клиенты</span>
@@ -168,7 +168,7 @@ function logout() {
                     <MagnifyingGlassIcon class="h-5 w-5" />
                 </button>
                 <button type="button" class="rounded-full p-0.5" @click="open">
-                    <KikiAvatar :size="30" />
+                    <KikiChatAvatar :size="30" />
                 </button>
             </div>
         </header>
@@ -269,7 +269,7 @@ function logout() {
                     <span class="text-[10px] font-medium">{{ item.label }}</span>
                 </Link>
                 <button type="button" class="flex min-w-[64px] flex-col items-center gap-1 rounded-2xl px-2 py-1.5 text-muted" @click="open">
-                    <KikiAvatar :size="23" />
+                    <KikiChatAvatar :size="23" />
                     <span class="text-[10px] font-medium">Кики</span>
                 </button>
             </div>
