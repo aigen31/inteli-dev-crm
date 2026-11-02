@@ -37,10 +37,22 @@ class KernelClient
             ]);
 
         if ($response->failed()) {
-            throw new AiException(
-                (string) ($response->json('detail') ?? 'Ассистент временно недоступен.'),
-                $response->status() > 0 ? $response->status() : 503,
-            );
+            $status = $response->status() > 0 ? $response->status() : 503;
+            Log::warning('Kernel chat failed', [
+                'status' => $status,
+                'detail' => $response->json('detail'),
+            ]);
+
+            $message = match ($status) {
+                401, 403 => 'Нет доступа к ассистенту. Проверьте токен канала.',
+                503 => 'Локальная модель ассистента недоступна. Настройте локальный endpoint.',
+                502, 504 => 'Ассистент временно недоступен. Попробуйте позже.',
+                default => is_string($response->json('detail')) && $response->json('detail') !== ''
+                    ? (string) $response->json('detail')
+                    : 'Ассистент временно недоступен.',
+            };
+
+            throw new AiException($message, $status);
         }
 
         /** @var array<string, mixed> $payload */
