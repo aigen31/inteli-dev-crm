@@ -103,15 +103,17 @@
         "resources/js/Pages/Admin/Dashboard.vue",
         "resources/js/Pages/Auth/Login.vue",
         "resources/js/Components/UI/Badge.vue",
-        "resources/js/Components/UI/Button.vue"
+        "resources/js/Components/UI/Button.vue",
+        "resources/js/Components/UI/EarlyAccessBanner.vue"
       ],
       "fingerprints": {
         ".superdesign/design-system.md": "68affd90d5b4ef25fee16319cee8d0b2964662013da35f5e12a80a25875269b3",
         "resources/js/Components/Layout/AppShell.vue": "d8e74fd27a7c9e530502832060afaf838e16a1e0b09db5476a4a9d0547f8246a",
         "resources/js/Pages/Admin/Dashboard.vue": "512cd47f1a822f8e70a59007702e76deed073f23e95ae7e52fda00d4153d7cf5",
-        "resources/js/Pages/Auth/Login.vue": "12269aac2c0c34a9e9e899bdb4019b482e6cef3a110c311c322b9a20f64065cb",
+        "resources/js/Pages/Auth/Login.vue": "934bcdea06d43edde60fff9ce0938afa4ecd2835f541d4d737ebffa109b4205e",
         "resources/js/Components/UI/Badge.vue": "b3d917fcecff72e5475dff55e79ab160fefeca8313dbf077c4be56749c41a246",
-        "resources/js/Components/UI/Button.vue": "7c8347fd054352ae1e6dbb7960b86dbe2d8520c337153b6b40a5d81aae48882c"
+        "resources/js/Components/UI/Button.vue": "7c8347fd054352ae1e6dbb7960b86dbe2d8520c337153b6b40a5d81aae48882c",
+        "resources/js/Components/UI/EarlyAccessBanner.vue": "42d54805b1855624b3627c9a7a63d3ed484d8d4f298580054e0b2228e9b91d91"
       },
       "drafts": {
         "81a545ba-7fb3-4854-98c8-ff92cd6c199e": {
@@ -120,7 +122,7 @@
           "currentVersion": 1
         }
       },
-      "updatedAt": "2026-11-02T14:50:57.222732+00:00"
+      "updatedAt": "2026-11-02T15:00:06.952078+00:00"
     }
   }
 }

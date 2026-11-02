@@ -107,8 +107,8 @@ function submit() {
 
                     <div class="mt-5 rounded-[12px] border border-warning/20 bg-warning/[0.07] px-3 py-2.5 text-[10px] leading-relaxed text-ink-soft">
                         <span class="font-semibold text-ink">Ранний доступ.</span>
-                        Приложение в бете — возможны ошибки. Если что-то сломалось, напишите на
-                        <a href="mailto:info@inteli-dev.ru?subject=%D0%9E%D1%88%D0%B8%D0%B1%D0%BA%D0%B0%20%D0%B2%20CRM" class="font-semibold text-warning underline decoration-warning/40 underline-offset-2">info@inteli-dev.ru</a>.
+                        Приложение в бете — возможны ошибки. Если что-то сломалось, напишите в
+                        <a href="https://t.me/AiGen31" target="_blank" rel="noopener noreferrer" class="font-semibold text-warning underline decoration-warning/40 underline-offset-2">Telegram</a>.
                     </div>
 
                     <div class="mt-4 flex items-center gap-2 text-[10px] text-muted">

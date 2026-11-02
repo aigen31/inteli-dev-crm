@@ -28,7 +28,9 @@ function dismiss() {
             Приложение в бете — возможны ошибки и перебои. Важные данные дублируйте.
         </p>
         <a
-            href="mailto:info@inteli-dev.ru?subject=%D0%9E%D1%88%D0%B8%D0%B1%D0%BA%D0%B0%20%D0%B2%20CRM"
+            href="https://t.me/AiGen31"
+            target="_blank"
+            rel="noopener noreferrer"
             class="shrink-0 font-semibold text-warning underline decoration-warning/40 underline-offset-2 transition hover:text-ink"
         >
             Сообщить об ошибке
