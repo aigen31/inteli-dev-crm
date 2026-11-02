@@ -27,7 +27,18 @@ class FileController extends Controller
             'mime_type' => $attachment->mime_type,
             'size' => $attachment->size,
             'url' => route('files.download', $attachment),
+            'preview_url' => route('files.preview', $attachment),
         ], 201);
+    }
+
+    public function preview(FileAttachment $file): StreamedResponse
+    {
+        $this->authorize('download', $file);
+
+        return Storage::disk('local')->response($file->stored_path, $file->original_name, [
+            'Content-Type' => $file->mime_type,
+            'Cache-Control' => 'private, max-age=300',
+        ]);
     }
 
     public function download(FileAttachment $file): StreamedResponse

@@ -1,6 +1,7 @@
 <script setup>
-import { computed } from 'vue';
-import { ArrowDownTrayIcon } from '@heroicons/vue/24/outline';
+import { computed, reactive } from 'vue';
+import { ArrowsPointingOutIcon } from '@heroicons/vue/24/outline';
+import ImageLightbox from '@/Components/UI/ImageLightbox.vue';
 
 const props = defineProps({
     template: { type: Object, required: true },
@@ -10,6 +11,37 @@ const props = defineProps({
 const schema = computed(() => props.template?.schema || { fields: [], groups: [] });
 const fieldsData = computed(() => props.data?.fields || {});
 const groupsData = computed(() => props.data?.groups || {});
+const lightbox = reactive({ open: false, index: 0 });
+
+const images = computed(() => {
+    const list = [];
+
+    (schema.value.fields || []).forEach((field) => {
+        const id = fieldsData.value[field.key];
+        if (field.type === 'image' && hasValue(id)) {
+            list.push({ id, alt: field.label, url: route('files.preview', id), download: route('files.download', id) });
+        }
+    });
+
+    (schema.value.groups || []).forEach((group) => {
+        (groupsData.value[group.key] || []).forEach((row, index) => {
+            (group.fields || []).forEach((field) => {
+                const id = row[field.key];
+                if (field.type === 'image' && hasValue(id)) {
+                    list.push({ id, alt: `${group.label} — ${field.label} ${index + 1}`, url: route('files.preview', id), download: route('files.download', id) });
+                }
+            });
+        });
+    });
+
+    return list;
+});
+
+function openImage(id) {
+    const index = images.value.findIndex((image) => image.id === id);
+    lightbox.index = index >= 0 ? index : 0;
+    lightbox.open = true;
+}
 
 function labelFor(field, value) {
     if (field.type === 'select') {
@@ -30,9 +62,12 @@ function hasValue(value) {
             <div v-for="field in schema.fields" :key="field.key">
                 <p class="text-[10px] font-semibold uppercase tracking-[0.07em] text-muted">{{ field.label }}</p>
                 <div v-if="field.type === 'image' && hasValue(fieldsData[field.key])" class="mt-1">
-                    <a :href="route('files.download', fieldsData[field.key])" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-700 hover:underline">
-                        <ArrowDownTrayIcon class="h-3.5 w-3.5" /> Изображение
-                    </a>
+                    <button type="button" class="group relative overflow-hidden rounded-[12px] border border-line bg-surface-2" @click="openImage(fieldsData[field.key])">
+                        <img :src="route('files.preview', fieldsData[field.key])" :alt="field.label" class="h-24 w-32 object-cover transition group-hover:scale-[1.02]" loading="lazy" />
+                        <span class="absolute inset-0 flex items-center justify-center bg-ink/25 opacity-0 transition group-hover:opacity-100">
+                            <ArrowsPointingOutIcon class="h-4 w-4 text-white" />
+                        </span>
+                    </button>
                 </div>
                 <p v-else class="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed text-ink-soft">
                     {{ hasValue(fieldsData[field.key]) ? labelFor(field, fieldsData[field.key]) : '—' }}
@@ -51,9 +86,12 @@ function hasValue(value) {
                     <div class="mt-1.5 grid grid-cols-1 gap-x-5 gap-y-2 sm:grid-cols-2">
                         <div v-for="field in group.fields || []" :key="field.key">
                             <p class="text-[9px] font-semibold uppercase tracking-[0.06em] text-muted">{{ field.label }}</p>
-                            <a v-if="field.type === 'image' && hasValue(row[field.key])" :href="route('files.download', row[field.key])" target="_blank" class="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-primary-700 hover:underline">
-                                <ArrowDownTrayIcon class="h-3 w-3" /> Скачать
-                            </a>
+                            <button v-if="field.type === 'image' && hasValue(row[field.key])" type="button" class="group relative mt-1 overflow-hidden rounded-[10px] border border-line bg-surface-2" @click="openImage(row[field.key])">
+                                <img :src="route('files.preview', row[field.key])" :alt="field.label" class="h-16 w-20 object-cover transition group-hover:scale-[1.02]" loading="lazy" />
+                                <span class="absolute inset-0 flex items-center justify-center bg-ink/25 opacity-0 transition group-hover:opacity-100">
+                                    <ArrowsPointingOutIcon class="h-3.5 w-3.5 text-white" />
+                                </span>
+                            </button>
                             <p v-else class="mt-0.5 whitespace-pre-wrap text-[11px] leading-relaxed text-ink-soft">{{ hasValue(row[field.key]) ? labelFor(field, row[field.key]) : '—' }}</p>
                         </div>
                     </div>
@@ -61,5 +99,7 @@ function hasValue(value) {
             </div>
             <p v-else class="mt-1 text-[11px] text-faint">Не заполнено.</p>
         </div>
+
+        <ImageLightbox v-model:open="lightbox.open" v-model:index="lightbox.index" :images="images" />
     </div>
 </template>

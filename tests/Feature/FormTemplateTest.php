@@ -5,8 +5,11 @@ declare(strict_types=1);
 use App\Models\FormTemplate;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\FileUploadService;
 use Database\Seeders\FormTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -73,4 +76,24 @@ test('admin can open the forms library', function (): void {
     $this->actingAs($this->admin)
         ->get(route('admin.forms.index'))
         ->assertOk();
+});
+
+test('form images can be previewed inline and are access controlled', function (): void {
+    Storage::fake('local');
+
+    $file = app(FileUploadService::class)->upload(
+        UploadedFile::fake()->image('proof.png', 320, 180),
+        $this->client,
+    );
+
+    $response = $this->actingAs($this->client)->get(route('files.preview', $file));
+
+    $response->assertOk();
+    expect($response->headers->get('Content-Disposition'))->toContain('inline');
+
+    $other = User::factory()->client()->create();
+
+    $this->actingAs($other)
+        ->get(route('files.preview', $file))
+        ->assertForbidden();
 });

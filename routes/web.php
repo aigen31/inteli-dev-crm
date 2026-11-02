@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
     // Files
     Route::middleware('is_active')->group(function () {
         Route::post('/files/upload', [FileController::class, 'upload'])->name('files.upload');
+        Route::get('/files/{file}/preview', [FileController::class, 'preview'])->name('files.preview');
         Route::get('/files/{file}/download', [FileController::class, 'download'])->name('files.download');
     });
 
