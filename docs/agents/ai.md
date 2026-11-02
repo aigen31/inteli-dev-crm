@@ -30,8 +30,11 @@ CRM проверяет `KERNEL_PROVIDER_TOKEN` и `X-Kernel-Channel: crm`, за�
 - модель и диалог: ядро;
 - клиенты, задачи, счета, `ai_actions`: PostgreSQL CRM;
 - публичные знания сайта: сайт;
-- внутренние и секретные данные CRM идут только в локальную модель
-  (`KERNEL_DATA_CLASS=internal`, `KERNEL_ALLOW_CLOUD_FOR_INTERNAL=false`).
+- внутренние и секретные данные CRM по умолчанию идут только в локальную
+  модель (`KERNEL_DATA_CLASS=internal`, `KERNEL_ALLOW_CLOUD_FOR_INTERNAL=false`);
+- в текущем dev-окружении локальной модели нет, поэтому в `.env` ядра явно
+  включён `KERNEL_ALLOW_CLOUD_FOR_INTERNAL=true`. Это отправляет данные CRM в
+  облако; для продакшена верните `false` и настройте `KERNEL_LOCAL_*`.
 
 ## Ограничения
 
