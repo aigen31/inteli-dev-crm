@@ -33,6 +33,7 @@
 | `kiki-empty.webp` | 640×480, RGBA | старый empty-кадр (резерв) |
 | `kiki-thinking.webp` | 384×512, RGBA | размышление |
 | `kiki-avatar.webp` | 640×640, RGBA | классический аватар (резерв) |
+| `kiki-chat-placeholder.webp` | 640×640, RGB | заглушка аватара в чате: полная высокая шляпа, с запасом; отображается через `object-contain` |
 
 Все файлы — в `public/images/kiki/`.
 
@@ -53,6 +54,7 @@
 - `resources/js/Pages/Admin/TaskTemplates/Index.vue` — `kiki-seated.webp`.
 - `resources/js/Pages/Admin/Invoices/Index.vue` — `kiki-flight-portrait.webp`.
 - `resources/js/Pages/Client/Dashboard.vue` — `kiki-desk.webp` в рамке.
-- `resources/js/Components/Assistant/AssistantPanel.vue` — `kiki-seated.webp` в приветствии, `avatar` в шапке.
+- `resources/js/Components/Assistant/AssistantPanel.vue` — `kiki-seated.webp` в приветствии, `KikiChatAvatar` в шапке и сообщениях.
+- `resources/js/Components/Kiki/KikiChatAvatar.vue` — заглушка: пунктирное кольцо, бейдж `?`, `object-contain`, полная шляпа.
 
 Дизайн-токены и правила — [.superdesign/design-system.md](../../.superdesign/design-system.md).

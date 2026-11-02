@@ -18,7 +18,7 @@ const inner = computed(() => Math.max(px.value - 5, 16));
         aria-label="Заглушка аватара Кики"
         role="img"
     >
-        <KikiAvatar :size="inner" />
+        <KikiAvatar variant="chat" fit="contain" :size="inner" />
         <span
             class="absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full bg-primary-500 font-bold leading-none text-white ring-2 ring-surface"
             :style="{ width: `${Math.max(13, Math.round(px * 0.4))}px`, height: `${Math.max(13, Math.round(px * 0.4))}px`, fontSize: `${Math.max(8, Math.round(px * 0.22))}px` }"

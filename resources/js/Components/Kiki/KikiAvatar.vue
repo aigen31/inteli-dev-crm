@@ -6,6 +6,7 @@ const props = defineProps({
     size: { type: [Number, String], default: 44 },
     alt: { type: String, default: 'Кики — ассистент inteli dev' },
     rounded: { type: String, default: 'full' },
+    fit: { type: String, default: 'cover' },
 });
 
 const sources = {
@@ -16,9 +17,11 @@ const sources = {
     flight: '/images/kiki/kiki-flight-badge.webp',
     seated: '/images/kiki/kiki-seated.webp',
     classic: '/images/kiki/kiki-avatar.webp',
+    chat: '/images/kiki/kiki-chat-placeholder.webp?v=1',
 };
 
 const src = computed(() => sources[props.variant] ?? sources.avatar);
+const fitClass = computed(() => (props.fit === 'contain' || props.variant === 'hero' || props.variant === 'empty' ? 'object-contain' : 'object-cover'));
 const style = computed(() => ({
     width: typeof props.size === 'number' ? `${props.size}px` : props.size,
     height: typeof props.size === 'number' ? `${props.size}px` : props.size,
@@ -31,9 +34,9 @@ const style = computed(() => ({
         :alt="alt"
         :style="style"
         :class="[
-            'shrink-0 object-cover',
+            'shrink-0',
+            fitClass,
             rounded === 'full' ? 'rounded-full' : 'rounded-[22px]',
-            variant === 'hero' || variant === 'empty' ? 'object-contain' : 'object-cover',
         ]"
         loading="lazy"
         draggable="false"
