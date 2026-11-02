@@ -33,7 +33,7 @@
 | `kiki-empty.webp` | 640×480, RGBA | старый empty-кадр (резерв) |
 | `kiki-thinking.webp` | 384×512, RGBA | размышление |
 | `kiki-avatar.webp` | 640×640, RGBA | классический аватар (резерв) |
-| `kiki-avatar-face.png` | 576×704, RGB | сгенерированный в Qwen i2i аватар с лицом Кики: полная высокая шляпа, лавандовый медальон, искры; `object-contain` |
+| `kiki-avatar-face.png` | 896×1184, RGB | сгенерированный в Qwen t2i аватар с лицом Кики: полная высокая шляпа с запасом, лавандовый медальон, искры; `object-contain` |
 
 Все файлы — в `public/images/kiki/`.
 

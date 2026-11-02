@@ -17,7 +17,7 @@ const sources = {
     flight: '/images/kiki/kiki-flight-badge.webp',
     seated: '/images/kiki/kiki-seated.webp',
     classic: '/images/kiki/kiki-avatar.webp',
-    face: '/images/kiki/kiki-avatar-face.png?v=1',
+    face: '/images/kiki/kiki-avatar-face.png?v=2',
 };
 
 const src = computed(() => sources[props.variant] ?? sources.avatar);
