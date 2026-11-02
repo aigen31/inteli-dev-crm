@@ -38,7 +38,7 @@
 
 `POST /admin/task-templates/generate` → `TemplateGenerator`:
 
-- при настроенном OpenAI-совместимом провайдере просит JSON `{name, summary, description, checklist, default_priority, default_due_days}`;
+- собирает детерминированный черновик `{name, summary, description, checklist, default_priority, default_due_days}` без внешней модели;
 - без ключа/при ошибке возвращает эвристический fallback (`source: fallback`, `warning`);
 - ответ — черновик, пользователь редактирует и сохраняет.
 
