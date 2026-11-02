@@ -9,12 +9,10 @@ use App\Models\Invoice;
 use App\Models\Task;
 use App\Models\TaskTemplate;
 use App\Models\User;
-use App\Services\Ai\OpenAiClient;
 use App\Services\Ai\TemplateGenerator;
 use App\Services\ApiTokenService;
 use App\Services\HtmlSanitizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery\MockInterface;
 
 uses(RefreshDatabase::class);
 
@@ -190,73 +188,14 @@ test('html sanitizer removes scripts and unsafe links', function (): void {
         ->and($html)->toContain('<strong>bold</strong>');
 });
 
-test('template generator falls back when ai is not configured', function (): void {
-    config(['ai.enabled' => true]);
-
+test('template generator returns a deterministic draft', function (): void {
     $result = app(TemplateGenerator::class)->generate('Клиент просит настроить интеграцию с CRM и проверить ошибки');
 
-    expect($result['source'])->toBe('fallback')
+    expect($result['source'])->toBe('draft')
         ->and($result['name'])->not->toBeEmpty()
         ->and($result['checklist'])->toHaveCount(4);
 });
 
-test('assistant proposes financial action and executes it after confirmation', function (): void {
-    $task = Task::factory()->create([
-        'client_id' => $this->client->id,
-        'created_by' => $this->admin->id,
-    ]);
-
-    $this->mock(OpenAiClient::class, function (MockInterface $mock) use ($task): void {
-        $mock->shouldReceive('chat')->once()->andReturn([
-            'message' => [
-                'role' => 'assistant',
-                'content' => null,
-                'tool_calls' => [[
-                    'id' => 'call_1',
-                    'type' => 'function',
-                    'function' => [
-                        'name' => 'create_invoice',
-                        'arguments' => json_encode([
-                            'task_id' => $task->id,
-                            'amount' => 5000,
-                            'description' => 'Оплата за лендинг',
-                            'payment_method' => 'transfer',
-                        ], JSON_THROW_ON_ERROR),
-                    ],
-                ]],
-            ],
-            'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 10],
-        ]);
-    });
-
-    $response = $this->actingAs($this->admin)
-        ->postJson('/assistant/chat', ['message' => 'Выставь счёт на 5000 за лендинг'])
-        ->assertOk()
-        ->assertJsonPath('pending_action.tool_name', 'create_invoice');
-
-    $messages = collect($response->json('messages'));
-
-    expect($messages->contains(
-        fn (array $message) => $message['role'] === 'assistant' && trim((string) $message['content']) === '',
-    ))->toBeFalse();
-
-    $actionId = $response->json('pending_action.id');
-
-    $this->assertDatabaseHas('ai_actions', [
-        'id' => $actionId,
-        'status' => 'proposed',
-    ]);
-
-    $this->actingAs($this->admin)
-        ->postJson("/assistant/actions/{$actionId}/confirm")
-        ->assertOk();
-
-    $this->assertDatabaseHas('invoices', [
-        'task_id' => $task->id,
-        'amount' => 5000,
-        'payment_method' => 'transfer',
-    ]);
-});
 
 test('client token cannot see another clients invoice', function (): void {
     $other = User::factory()->client()->create();

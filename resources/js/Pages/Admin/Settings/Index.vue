@@ -33,7 +33,6 @@ const props = defineProps({
     customFieldEntities: Array,
     customFieldTypes: Array,
     apiTokens: Array,
-    ai: Object,
     aiActions: Array,
     mcp: Object,
 });
@@ -192,34 +191,6 @@ async function copy(value) {
     }
 }
 
-const aiForm = useForm({
-    enabled: props.ai?.enabled ?? true,
-    base_url: props.ai?.base_url || 'https://api.openai.com/v1',
-    model: props.ai?.model || 'gpt-4o-mini',
-    temperature: props.ai?.temperature ?? 0.4,
-    max_tokens: props.ai?.max_tokens ?? 1200,
-    api_key: '',
-    clear_key: false,
-});
-const aiTest = ref(null);
-const aiTesting = ref(false);
-
-function saveAi() {
-    aiForm.put(route('admin.ai-settings.update'), { preserveScroll: true });
-}
-
-async function testAi() {
-    aiTesting.value = true;
-    aiTest.value = null;
-    try {
-        const { data } = await axios.post(route('admin.ai-settings.test'));
-        aiTest.value = data;
-    } catch (error) {
-        aiTest.value = { ok: false, message: error?.response?.data?.message || 'Не удалось проверить соединение.' };
-    } finally {
-        aiTesting.value = false;
-    }
-}
 
 const copiedMcp = ref(false);
 async function copyMcp() {
@@ -428,41 +399,9 @@ node mcp/src/server.mjs</pre>
                         <div class="min-w-0 flex-1">
                             <p class="eyebrow">Ассистент</p>
                             <h2 class="mt-1 text-[15px] font-bold text-ink">Кики</h2>
-                            <p class="mt-1 text-[11px] text-muted">Любой OpenAI-совместимый API: OpenAI, локальный Ollama, LM Studio, vLLM.</p>
+                            <p class="mt-1 text-[11px] text-muted">Модель, ключи и инструменты настраиваются в сервисе ядра. Здесь только журнал действий Кики.</p>
                         </div>
-                        <span :class="['rounded-full px-3 py-1.5 text-[10px] font-semibold', ai?.is_configured ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning']">
-                            {{ ai?.is_configured ? 'Готова к работе' : 'Не настроена' }}
-                        </span>
                     </div>
-
-                    <Card title="Подключение">
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div class="sm:col-span-2">
-                                <TextInput v-model="aiForm.base_url" label="Base URL" :error="aiForm.errors.base_url" placeholder="https://api.openai.com/v1" hint="Для OpenAI-совместимых провайдеров. Путь /chat/completions добавится автоматически." />
-                            </div>
-                            <TextInput v-model="aiForm.model" label="Модель" :error="aiForm.errors.model" placeholder="gpt-4o-mini" />
-                            <TextInput v-model="aiForm.api_key" label="API-ключ" type="password" :error="aiForm.errors.api_key" :placeholder="ai?.has_key ? 'Ключ уже сохранён — оставьте пустым' : 'sk-…'" hint="Хранится зашифрованным." />
-                            <TextInput v-model="aiForm.temperature" label="Температура" type="number" step="0.1" :error="aiForm.errors.temperature" />
-                            <TextInput v-model="aiForm.max_tokens" label="Максимум токенов" type="number" :error="aiForm.errors.max_tokens" />
-                        </div>
-                        <div class="mt-4 flex flex-wrap items-center gap-3">
-                            <label class="flex items-center gap-2 text-[12px] text-ink-soft">
-                                <input v-model="aiForm.enabled" type="checkbox" class="h-4 w-4 rounded border-line-strong text-primary-500" />
-                                Ассистент включён
-                            </label>
-                            <label class="flex items-center gap-2 text-[12px] text-ink-soft">
-                                <input v-model="aiForm.clear_key" type="checkbox" class="h-4 w-4 rounded border-line-strong text-primary-500" />
-                                Удалить сохранённый ключ
-                            </label>
-                            <div class="ml-auto flex gap-2">
-                                <Button variant="secondary" :disabled="aiTesting" @click="testAi">{{ aiTesting ? 'Проверяю…' : 'Проверить' }}</Button>
-                                <Button :disabled="aiForm.processing" @click="saveAi">Сохранить</Button>
-                            </div>
-                        </div>
-                        <p v-if="aiTest" :class="['mt-3 rounded-xl px-3 py-2 text-[11px]', aiTest.ok ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger-ink']">
-                            {{ aiTest.message }}
-                        </p>
-                    </Card>
 
                     <Card title="Последние действия" :padded="false">
                         <div v-if="!aiActions.length" class="px-5 py-8 text-center text-[11px] text-muted">Кики ещё ничего не меняла.</div>

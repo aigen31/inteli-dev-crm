@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 return [
+    // The CRM has no direct model provider. All model calls go through the
+    // central Kiki assistant kernel. These settings only describe that link.
     'enabled' => (bool) env('AI_ASSISTANT_ENABLED', true),
-    'timeout' => (int) env('AI_TIMEOUT', 90),
-
-    // Central Kiki assistant kernel. The browser never sees these tokens.
     'kernel_url' => rtrim((string) env('KERNEL_URL', ''), '/'),
     'kernel_token' => (string) env('KERNEL_TOKEN', ''),
     'kernel_provider_token' => (string) env('KERNEL_PROVIDER_TOKEN', ''),

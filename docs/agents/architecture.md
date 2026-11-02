@@ -12,7 +12,7 @@ API идёт отдельным контуром: `routes/api.php` → `api.toke
 
 - `app/Actions/` — операции: клиенты, задачи, счета, платежи, ручное подтверждение перевода.
 - `app/Services/` — доменные сервисы (`TaskService`, `InvoiceService`, `SettingsService`, `YooKassaService`), новые: `TaskTemplateService`, `CustomFieldService`, `HtmlSanitizer`, `ApiTokenService`.
-- `app/Services/Ai/` — `AgentService` (адаптер ядра), `KernelClient`, `CrmToolbox`, `PromptFactory` (профиль роли), `OpenAiClient`/`ContextBuilder` (генератор шаблонов и legacy), `TemplateGenerator`, `AiSettingsService`.
+- `app/Services/Ai/` — `AgentService` (адаптер ядра), `KernelClient`, `CrmToolbox`, `PromptFactory` (профиль роли), `TemplateGenerator` (детерминированный черновик).
 - `app/Http/Controllers/Internal/AssistantToolController.php` — server-to-server инструменты для ядра.
 - `app/Http/Requests/` — валидация web-форм; API валидирует в контроллерах, потому что правила часто зависят от роли.
 - `app/Http/Resources/` — стабильные ответы API v1 (`ClientResource`, `TaskResource`, `TaskTemplateResource`, `InvoiceResource`, `CustomFieldResource`).

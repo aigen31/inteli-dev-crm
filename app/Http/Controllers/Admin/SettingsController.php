@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Models\AiAction;
 use App\Models\ApiToken;
 use App\Models\CustomField;
-use App\Services\Ai\AiSettingsService;
 use App\Services\CustomFieldService;
 use App\Services\SettingsService;
 use App\Support\Options;
@@ -23,7 +22,6 @@ class SettingsController extends Controller
         Request $request,
         SettingsService $settings,
         CustomFieldService $customFields,
-        AiSettingsService $aiSettings,
     ): Response {
         $fields = CustomField::query()
             ->orderBy('entity_type')
@@ -61,7 +59,6 @@ class SettingsController extends Controller
             'customFieldEntities' => Options::customFieldEntities(),
             'customFieldTypes' => Options::customFieldTypes(),
             'apiTokens' => $tokens,
-            'ai' => $aiSettings->publicSettings(),
             'aiActions' => $actions,
             'mcp' => [
                 'api_url' => rtrim((string) config('app.url'), '/').'/api/v1',

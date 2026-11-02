@@ -8,7 +8,6 @@ import RichTextEditor from '@/Components/Form/RichTextEditor.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
-import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import { taskStatusLabels } from '@/Utils/constants.js';
 import {
     ArrowDownIcon,
@@ -122,11 +121,10 @@ function destroy() {
             <div class="space-y-5">
                 <section class="surface-card p-5 sm:p-6">
                     <div class="flex items-start gap-3">
-                        <KikiAvatar :size="44" class="kiki-ring" />
                         <div class="min-w-0">
-                            <p class="eyebrow">Кики поможет</p>
-                            <h2 class="mt-1 text-[15px] font-bold text-ink">Собрать структуру из идеи</h2>
-                            <p class="mt-1 text-[11px] leading-relaxed text-muted">Опишите, что обычно делает клиент. Кики предложит описание и чек-лист — вы отредактируете.</p>
+                            <p class="eyebrow">Черновик</p>
+                            <h2 class="mt-1 text-[15px] font-bold text-ink">Собрать структуру из описания</h2>
+                            <p class="mt-1 text-[11px] leading-relaxed text-muted">Опишите, что обычно делает клиент. Сервис соберёт черновик описания и чек-листа, вы отредактируете.</p>
                         </div>
                     </div>
                     <div class="mt-4 flex flex-col gap-2 sm:flex-row">

@@ -99,10 +99,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/api-tokens', [Admin\ApiTokenController::class, 'store'])->name('api-tokens.store');
         Route::delete('/api-tokens/{apiToken}', [Admin\ApiTokenController::class, 'destroy'])->name('api-tokens.destroy');
 
-        // AI settings
-        Route::put('/ai-settings', [Admin\AiSettingsController::class, 'update'])->name('ai-settings.update');
-        Route::post('/ai-settings/test', [Admin\AiSettingsController::class, 'test'])->name('ai-settings.test');
-
         // Settings
         Route::get('/settings', [Admin\SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
