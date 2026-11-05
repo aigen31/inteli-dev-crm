@@ -22,7 +22,7 @@ services:
       # bare `app` alias makes nginx and the kernel resolve the wrong one.
       assistant:
         aliases:
-          - crm-app
+          - crm-prod-app
 
   # ── Nginx web-server ─────────────────────────────────
   nginx:
