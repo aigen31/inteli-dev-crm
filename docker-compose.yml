@@ -77,7 +77,7 @@ services:
       traefik-public:
       assistant:
         aliases:
-          - crm-nginx
+          - crm-prod-nginx
 
   # ── Queue worker ─────────────────────────────────────
   worker:
