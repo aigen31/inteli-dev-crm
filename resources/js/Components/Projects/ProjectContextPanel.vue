@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
@@ -33,7 +33,7 @@ const form = useForm({
 });
 
 const focus = ref('');
-const study = ref(null);
+const study = ref(props.studies.find((item) => ['queued', 'running'].includes(item.status)) ?? props.studies[0] ?? null);
 const history = ref([...props.studies]);
 const error = ref(null);
 const starting = ref(false);
@@ -135,6 +135,13 @@ async function cancel() {
 function save() {
     form.put(route('admin.projects.update', props.project.id), { preserveScroll: true });
 }
+
+onMounted(() => {
+    if (running.value) {
+        pollTimer = window.setInterval(poll, 2500);
+        poll();
+    }
+});
 
 onBeforeUnmount(() => window.clearInterval(pollTimer));
 </script>
