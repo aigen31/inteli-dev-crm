@@ -18,6 +18,7 @@ const props = defineProps({
     statuses: Array,
     types: Array,
     clients: Array,
+    projects: Array,
     counts: Object,
 });
 
@@ -26,6 +27,7 @@ const local = reactive({
     status: props.filters?.status || '',
     type: props.filters?.type || '',
     client_id: props.filters?.client_id || '',
+    project_id: props.filters?.project_id || '',
 });
 
 const quickStatuses = [
@@ -44,6 +46,7 @@ function apply(extra = {}) {
             status: local.status || undefined,
             type: local.type || undefined,
             client_id: local.client_id || undefined,
+            project_id: local.project_id || undefined,
             q: local.q || undefined,
         },
         { preserveState: true, preserveScroll: true, replace: true },
@@ -79,7 +82,7 @@ function setStatus(value) {
         </div>
 
         <div class="surface-card mb-4 p-3">
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_170px_170px]">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_150px_150px_180px]">
                 <form class="relative" @submit.prevent="apply()">
                     <MagnifyingGlassIcon class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                     <input
@@ -91,6 +94,7 @@ function setStatus(value) {
                 </form>
                 <SelectInput v-model="local.type" :options="types" placeholder="Все типы" @update:model-value="apply()" />
                 <SelectInput v-model="local.client_id" :options="clients.map((c) => ({ value: c.id, label: c.name }))" placeholder="Все клиенты" @update:model-value="apply()" />
+                <SelectInput v-model="local.project_id" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Все проекты" @update:model-value="apply()" />
             </div>
         </div>
 
@@ -116,7 +120,10 @@ function setStatus(value) {
                             <p class="truncate text-[13px] font-semibold text-ink group-hover:text-primary-800">{{ task.title }}</p>
                             <span v-if="task.template" class="rounded-full bg-primary-soft px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-primary-700">шаблон</span>
                         </div>
-                        <p class="mt-1 truncate text-[11px] text-muted">
+                        <p class="mt-1 flex flex-wrap items-center gap-1.5 truncate text-[11px] text-muted">
+                            <span v-if="task.project" class="rounded-full border border-line bg-white/70 px-2 py-0.5 font-mono text-[9px] text-ink-soft">
+                                {{ task.project.key }}{{ task.number ? '-' + task.number : '' }}
+                            </span>
                             {{ task.client?.name || 'Без клиента' }}
                             <span v-if="task.assignee"> · {{ task.assignee.name }}</span>
                             <span v-if="task.checklist?.length"> · {{ task.checklist.length }} шагов</span>

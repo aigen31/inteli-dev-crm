@@ -23,8 +23,21 @@ class CreateTaskAction
     {
         $checklist = $this->normalizeChecklist($data['checklist'] ?? []);
 
+        $projectId = $data['project_id'] ?? null;
+        $projectId = $projectId !== null && $projectId !== '' ? (string) $projectId : null;
+
+        $number = null;
+
+        if ($projectId !== null) {
+            $number = (int) Task::query()
+                ->where('project_id', $projectId)
+                ->max('number') + 1;
+        }
+
         $task = Task::create([
             'client_id' => $data['client_id'] ?? $creator->id,
+            'project_id' => $projectId,
+            'number' => $number,
             'created_by' => $creator->id,
             'task_template_id' => $data['task_template_id'] ?? null,
             'form_template_id' => $data['form_template_id'] ?? null,

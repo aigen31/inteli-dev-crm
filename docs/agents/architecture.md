@@ -12,7 +12,7 @@ API идёт отдельным контуром: `routes/api.php` → `api.toke
 
 - `app/Actions/` — операции: клиенты, задачи, счета, платежи, ручное подтверждение перевода.
 - `app/Services/` — доменные сервисы (`TaskService`, `InvoiceService`, `SettingsService`, `YooKassaService`), новые: `TaskTemplateService`, `CustomFieldService`, `HtmlSanitizer`, `ApiTokenService`.
-- `app/Services/Ai/` — `AgentService` (адаптер ядра), `KernelClient`, `CrmToolbox`, `PromptFactory` (профиль роли), `TemplateGenerator` (детерминированный черновик).
+- `app/Services/Ai/` — `AgentService` (адаптер ядра), `SessionService` (список сессий с fallback на зеркало), `KernelClient`, `CrmToolbox`, `PromptFactory` (профиль роли), `TemplateGenerator` (детерминированный черновик).
 - `app/Http/Controllers/Internal/AssistantToolController.php` — server-to-server инструменты для ядра.
 - `app/Http/Requests/` — валидация web-форм; API валидирует в контроллерах, потому что правила часто зависят от роли.
 - `app/Http/Resources/` — стабильные ответы API v1 (`ClientResource`, `TaskResource`, `TaskTemplateResource`, `InvoiceResource`, `CustomFieldResource`).
@@ -35,7 +35,7 @@ API идёт отдельным контуром: `routes/api.php` → `api.toke
 - Счёт: `pending → paid | cancelled | refunded`; `payment_method`:
   - `yookassa` — онлайн-оплата, вебхук, рекуррент;
   - `transfer` — реквизиты из `settings`, оплата вне кассы, рекуррент запрещён, подтверждение вручную.
-- Кики: диалоги (`ai_conversations`), сообщения (`ai_messages`), журнал действий (`ai_actions`). Финансовые инструменты создают `proposed`-действие и выполняются только после confirm; права перепроверяются.
+- Кики: сессии и их заголовки принадлежат ядру; CRM хранит зеркало (`ai_conversations`), сообщения (`ai_messages`, включая ссылки на изображения) и журнал действий (`ai_actions`). Финансовые инструменты и заявки из форм создают `proposed`-действие и выполняются только после confirm; права перепроверяются.
 - API-токены: `api_tokens` (SHA-256 хеш, префикс, abilities, expiry). Токен наследует роль пользователя.
 
 ## Где что искать

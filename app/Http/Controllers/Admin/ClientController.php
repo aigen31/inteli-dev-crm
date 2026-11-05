@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreClientRequest;
 use App\Http\Requests\Admin\UpdateClientRequest;
 use App\Models\User;
+use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -60,9 +61,10 @@ class ClientController extends Controller
         return Inertia::render('Admin/Clients/Create');
     }
 
-    public function store(StoreClientRequest $request, CreateClientAction $action): RedirectResponse
+    public function store(StoreClientRequest $request, CreateClientAction $action, ConsentService $consents): RedirectResponse
     {
-        $action->execute($request->validated());
+        $client = $action->execute($request->validated());
+        $consents->record($client, 'admin-client-create', $request, ['confirmed_by' => $request->user()->id, 'basis' => 'contract'], 'privacy');
 
         return redirect()->route('admin.clients.index')
             ->with('success', 'Клиент успешно создан.');

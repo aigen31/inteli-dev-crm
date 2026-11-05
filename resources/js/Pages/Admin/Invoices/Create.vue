@@ -6,6 +6,7 @@ import Button from '@/Components/UI/Button.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
+import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 
 const props = defineProps({
     tasks: Array,
@@ -19,6 +20,7 @@ const form = useForm({
     payment_method: 'yookassa',
     is_recurring: false,
     recurring_interval: '',
+    consent: false,
 });
 
 const taskOptions = props.tasks.map((task) => ({ value: task.id, label: `${task.title} (${task.client?.name || ''})` }));
@@ -50,7 +52,7 @@ function submit() {
     <AdminLayout title="Новый счёт">
         <template #actions>
             <Link :href="route('admin.invoices.index')"><Button variant="ghost" size="sm">Назад</Button></Link>
-            <Button size="sm" :disabled="form.processing" @click="submit">Создать счёт</Button>
+            <Button size="sm" :disabled="form.processing || !form.consent" @click="submit">Создать счёт</Button>
         </template>
 
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.2fr_.8fr]">
@@ -73,6 +75,7 @@ function submit() {
                         <SelectInput v-if="form.is_recurring" v-model="form.recurring_interval" label="Интервал" :options="intervalOptions" :error="form.errors.recurring_interval" />
                     </template>
                     <p v-if="form.errors.is_recurring" class="text-[10px] text-danger-ink">{{ form.errors.is_recurring }}</p>
+                    <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="admin-invoice-consent" variant="contract" />
                 </div>
             </section>
 

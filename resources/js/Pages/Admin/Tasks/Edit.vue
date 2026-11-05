@@ -10,6 +10,7 @@ const props = defineProps({
     task: Object,
     customFields: Array,
     clients: Array,
+    projects: Array,
     assignees: Array,
     templates: Array,
     types: Array,
@@ -22,6 +23,7 @@ const values = computed(() => Object.fromEntries((props.customFields || []).map(
 
 const form = useForm({
     client_id: props.task?.client_id || '',
+    project_id: props.task?.project_id || '',
     task_template_id: props.task?.task_template_id || '',
     title: props.task?.title || '',
     description: props.task?.description || '',
@@ -60,6 +62,7 @@ function submit() {
         <TaskFormFields
             :model-value="form"
             :clients="clients"
+            :projects="projects"
             :assignees="assignees"
             :templates="templates"
             :types="types"

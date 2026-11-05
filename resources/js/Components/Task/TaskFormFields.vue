@@ -10,6 +10,7 @@ import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from '@heroicons/vue/
 const props = defineProps({
     modelValue: { type: Object, required: true },
     clients: { type: Array, default: () => [] },
+    projects: { type: Array, default: () => [] },
     assignees: { type: Array, default: () => [] },
     templates: { type: Array, default: () => [] },
     types: { type: Array, default: () => [] },
@@ -27,6 +28,17 @@ const checklist = computed(() => props.modelValue.checklist || []);
 
 function update(key, value) {
     emit('update:modelValue', { ...props.modelValue, [key]: value });
+}
+
+function selectProject(projectId) {
+    const project = props.projects.find((item) => item.id === projectId);
+    const next = { ...props.modelValue, project_id: projectId };
+
+    if (project?.client_id && !props.modelValue.client_id) {
+        next.client_id = project.client_id;
+    }
+
+    emit('update:modelValue', next);
 }
 
 function applyTemplate(templateId) {
@@ -113,6 +125,14 @@ const statusOptions = computed(() =>
                     placeholder="Выберите клиента"
                     :error="error('client_id')"
                     @update:model-value="update('client_id', $event)"
+                />
+                <SelectInput
+                    :model-value="modelValue.project_id || ''"
+                    label="Проект"
+                    :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))"
+                    placeholder="Без проекта"
+                    :error="error('project_id')"
+                    @update:model-value="selectProject"
                 />
                 <SelectInput
                     :model-value="modelValue.assignee_id || ''"

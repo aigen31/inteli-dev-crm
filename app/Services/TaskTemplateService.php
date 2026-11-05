@@ -73,6 +73,7 @@ class TaskTemplateService
 
         $task = $this->createTask->execute([
             'client_id' => $client->id,
+            'project_id' => $overrides['project_id'] ?? null,
             'title' => Arr::get($overrides, 'title') ?: $template->name,
             'description' => Arr::get($overrides, 'description') ?: $template->description,
             'type' => $template->default_type ?? TaskType::OneTime,

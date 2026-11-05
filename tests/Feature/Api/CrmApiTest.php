@@ -196,7 +196,6 @@ test('template generator returns a deterministic draft', function (): void {
         ->and($result['checklist'])->toHaveCount(4);
 });
 
-
 test('client token cannot see another clients invoice', function (): void {
     $other = User::factory()->client()->create();
     $task = Task::factory()->create(['client_id' => $other->id, 'created_by' => $this->admin->id]);

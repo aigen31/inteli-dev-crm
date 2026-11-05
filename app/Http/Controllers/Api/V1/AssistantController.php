@@ -24,17 +24,20 @@ class AssistantController extends Controller
     public function chat(Request $request, AgentService $agent): JsonResponse
     {
         $data = $request->validate([
-            'message' => ['required', 'string', 'min:1', 'max:4000'],
+            'message' => ['nullable', 'string', 'max:4000'],
             'conversation_id' => ['nullable', 'uuid'],
             'context' => ['nullable', 'array'],
+            'attachments' => ['nullable', 'array', 'max:4'],
+            'attachments.*' => ['uuid'],
         ]);
 
         try {
             return response()->json($agent->chat(
                 $request->user(),
                 $data['conversation_id'] ?? null,
-                $data['message'],
+                (string) ($data['message'] ?? ''),
                 $data['context'] ?? [],
+                $data['attachments'] ?? [],
             ));
         } catch (AiException $exception) {
             return response()->json([

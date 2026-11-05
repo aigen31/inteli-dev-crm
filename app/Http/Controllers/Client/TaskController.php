@@ -12,8 +12,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ReviewTaskRequest;
 use App\Http\Requests\Client\StoreTaskRequest;
 use App\Models\FormTemplate;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskTemplate;
+use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use App\Services\FormTemplateService;
 use App\Services\TaskTemplateService;
@@ -33,9 +35,11 @@ class TaskController extends Controller
 
     public function index(Request $request): Response
     {
-        $tasks = $request->user()
-            ->clientTasks()
-            ->with(['assignee:id,name', 'template:id,name'])
+        $user = $request->user();
+
+        $tasks = Task::query()
+            ->visibleTo($user)
+            ->with(['assignee:id,name', 'template:id,name', 'project:id,key,name,color'])
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->latest()
             ->paginate(15)
@@ -46,8 +50,8 @@ class TaskController extends Controller
             'filters' => $request->only('status'),
             'statuses' => Options::taskStatuses(),
             'counts' => [
-                'all' => $request->user()->clientTasks()->count(),
-                'active' => $request->user()->clientTasks()->whereIn('status', [
+                'all' => Task::query()->visibleTo($user)->count(),
+                'active' => Task::query()->visibleTo($user)->whereIn('status', [
                     TaskStatus::PendingReview,
                     TaskStatus::Queued,
                     TaskStatus::InProgress,
@@ -68,7 +72,22 @@ class TaskController extends Controller
             ->map(fn (FormTemplate $form) => $form->toLibraryArray())
             ->values();
 
+        $user = request()->user();
+
         return Inertia::render('Client/Tasks/Create', [
+            'projects' => Project::query()
+                ->visibleTo($user)
+                ->whereNull('archived_at')
+                ->orderBy('name')
+                ->get()
+                ->filter(fn (Project $project): bool => $project->canCreateTasks($user))
+                ->map(fn (Project $project): array => [
+                    'id' => $project->id,
+                    'key' => $project->key,
+                    'name' => $project->name,
+                    'client_id' => $project->client_id,
+                ])
+                ->values(),
             'priorities' => Options::priorities(),
             'forms' => $forms,
             'scenariosCount' => TaskTemplate::query()
@@ -92,7 +111,10 @@ class TaskController extends Controller
         Request $request,
         FormTemplate $formTemplate,
         FormTemplateService $forms,
+        ConsentService $consents,
     ): RedirectResponse {
+        $request->validate(['consent' => ['accepted']]);
+
         $task = $forms->createTask(
             $formTemplate,
             $request->user(),
@@ -105,17 +127,24 @@ class TaskController extends Controller
             $request->user(),
         );
 
+        $consents->record($request->user(), 'client-task-form', $request, ['task_id' => $task->id]);
+
         return redirect()
             ->route('client.tasks.show', $task)
             ->with('success', 'Заявка собрана из формы и отправлена.');
     }
 
-    public function store(StoreTaskRequest $request, CreateTaskAction $action): RedirectResponse
+    public function store(StoreTaskRequest $request, CreateTaskAction $action, ConsentService $consents): RedirectResponse
     {
         $data = $request->validated();
         $user = $request->user();
         $customValues = $data['custom_fields'] ?? [];
         unset($data['custom_fields']);
+
+        if (! empty($data['project_id'])) {
+            $project = Project::query()->visibleTo($user)->findOrFail($data['project_id']);
+            $this->authorize('createTask', $project);
+        }
 
         if (! empty($data['template_id'])) {
             $template = TaskTemplate::query()->visibleTo($user)->findOrFail($data['template_id']);
@@ -124,6 +153,7 @@ class TaskController extends Controller
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'deadline' => $data['deadline'] ?? null,
+                'project_id' => $data['project_id'] ?? null,
             ], TaskSource::Client);
         } else {
             if (mb_strlen(trim(strip_tags($data['description'] ?? ''))) < 10) {
@@ -136,6 +166,7 @@ class TaskController extends Controller
         }
 
         $this->customFields->sync($task, $customValues, $user);
+        $consents->record($user, 'client-task', $request, ['task_id' => $task->id]);
 
         return redirect()->route('client.tasks.show', $task)
             ->with('success', 'Заявка отправлена.');
@@ -153,24 +184,29 @@ class TaskController extends Controller
             'title' => ['nullable', 'string', 'min:3', 'max:255'],
             'description' => ['nullable', 'string', 'max:20000'],
             'deadline' => ['nullable', 'date', 'after_or_equal:today'],
+            'consent' => ['accepted'],
         ]);
 
         $task = $service->apply($available, $user, $user, $data, TaskSource::Client);
+        app(ConsentService::class)->record($user, 'client-task-template', $request, ['task_id' => $task->id]);
 
         return redirect()->route('client.tasks.show', $task)
             ->with('success', 'Заявка создана из шаблона.');
     }
 
-    public function show(Task $task): Response
+    public function show(Request $request, Task $task): Response
     {
         $this->authorize('view', $task);
 
         $task->load([
             'assignee',
+            'project',
             'template',
             'formTemplate',
             'comments.author',
-            'reports.author',
+            'reports' => fn ($query) => $query
+                ->where(fn ($inner) => $inner->where('recipient_id', $request->user()->id)->orWhereNull('recipient_id'))
+                ->with(['author:id,name', 'recipient:id,name', 'screenshot', 'items.screenshot']),
             'invoices',
             'statusHistory.changedBy',
         ]);

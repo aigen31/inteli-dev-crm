@@ -6,6 +6,7 @@ import Button from '@/Components/UI/Button.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
+import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 import { ArrowLeftIcon, CheckIcon, PlusIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -13,7 +14,7 @@ const props = defineProps({
 });
 
 const selected = ref(null);
-const form = useForm({ title: '', description: '', deadline: '' });
+const form = useForm({ title: '', description: '', deadline: '', consent: false });
 
 function choose(template) {
     selected.value = template;
@@ -105,7 +106,10 @@ function submit() {
                         </div>
                         <TextInput v-model="form.deadline" label="Желаемый срок" type="date" :error="form.errors.deadline" />
                     </div>
-                    <Button class="mt-4 w-full" size="sm" :disabled="form.processing" @click="submit">
+                    <div class="mt-4">
+                        <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="scenario-consent" />
+                    </div>
+                    <Button class="mt-4 w-full" size="sm" :disabled="form.processing || !form.consent" @click="submit">
                         <PlusIcon class="h-4 w-4" />
                         Создать заявку
                     </Button>

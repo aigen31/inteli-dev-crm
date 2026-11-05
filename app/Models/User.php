@@ -9,6 +9,7 @@ use App\Models\Concerns\HasCustomFields;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -56,6 +57,18 @@ class User extends Authenticatable
     public function clientTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'client_id');
+    }
+
+    public function projectMemberships(): HasMany
+    {
+        return $this->hasMany(ProjectMember::class);
+    }
+
+    public function memberProjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'project_members')
+            ->withPivot(['role', 'added_by'])
+            ->withTimestamps();
     }
 
     public function createdTasks(): HasMany

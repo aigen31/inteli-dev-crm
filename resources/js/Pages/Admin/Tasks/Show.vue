@@ -11,7 +11,7 @@ import CustomFieldsView from '@/Components/CustomFields/CustomFieldsView.vue';
 import StructuredFormSummary from '@/Components/FormTemplates/StructuredFormSummary.vue';
 import { invoiceStatusLabels, taskPriorityLabels, taskSourceLabels, taskStatusLabels, taskTypeLabels } from '@/Utils/constants.js';
 import { formatDate, formatDateTime, formatMoney } from '@/Utils/formatters.js';
-import { CheckIcon, PencilSquareIcon, PlusIcon } from '@heroicons/vue/24/outline';
+import { ArrowTopRightOnSquareIcon, CheckIcon, PencilSquareIcon, PlusIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     task: Object,
@@ -21,8 +21,6 @@ const props = defineProps({
 
 const statusForm = useForm({ status: '', comment: '' });
 const commentForm = useForm({ content: '', attachments: null });
-const reportForm = useForm({ content: '', attachments: null });
-const showReportForm = ref(false);
 
 const checklist = computed(() => props.task.checklist || []);
 
@@ -40,14 +38,6 @@ function addComment() {
     commentForm.post(route('admin.tasks.comments.store', props.task.id), { onSuccess: () => commentForm.reset() });
 }
 
-function addReport() {
-    reportForm.post(route('admin.tasks.reports.store', props.task.id), {
-        onSuccess: () => {
-            reportForm.reset();
-            showReportForm.value = false;
-        },
-    });
-}
 </script>
 
 <template>
@@ -65,6 +55,13 @@ function addReport() {
         </template>
 
         <div class="mb-6 flex flex-wrap items-center gap-2.5">
+            <Link
+                v-if="task.project"
+                :href="route('admin.projects.show', task.project.id)"
+                class="rounded-full border border-line bg-surface px-2.5 py-1 font-mono text-[9px] tracking-[0.06em] text-ink-soft hover:border-primary-300"
+            >
+                {{ task.project.key }}{{ task.number ? '-' + task.number : '' }} · {{ task.project.name }}
+            </Link>
             <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
             <Badge :status="task.priority" type="priority">{{ taskPriorityLabels[task.priority] }}</Badge>
             <span v-if="task.template" class="rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800">из шаблона «{{ task.template.name }}»</span>
@@ -137,30 +134,38 @@ function addReport() {
                 </Card>
 
                 <Card title="Отчёты">
-                    <div v-if="task.reports?.length" class="divide-y divide-line/60">
-                        <div v-for="report in task.reports" :key="report.id" class="py-3 first:pt-0">
-                            <div class="mb-1 flex items-center gap-2">
-                                <span class="text-[12px] font-semibold text-ink">{{ report.author?.name }}</span>
-                                <span class="font-mono text-[9px] text-faint">{{ formatDateTime(report.created_at) }}</span>
+                    <div v-if="task.reports?.length" class="space-y-3">
+                        <article v-for="report in task.reports" :key="report.id" class="rounded-[16px] border border-line/70 bg-white/50 p-3">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-[11px] font-semibold text-ink">{{ report.author?.name }}</span>
+                                <span v-if="report.recipient" class="text-[10px] text-muted">→ {{ report.recipient.name }}</span>
+                                <span class="ml-auto font-mono text-[9px] text-faint">{{ formatDateTime(report.sent_at || report.created_at) }}</span>
                             </div>
-                            <p class="whitespace-pre-wrap text-[12px] leading-relaxed text-ink-soft">{{ report.content }}</p>
-                        </div>
+                            <p v-if="report.title" class="mt-1 text-[12px] font-semibold text-ink">{{ report.title }}</p>
+                            <div v-for="(item, index) in report.items" :key="item.id" class="mt-2 rounded-[12px] border border-line/60 bg-surface/60 p-2.5">
+                                <p class="font-mono text-[8px] uppercase tracking-[0.12em] text-faint">Группа {{ index + 1 }}</p>
+                                <p class="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed text-ink-soft">{{ item.content }}</p>
+                                <a v-if="item.test_url" :href="item.test_url" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-primary-700 hover:underline">
+                                    Страница для тестирования
+                                    <ArrowTopRightOnSquareIcon class="h-3 w-3" />
+                                </a>
+                                <a v-if="item.screenshot_id" :href="route('reports.screenshot', { report: report.id, item: item.id })" target="_blank" rel="noopener" class="mt-2 block">
+                                    <img :src="route('reports.screenshot', { report: report.id, item: item.id })" alt="Скриншот отчёта" class="max-h-[240px] w-full rounded-[12px] border border-line object-cover" loading="lazy" />
+                                </a>
+                            </div>
+                            <Link :href="route('reports.show', report.id)" class="mt-2 inline-flex text-[10px] font-semibold text-primary-700 hover:underline">Открыть отчёт</Link>
+                        </article>
                     </div>
                     <p v-else class="text-[12px] text-muted">Пока нет отчётов.</p>
 
-                    <div v-if="!showReportForm" class="mt-4 border-t border-line/70 pt-4">
-                        <Button size="sm" variant="secondary" @click="showReportForm = true">
-                            <PlusIcon class="h-4 w-4" />
-                            Добавить отчёт
-                        </Button>
+                    <div class="mt-4 border-t border-line/70 pt-4">
+                        <Link :href="route('admin.reports.create', { task_id: task.id })">
+                            <Button size="sm" variant="secondary">
+                                <PlusIcon class="h-4 w-4" />
+                                Создать отчёт
+                            </Button>
+                        </Link>
                     </div>
-                    <form v-else class="mt-4 space-y-3 border-t border-line/70 pt-4" @submit.prevent="addReport">
-                        <TextArea v-model="reportForm.content" placeholder="Что сделано, что проверить…" :error="reportForm.errors.content" />
-                        <div class="flex justify-end gap-2">
-                            <Button variant="ghost" size="sm" @click="showReportForm = false">Отмена</Button>
-                            <Button type="submit" size="sm" :disabled="reportForm.processing || !reportForm.content">Сохранить</Button>
-                        </div>
-                    </form>
                 </Card>
             </div>
 

@@ -48,8 +48,12 @@ services:
       - app-public:/var/www/public
       - ./promo:/var/www/promo:ro
     networks:
-      - crm
-      - assistant
+      crm:
+      # Unique alias: another CRM stack shares the `assistant` network, and a
+      # bare `app` alias makes nginx and the kernel resolve the wrong one.
+      assistant:
+        aliases:
+          - crm-app
 
   # ── Nginx web-server ─────────────────────────────────
   nginx:
@@ -93,9 +97,11 @@ services:
       - "traefik.http.routers.crm.middlewares=crm-headers,crm-ratelimit"
       - "traefik.http.routers.landing.middlewares=crm-headers,crm-ratelimit"
     networks:
-      - crm
-      - traefik-public
-      - assistant
+      crm:
+      traefik-public:
+      assistant:
+        aliases:
+          - crm-nginx
 
   # ── Queue worker ─────────────────────────────────────
   worker:

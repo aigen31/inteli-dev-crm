@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Internal\AssistantToolController;
+use App\Http\Controllers\McpController;
 use Illuminate\Support\Facades\Route;
 
 // Internal contract for the central Kiki assistant kernel. Service token only.
@@ -12,6 +13,7 @@ Route::prefix('internal/assistant')
     ->group(function (): void {
         Route::get('/profile', [AssistantToolController::class, 'profile']);
         Route::post('/tools/{tool}', [AssistantToolController::class, 'tool']);
+        Route::get('/files/{file}', [AssistantToolController::class, 'file']);
     });
 
 Route::get('/v1/ping', fn () => response()->json([
@@ -61,3 +63,6 @@ Route::prefix('v1')
                 ->whereIn('entity', ['client', 'task', 'invoice']);
         });
     });
+
+// MCP server for DeepSeek Harness and other agents (token auth inside).
+Route::post('/mcp', [McpController::class, 'handle'])->name('mcp.handle');

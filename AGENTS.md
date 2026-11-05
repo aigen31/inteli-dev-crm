@@ -23,7 +23,7 @@ docker compose exec app php artisan db:seed --force
 | Формы заявок: поля, обязательные, repeat-группы | [form-templates.md](docs/agents/form-templates.md) |
 | Классические сценарии, WYSIWYG, чек-листы, ИИ-генерация | [project-management.md](docs/agents/project-management.md) |
 | Пользовательские поля, типы, значения, API | [custom-fields.md](docs/agents/custom-fields.md) |
-| Кики: провайдер, инструменты, подтверждения, guardrails | [ai.md](docs/agents/ai.md) |
+| Кики: сессии, изображения, документы, планы задач, память проекта | [ai.md](docs/agents/ai.md) |
 | REST API v1, токены, примеры | [api.md](docs/agents/api.md) · [docs/api](docs/api/README.md) |
 | MCP-сервер и подключение ИИ-клиентов | [mcp.md](docs/agents/mcp.md) · [mcp/README.md](mcp/README.md) |
 | Vue/Inertia, дизайн-система, лейауты, сборка | [frontend.md](docs/agents/frontend.md) |
@@ -44,6 +44,9 @@ docker compose exec app php artisan db:seed --force
 - Пользовательские поля — только через `CustomFieldService`; значения хранятся типизированно, не в одном JSON.
 - API-токен наследует роль пользователя; `read` не даёт писать, `write` нужен для действий Кики через API.
 - Финансовые действия Кики выполняются только после подтверждения (`AiAction`), права перепроверяются при confirm.
+- Кики: сессии и заголовки принадлежат ядру, CRM держит зеркало; изображения хранятся в `FileAttachment`, документы — в `ai_documents` (ядро получает манифест и читает через `read_document`); планы задач и формы подтверждаются как `AiAction`.
+- Отчёты — повторяемые группы «объяснение → ссылка для тестирования → скриншот», получатель и опциональная задача. Создаются в CRM и через MCP (`/api/mcp`, инструмент `create_task_report`); DeepSeek Harness подключён к этому серверу.
+- Проекты — отдельная сущность: ключ, клиент, задачи с номерами (`KOR-12`), прогресс, сайт, `AGENTS.md` и указания. Доступ к проекту — владелец + участники с ролями (`manager`/`member`/`viewer`); задачи клиента фильтруются и по проекту. Контекст и изучение сайта принадлежат проекту, а не общим настройкам; прайс-лист отдаёт ядро (`get_price_list`).
 - UI — из `Components/UI`, `Components/Form`, `Components/CustomFields`; тема — токены `resources/css/app.css`.
 - Проверка изменения: `php artisan test` в контейнере + `vendor/bin/pint --test`; MCP — `cd mcp && npm test`.
 - Секреты — только в `.env` и зашифрованных настройках; `.env*` и `bootstrap/cache/*.php` не коммитятся.

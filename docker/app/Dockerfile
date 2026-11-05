@@ -48,6 +48,11 @@ RUN npm run build
 # ─── Production image ────────────────────────────────────────────
 FROM base AS production
 
+# PDF text extraction for the assistant's document pipeline.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends poppler-utils \
+    && rm -rf /var/lib/apt/lists/*
+
 # Create app user
 RUN groupadd -g 1000 app && useradd -u 1000 -g app -m app
 

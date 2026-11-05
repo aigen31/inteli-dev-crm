@@ -77,6 +77,7 @@ $name        = trim((string) ($input['name'] ?? ''));
 $contact     = trim((string) ($input['contact'] ?? ''));
 $description = trim((string) ($input['description'] ?? ''));
 $budget      = trim((string) ($input['budget'] ?? ''));
+$consent     = filter_var($input['consent'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
 // ── Validation ────────────────────────────────────────
 $errors = [];
@@ -93,6 +94,10 @@ if ($description === '' || mb_strlen($description) > 5000) {
     $errors['description'] = 'Опишите задачу (до 5000 символов)';
 }
 
+if (! $consent) {
+    $errors['consent'] = 'Подтвердите согласие на обработку персональных данных';
+}
+
 $allowedBudgets = ['', 'under_30k', '30k_100k', 'over_100k'];
 if (!in_array($budget, $allowedBudgets, true)) {
     $budget = '';
@@ -102,6 +107,20 @@ if (!empty($errors)) {
     http_response_code(422);
     echo json_encode(['success' => false, 'errors' => $errors]);
     exit;
+}
+
+// ── Consent log (durable JSONL next to Laravel storage) ─
+$consentDir = dirname(__DIR__, 2).'/storage/app';
+if (is_dir($consentDir) && is_writable($consentDir)) {
+    $line = json_encode([
+        'accepted_at' => gmdate('c'),
+        'form' => 'lead-form',
+        'document' => 'consent',
+        'version' => '2026-11-06',
+        'ip' => $clientIp,
+        'user_agent' => substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 500),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    @file_put_contents($consentDir.'/consents.log', $line.PHP_EOL, FILE_APPEND | LOCK_EX);
 }
 
 // ── Sanitize for email body ───────────────────────────

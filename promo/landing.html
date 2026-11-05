@@ -665,6 +665,18 @@
             </select>
           </div>
 
+          <!-- Consent -->
+          <div>
+            <label class="flex items-start gap-2 text-xs text-gray-600">
+              <input type="checkbox" id="consent" name="consent" class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+              <span>
+                Я даю <a href="https://crm.inteli-dev.ru/legal/consent" target="_blank" rel="noopener" class="font-medium text-primary-600 underline">согласие на обработку персональных данных</a>
+                и подтверждаю, что ознакомлен с <a href="https://crm.inteli-dev.ru/legal/privacy" target="_blank" rel="noopener" class="font-medium text-primary-600 underline">политикой</a>.
+              </span>
+            </label>
+            <p class="mt-1 text-xs text-red-600 hidden" id="consentError">Подтвердите согласие на обработку данных</p>
+          </div>
+
           <!-- Submit -->
           <button type="submit" id="submitBtn" class="w-full inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-md bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
             Отправить заявку
@@ -834,6 +846,16 @@
         descError.classList.add('hidden');
       }
 
+      // Consent
+      const consent = document.getElementById('consent');
+      const consentError = document.getElementById('consentError');
+      if (!consent.checked) {
+        consentError.classList.remove('hidden');
+        valid = false;
+      } else {
+        consentError.classList.add('hidden');
+      }
+
       if (!valid) return;
 
       // Disable button & show loading
@@ -849,6 +871,7 @@
             contact: contact.value.trim(),
             description: desc.value.trim(),
             budget: document.getElementById('budget').value,
+            consent: consent.checked,
           }),
         });
 

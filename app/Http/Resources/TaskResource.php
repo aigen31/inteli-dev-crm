@@ -17,6 +17,15 @@ class TaskResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'reference' => $this->reference(),
+            'number' => $this->number,
+            'project_id' => $this->project_id,
+            'project' => $this->whenLoaded('project', fn () => $this->project ? [
+                'id' => $this->project->id,
+                'key' => $this->project->key,
+                'name' => $this->project->name,
+                'color' => $this->project->color,
+            ] : null),
             'title' => $this->title,
             'description' => $this->description,
             'checklist' => $this->normalizedChecklist(),

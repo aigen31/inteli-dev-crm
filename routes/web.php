@@ -7,6 +7,9 @@ use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\Auth;
 use App\Http\Controllers\Client;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\InviteController;
+use App\Http\Controllers\LegalController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Webhook\YooKassaWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
@@ -24,7 +27,17 @@ Route::middleware('auth')->group(function () {
 
     // Kiki assistant (both roles)
     Route::middleware(['is_active', 'throttle:assistant'])->group(function () {
-        Route::get('/assistant', [AssistantController::class, 'show'])->name('assistant.show');
+        Route::get('/assistant', [AssistantController::class, 'page'])->name('assistant.index');
+        Route::get('/assistant/state', [AssistantController::class, 'state'])->name('assistant.state');
+
+        Route::get('/assistant/conversations', [AssistantController::class, 'sessions'])->name('assistant.conversations.index');
+        Route::post('/assistant/conversations', [AssistantController::class, 'createSession'])->name('assistant.conversations.store');
+        Route::get('/assistant/conversations/{conversation}', [AssistantController::class, 'showSession'])->name('assistant.conversations.show');
+        Route::patch('/assistant/conversations/{conversation}', [AssistantController::class, 'updateSession'])->name('assistant.conversations.update');
+        Route::delete('/assistant/conversations/{conversation}', [AssistantController::class, 'destroySession'])->name('assistant.conversations.destroy');
+        Route::post('/assistant/conversations/{conversation}/regenerate', [AssistantController::class, 'regenerate'])->name('assistant.conversations.regenerate');
+
+        Route::post('/assistant/documents', [AssistantController::class, 'uploadDocument'])->name('assistant.documents.store');
         Route::post('/assistant/chat', [AssistantController::class, 'chat'])->name('assistant.chat');
         Route::post('/assistant/actions/{action}/confirm', [AssistantController::class, 'confirm'])->name('assistant.confirm');
         Route::post('/assistant/actions/{action}/reject', [AssistantController::class, 'reject'])->name('assistant.reject');
@@ -80,6 +93,28 @@ Route::middleware('auth')->group(function () {
         Route::post('/tasks/{task}/comments', [Admin\TaskCommentController::class, 'store'])->name('tasks.comments.store');
         Route::post('/tasks/{task}/reports', [Admin\TaskReportController::class, 'store'])->name('tasks.reports.store');
 
+        // Reports
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
+        Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+
+        // Projects
+        Route::get('/projects', [Admin\ProjectController::class, 'index'])->name('projects.index');
+        Route::get('/projects/create', [Admin\ProjectController::class, 'create'])->name('projects.create');
+        Route::post('/projects', [Admin\ProjectController::class, 'store'])->name('projects.store');
+        Route::get('/projects/{project}', [Admin\ProjectController::class, 'show'])->name('projects.show');
+        Route::get('/projects/{project}/edit', [Admin\ProjectController::class, 'edit'])->name('projects.edit');
+        Route::put('/projects/{project}', [Admin\ProjectController::class, 'update'])->name('projects.update');
+        Route::post('/projects/{project}/archive', [Admin\ProjectController::class, 'archive'])->name('projects.archive');
+        Route::post('/projects/{project}/members', [Admin\ProjectController::class, 'storeMember'])->name('projects.members.store');
+        Route::patch('/projects/{project}/members/{member}', [Admin\ProjectController::class, 'updateMember'])->name('projects.members.update');
+        Route::delete('/projects/{project}/members/{member}', [Admin\ProjectController::class, 'destroyMember'])->name('projects.members.destroy');
+        Route::post('/projects/{project}/invites', [Admin\ProjectInviteController::class, 'store'])->name('projects.invites.store');
+        Route::delete('/projects/{project}/invites/{invite}', [Admin\ProjectInviteController::class, 'destroy'])->name('projects.invites.destroy');
+        Route::post('/projects/{project}/study', [Admin\ProjectController::class, 'study'])->name('projects.study');
+        Route::get('/projects/{project}/study/{study}', [Admin\ProjectController::class, 'studyStatus'])->name('projects.study.status');
+        Route::post('/projects/{project}/study/{study}/cancel', [Admin\ProjectController::class, 'cancelStudy'])->name('projects.study.cancel');
+
         // Invoices
         Route::get('/invoices', [Admin\InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/invoices/create', [Admin\InvoiceController::class, 'create'])->name('invoices.create');
@@ -102,11 +137,17 @@ Route::middleware('auth')->group(function () {
         // Settings
         Route::get('/settings', [Admin\SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
+
     });
 
     // Client routes
     Route::middleware('is_active')->group(function () {
         Route::get('/dashboard', [Client\DashboardController::class, 'index'])->name('client.dashboard');
+
+        Route::get('/reports', [ReportController::class, 'index'])->name('client.reports.index');
+
+        Route::get('/projects', [Client\ProjectController::class, 'index'])->name('client.projects.index');
+        Route::get('/projects/{project}', [Client\ProjectController::class, 'show'])->name('client.projects.show');
 
         Route::get('/tasks', [Client\TaskController::class, 'index'])->name('client.tasks.index');
         Route::get('/tasks/create', [Client\TaskController::class, 'create'])->name('client.tasks.create');
@@ -126,6 +167,20 @@ Route::middleware('auth')->group(function () {
         Route::put('/profile', [Client\ProfileController::class, 'update'])->name('client.profile.update');
     });
 });
+
+// Reports are shared by both roles; the policy checks the recipient.
+Route::middleware(['auth', 'is_active'])->group(function () {
+    Route::get('/reports/{report}', [ReportController::class, 'show'])->whereUuid('report')->name('reports.show');
+    Route::get('/reports/{report}/screenshot', [ReportController::class, 'screenshot'])->whereUuid('report')->name('reports.screenshot');
+});
+
+// Legal pages are public: they are linked from the login screen and the site.
+Route::get('/invite/{token}', [InviteController::class, 'show'])->name('invite.show');
+Route::post('/invite/{token}', [InviteController::class, 'store'])->middleware('throttle:10,1')->name('invite.store');
+
+Route::get('/legal/privacy', [LegalController::class, 'privacy'])->name('legal.privacy');
+Route::get('/legal/consent', [LegalController::class, 'consent'])->name('legal.consent');
+Route::get('/legal/requisites', [LegalController::class, 'requisites'])->name('legal.requisites');
 
 // Webhook (no auth, verify middleware)
 Route::post('/webhooks/yookassa', [YooKassaWebhookController::class, 'handle'])

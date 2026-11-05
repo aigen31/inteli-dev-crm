@@ -4,15 +4,18 @@ import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Card from '@/Components/UI/Card.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import Button from '@/Components/UI/Button.vue';
+import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 
 const props = defineProps({
     user: Object,
+    hasConsent: { type: Boolean, default: false },
 });
 
 const profileForm = useForm({
     name: props.user.name,
     phone: props.user.phone || '',
     messenger_contacts: props.user.messenger_contacts || {},
+    consent: false,
 });
 
 function updateProfile() {
@@ -41,8 +44,10 @@ function updatePassword() {
                     <TextInput :model-value="user.email" label="Email" disabled />
                     <TextInput v-model="profileForm.phone" label="Телефон" :error="profileForm.errors.phone" />
 
+                    <ConsentCheckbox v-if="!hasConsent" v-model="profileForm.consent" :error="profileForm.errors.consent" id="profile-consent" />
+
                     <div class="flex justify-end pt-4">
-                        <Button type="submit" :disabled="profileForm.processing">Сохранить</Button>
+                        <Button type="submit" :disabled="profileForm.processing || (!hasConsent && !profileForm.consent)">Сохранить</Button>
                     </div>
                 </form>
             </Card>

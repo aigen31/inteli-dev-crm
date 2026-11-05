@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreInvoiceRequest;
 use App\Models\Invoice;
 use App\Models\Task;
+use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,7 +62,7 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function store(StoreInvoiceRequest $request, CreateInvoiceAction $action): RedirectResponse
+    public function store(StoreInvoiceRequest $request, CreateInvoiceAction $action, ConsentService $consents): RedirectResponse
     {
         $data = $request->validated();
         $customValues = $data['custom_fields'] ?? [];
@@ -69,6 +70,7 @@ class InvoiceController extends Controller
 
         $invoice = $action->execute($data);
         $this->customFields->sync($invoice, $customValues, $request->user());
+        $consents->record($invoice->client, 'admin-invoice-create', $request, ['confirmed_by' => $request->user()->id, 'invoice_id' => $invoice->id, 'basis' => 'contract'], 'privacy');
 
         return redirect()->route('admin.invoices.show', $invoice)
             ->with('success', 'Счёт создан.');
