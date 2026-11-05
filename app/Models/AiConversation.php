@@ -14,10 +14,13 @@ class AiConversation extends Model
     use HasUuids;
 
     protected $fillable = [
+        'id',
         'user_id',
         'title',
         'context',
         'last_message_at',
+        'pinned_at',
+        'archived_at',
     ];
 
     protected function casts(): array
@@ -25,7 +28,19 @@ class AiConversation extends Model
         return [
             'context' => 'array',
             'last_message_at' => 'datetime',
+            'pinned_at' => 'datetime',
+            'archived_at' => 'datetime',
         ];
+    }
+
+    public function isPinned(): bool
+    {
+        return $this->pinned_at !== null;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
     }
 
     public function user(): BelongsTo

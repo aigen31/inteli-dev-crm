@@ -7,6 +7,7 @@
 | [0003](0003-ai-agent.md) | Tool-calling агент с подтверждением финансовых действий | Accepted |
 | [0004](0004-api-and-mcp.md) | REST API v1 с bearer-токенами + MCP как прокси над API | Accepted |
 | [0005](0005-light-design-and-kiki.md) | Светлая «бумажная» тема и Кики как навигационный якорь | Accepted |
+| [0006](0006-structured-form-templates.md) | Structured form templates как основной путь заявки | Accepted |
+| [0007](0007-assistant-workspace.md) | Сессии, изображения и заявки из форм в ассистенте | Accepted |
 
 Формат: контекст → решение → альтернативы → последствия. Новые решения добавляйте отдельным файлом и строкой в таблицу.
-- [0006 — Structured form templates](0006-structured-form-templates.md)

@@ -26,18 +26,19 @@ class FormTemplateService
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function createTask(FormTemplate $template, User $client, array $payload, User $creator): Task
-    {
+    public function createTask(
+        FormTemplate $template,
+        User $client,
+        array $payload,
+        User $creator,
+        TaskSource $source = TaskSource::Client,
+    ): Task {
         if (! $template->is_active) {
             throw ValidationException::withMessages(['form' => 'Эта форма сейчас недоступна.']);
         }
 
         $schema = $template->normalizedSchema();
-        $validator = Validator::make($payload, $this->rules($schema, $client), [
-            'form_data.required' => 'Заполните форму — без данных заявку не отправить.',
-            'title.required' => 'Дайте заявке короткое название.',
-            'title.min' => 'Название должно быть чуть подробнее.',
-        ]);
+        $validator = Validator::make($payload, $this->rules($schema, $client), $this->messages($schema));
 
         if ($validator->fails()) {
             throw new ValidationException($validator);
@@ -51,7 +52,7 @@ class FormTemplateService
             'title' => trim((string) ($data['title'] ?? '')) ?: $template->name,
             'description' => $template->description ?: $template->summary,
             'type' => TaskType::OneTime,
-            'source' => TaskSource::Client,
+            'source' => $source,
             'priority' => $data['priority'] ?? TaskPriority::Medium,
             'deadline' => $data['deadline'] ?? null,
             'form_template_id' => $template->id,
@@ -61,6 +62,37 @@ class FormTemplateService
         $template->increment('usage_count');
 
         return $task;
+    }
+
+    /**
+     * Message keys are explicit because the project has no published `lang`
+     * files: a bare `validation.required` would reach the UI as a raw key.
+     *
+     * @param  array<string, mixed>  $schema
+     * @return array<string, string>
+     */
+    private function messages(array $schema): array
+    {
+        $messages = [
+            'form_data.required' => 'Заполните форму — без данных заявку не отправить.',
+            'title.required' => 'Дайте заявке короткое название.',
+            'title.min' => 'Название должно быть чуть подробнее.',
+        ];
+
+        foreach ($schema['groups'] as $group) {
+            $key = (string) ($group['key'] ?? '');
+            $label = (string) ($group['label'] ?? 'повторяемый блок');
+
+            if ($key === '') {
+                continue;
+            }
+
+            $messages["form_data.groups.{$key}.required"] = "Добавьте хотя бы одну запись: {$label}.";
+            $messages["form_data.groups.{$key}.min"] = "Добавьте хотя бы одну запись: {$label}.";
+            $messages["form_data.groups.{$key}.max"] = "Слишком много записей: {$label}.";
+        }
+
+        return $messages;
     }
 
     /**

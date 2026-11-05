@@ -12,6 +12,7 @@ Route::prefix('internal/assistant')
     ->group(function (): void {
         Route::get('/profile', [AssistantToolController::class, 'profile']);
         Route::post('/tools/{tool}', [AssistantToolController::class, 'tool']);
+        Route::get('/files/{file}', [AssistantToolController::class, 'file']);
     });
 
 Route::get('/v1/ping', fn () => response()->json([

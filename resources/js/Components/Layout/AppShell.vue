@@ -24,6 +24,7 @@ const props = defineProps({
     role: { type: String, default: 'admin' },
     title: { type: String, default: null },
     eyebrow: { type: String, default: null },
+    bare: { type: Boolean, default: false },
 });
 
 const page = usePage();
@@ -52,13 +53,17 @@ const navigation = computed(() =>
               },
               { label: 'Клиенты', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') },
               { label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },
+              { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
           ]
         : [
               { label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' },
               { label: 'Задачи', href: route('client.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/tasks') },
               { label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
+              { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
           ],
 );
+
+const mobileNavigation = computed(() => navigation.value.filter((item) => !item.href.endsWith('/assistant')));
 
 const secondary = computed(() =>
     isAdmin.value
@@ -205,7 +210,7 @@ function logout() {
 
         <div class="relative z-10 lg:pl-[236px]">
             <!-- Desktop top strip -->
-            <div class="mx-auto hidden max-w-[1280px] items-center gap-4 px-8 pt-6 lg:flex">
+            <div v-if="!bare" class="mx-auto hidden max-w-[1280px] items-center gap-4 px-8 pt-6 lg:flex">
                 <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
                     <span>inteli dev</span>
                     <span class="text-faint">/</span>
@@ -230,10 +235,17 @@ function logout() {
                 </div>
             </div>
 
-            <main class="mx-auto w-full max-w-[1280px] px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-16 lg:pt-7">
-                <EarlyAccessBanner />
+            <main
+                :class="[
+                    'mx-auto w-full',
+                    bare
+                        ? 'max-w-none px-2 pb-2 pt-2 sm:px-3 lg:px-3 lg:pb-3 lg:pt-2'
+                        : 'max-w-[1280px] px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-16 lg:pt-7',
+                ]"
+            >
+                <EarlyAccessBanner v-if="!bare" />
 
-                <div class="mb-7 flex flex-wrap items-end justify-between gap-5">
+                <div v-if="!bare" class="mb-7 flex flex-wrap items-end justify-between gap-5">
                     <div class="min-w-0">
                         <p class="eyebrow">{{ eyebrow || (isAdmin ? 'Рабочий стол' : 'Личный кабинет') }}</p>
                         <h1 class="page-title mt-2">
@@ -265,7 +277,7 @@ function logout() {
         <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-surface/90 px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl lg:hidden">
             <div class="mx-auto flex max-w-md items-center justify-around">
                 <Link
-                    v-for="item in navigation"
+                    v-for="item in mobileNavigation"
                     :key="item.label"
                     :href="item.href"
                     :class="['flex min-w-[64px] flex-col items-center gap-1 rounded-2xl px-2 py-1.5', item.active ? 'text-primary-700' : 'text-muted']"

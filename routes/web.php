@@ -24,7 +24,16 @@ Route::middleware('auth')->group(function () {
 
     // Kiki assistant (both roles)
     Route::middleware(['is_active', 'throttle:assistant'])->group(function () {
-        Route::get('/assistant', [AssistantController::class, 'show'])->name('assistant.show');
+        Route::get('/assistant', [AssistantController::class, 'page'])->name('assistant.index');
+        Route::get('/assistant/state', [AssistantController::class, 'state'])->name('assistant.state');
+
+        Route::get('/assistant/conversations', [AssistantController::class, 'sessions'])->name('assistant.conversations.index');
+        Route::post('/assistant/conversations', [AssistantController::class, 'createSession'])->name('assistant.conversations.store');
+        Route::get('/assistant/conversations/{conversation}', [AssistantController::class, 'showSession'])->name('assistant.conversations.show');
+        Route::patch('/assistant/conversations/{conversation}', [AssistantController::class, 'updateSession'])->name('assistant.conversations.update');
+        Route::delete('/assistant/conversations/{conversation}', [AssistantController::class, 'destroySession'])->name('assistant.conversations.destroy');
+        Route::post('/assistant/conversations/{conversation}/regenerate', [AssistantController::class, 'regenerate'])->name('assistant.conversations.regenerate');
+
         Route::post('/assistant/chat', [AssistantController::class, 'chat'])->name('assistant.chat');
         Route::post('/assistant/actions/{action}/confirm', [AssistantController::class, 'confirm'])->name('assistant.confirm');
         Route::post('/assistant/actions/{action}/reject', [AssistantController::class, 'reject'])->name('assistant.reject');

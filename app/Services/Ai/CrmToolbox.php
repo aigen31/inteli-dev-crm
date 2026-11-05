@@ -17,11 +17,13 @@ use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Models\CustomField;
+use App\Models\FormTemplate;
 use App\Models\Invoice;
 use App\Models\Task;
 use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\CustomFieldService;
+use App\Services\FormTemplateService;
 use App\Services\TaskTemplateService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -35,6 +37,7 @@ class CrmToolbox
         private readonly CrmSerializer $serializer,
         private readonly CustomFieldService $customFields,
         private readonly TaskTemplateService $templates,
+        private readonly FormTemplateService $formTemplates,
         private readonly CreateTaskAction $createTask,
         private readonly ChangeTaskStatusAction $changeTaskStatus,
         private readonly CreateClientAction $createClient,
@@ -78,6 +81,25 @@ class CrmToolbox
     }
 
     /**
+     * Some confirmations are a structured form, not a yes/no. The UI renders
+     * the form inside the chat and posts edited values back on confirm.
+     */
+    public function isFormTool(string $name): bool
+    {
+        return $name === 'create_task_from_form';
+    }
+
+    public function describesForm(string $name): bool
+    {
+        return $this->isFormTool($name);
+    }
+
+    public function allowsArgumentOverride(string $name): bool
+    {
+        return $this->isFormTool($name);
+    }
+
+    /**
      * @param  array<string, mixed>  $arguments
      */
     public function summarize(string $name, array $arguments): string
@@ -87,6 +109,9 @@ class CrmToolbox
             'mark_invoice_paid' => 'подтвердить оплату счёта '.($arguments['invoice_id'] ?? ''),
             'create_client' => 'создать клиента «'.($arguments['name'] ?? '').'»',
             'create_task' => 'создать задачу «'.($arguments['title'] ?? '').'»',
+            'create_task_from_form' => 'собрать заявку по форме'.(isset($arguments['title']) && $arguments['title'] !== ''
+                ? ' «'.$arguments['title'].'»'
+                : ''),
             'apply_template' => 'создать задачу из шаблона',
             'set_custom_field' => 'изменить поле «'.($arguments['key'] ?? '').'»',
             default => $name,
@@ -117,6 +142,8 @@ class CrmToolbox
             'list_tasks' => $this->listTasks($user, $arguments),
             'get_task' => $this->getTask($user, $arguments),
             'create_task' => $this->createTaskTool($user, $arguments),
+            'create_task_from_form' => $this->createTaskFromForm($user, $arguments),
+            'list_form_templates' => $this->listFormTemplates($user),
             'update_task_status' => $this->updateTaskStatus($user, $arguments),
             'list_task_templates' => $this->listTemplates($user),
             'apply_task_template' => $this->applyTemplate($user, $arguments),
@@ -210,6 +237,37 @@ class CrmToolbox
                 'required' => ['title'],
                 'roles' => ['admin', 'client'],
                 'confirm' => false,
+            ],
+            'list_form_templates' => [
+                'description' => 'Формы заявок: ключи, названия и схема полей (обязательные, типы, варианты, repeat-группы). Вызывай перед create_task_from_form, чтобы заполнить поля по схеме.',
+                'properties' => [
+                    'query' => ['type' => 'string', 'description' => 'Поиск по названию или ключу (необязательно).'],
+                ],
+                'required' => [],
+                'roles' => ['admin', 'client'],
+                'confirm' => false,
+            ],
+            'create_task_from_form' => [
+                'description' => 'Создать заявку-задачу по structured-форме. Сначала вызови list_form_templates и заполни form_data по схеме. Пользователь проверит и дополнит форму в чате перед подтверждением.',
+                'properties' => [
+                    'form_template_id' => ['type' => 'string', 'description' => 'UUID формы.'],
+                    'form_key' => ['type' => 'string', 'description' => 'Ключ формы, если UUID неизвестен, например bug-report.'],
+                    'title' => ['type' => 'string', 'description' => 'Короткое название заявки.'],
+                    'client_id' => ['type' => 'string', 'description' => 'UUID клиента (только администратор).'],
+                    'priority' => ['type' => 'string', 'enum' => array_column(TaskPriority::cases(), 'value'), 'description' => 'Приоритет.'],
+                    'deadline' => ['type' => 'string', 'description' => 'Желаемый срок YYYY-MM-DD (необязательно).'],
+                    'form_data' => [
+                        'type' => 'object',
+                        'description' => 'Значения полей: {fields: {key: value}, groups: {key: [{...}]}}.',
+                        'properties' => [
+                            'fields' => ['type' => 'object', 'additionalProperties' => true],
+                            'groups' => ['type' => 'object', 'additionalProperties' => true],
+                        ],
+                    ],
+                ],
+                'required' => ['form_data'],
+                'roles' => ['admin', 'client'],
+                'confirm' => true,
             ],
             'update_task_status' => [
                 'description' => 'Перевести задачу в другой статус. Только администратор.',
@@ -531,6 +589,250 @@ class CrmToolbox
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private function listFormTemplates(User $user): array
+    {
+        $templates = FormTemplate::query()
+            ->visibleTo($user)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        return [
+            'count' => $templates->count(),
+            'items' => $templates->map(fn (FormTemplate $template): array => [
+                'id' => $template->id,
+                'key' => $template->key,
+                'name' => $template->name,
+                'summary' => $template->summary,
+                'category' => $template->category,
+                'fields' => $this->formFields($template),
+                'groups' => $this->formGroups($template),
+            ])->all(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function createTaskFromForm(User $user, array $arguments): array
+    {
+        $data = Validator::make($arguments, [
+            'form_template_id' => ['nullable', 'uuid'],
+            'form_key' => ['nullable', 'string', 'max:120'],
+            'title' => ['nullable', 'string', 'max:255'],
+            'client_id' => ['nullable', 'string', 'max:128'],
+            'priority' => ['nullable', Rule::enum(TaskPriority::class)],
+            'deadline' => ['nullable', 'date'],
+            'form_data' => ['required', 'array'],
+        ])->validate();
+
+        $template = $this->resolveFormTemplate($user, $data);
+        $client = $user->isClient()
+            ? $user
+            : $this->resolveClient($user, (string) ($data['client_id'] ?? ''));
+
+        $task = $this->formTemplates->createTask(
+            $template,
+            $client,
+            [
+                'title' => $data['title'] ?? $template->name,
+                'priority' => $data['priority'] ?? TaskPriority::Medium,
+                'deadline' => $data['deadline'] ?? null,
+                'form_data' => $data['form_data'],
+            ],
+            $user,
+            $user->isClient() ? TaskSource::Client : TaskSource::Ai,
+        );
+
+        return [
+            ...$this->serializer->task($task),
+            'form_template' => [
+                'id' => $template->id,
+                'key' => $template->key,
+                'name' => $template->name,
+            ],
+        ];
+    }
+
+    /**
+     * Payload that the chat UI renders inside a confirmation card. It is built
+     * before the user confirms, so a stale template id fails the tool call and
+     * the model can correct itself instead of showing a broken form.
+     *
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    public function formPayload(User $user, array $arguments): array
+    {
+        $data = Validator::make($arguments, [
+            'form_template_id' => ['nullable', 'uuid'],
+            'form_key' => ['nullable', 'string', 'max:120'],
+            'title' => ['nullable', 'string', 'max:255'],
+            'client_id' => ['nullable', 'string', 'max:128'],
+            'priority' => ['nullable', Rule::enum(TaskPriority::class)],
+            'deadline' => ['nullable', 'date'],
+            'form_data' => ['nullable', 'array'],
+        ])->validate();
+
+        $template = $this->resolveFormTemplate($user, $data);
+
+        return [
+            'template' => [
+                'id' => $template->id,
+                'key' => $template->key,
+                'name' => $template->name,
+                'summary' => $template->summary,
+                'description' => $template->description,
+                'category' => $template->category,
+            ],
+            'schema' => $template->normalizedSchema(),
+            'values' => $this->normalizeFormValues($template, $data['form_data'] ?? []),
+            'defaults' => [
+                'title' => $data['title'] ?? $template->name,
+                'priority' => $data['priority'] ?? TaskPriority::Medium->value,
+                'deadline' => $data['deadline'] ?? null,
+            ],
+            'client_id' => $data['client_id'] ?? ($user->isClient() ? $user->id : null),
+            'clients' => $user->isAdmin()
+                ? User::query()
+                    ->where('role', UserRole::Client)
+                    ->orderBy('name')
+                    ->limit(200)
+                    ->get(['id', 'name', 'email'])
+                    ->map(fn (User $client): array => [
+                        'id' => $client->id,
+                        'name' => $client->name,
+                        'email' => $client->email,
+                    ])
+                    ->all()
+                : [],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function resolveFormTemplate(User $user, array $data): FormTemplate
+    {
+        $query = FormTemplate::query()->visibleTo($user);
+
+        $template = isset($data['form_template_id']) && $data['form_template_id'] !== ''
+            ? $query->find((string) $data['form_template_id'])
+            : (isset($data['form_key']) && $data['form_key'] !== ''
+                ? $query->where('key', (string) $data['form_key'])->first()
+                : null);
+
+        if (! $template instanceof FormTemplate) {
+            throw ValidationException::withMessages([
+                'form_template_id' => 'Форма не найдена. Вызовите list_form_templates и выберите существующую.',
+            ]);
+        }
+
+        return $template;
+    }
+
+    /**
+     * Fill the schema shape so the UI can render a complete, editable form even
+     * when the model left optional fields out.
+     *
+     * @param  array<string, mixed>  $values
+     * @return array{fields: array<string, mixed>, groups: array<string, list<array<string, mixed>>>}
+     */
+    private function normalizeFormValues(FormTemplate $template, array $values): array
+    {
+        $schema = $template->normalizedSchema();
+        $normalized = ['fields' => [], 'groups' => []];
+        $inputFields = is_array($values['fields'] ?? null) ? $values['fields'] : [];
+
+        foreach ($schema['fields'] as $field) {
+            $key = (string) ($field['key'] ?? '');
+            if ($key === '') {
+                continue;
+            }
+            $normalized['fields'][$key] = $inputFields[$key] ?? ($field['type'] === 'checkbox' ? false : '');
+        }
+
+        $inputGroups = is_array($values['groups'] ?? null) ? $values['groups'] : [];
+
+        foreach ($schema['groups'] as $group) {
+            $key = (string) ($group['key'] ?? '');
+            if ($key === '') {
+                continue;
+            }
+
+            $rows = is_array($inputGroups[$key] ?? null) ? $inputGroups[$key] : [];
+            $normalized['groups'][$key] = array_values(array_map(function (array $row) use ($group): array {
+                $clean = [];
+                foreach ($group['fields'] ?? [] as $field) {
+                    $fieldKey = (string) ($field['key'] ?? '');
+                    if ($fieldKey === '') {
+                        continue;
+                    }
+                    $clean[$fieldKey] = $row[$fieldKey] ?? ($field['type'] === 'checkbox' ? false : '');
+                }
+
+                return $clean;
+            }, array_filter($rows, 'is_array')));
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function formFields(FormTemplate $template): array
+    {
+        return array_map(fn (array $field): array => [
+            'key' => $field['key'] ?? null,
+            'label' => $field['label'] ?? null,
+            'type' => $field['type'] ?? 'text',
+            'required' => (bool) ($field['required'] ?? false),
+            'placeholder' => $field['placeholder'] ?? null,
+            'help' => $field['help'] ?? null,
+            'options' => array_map(
+                fn (array $option): array => [
+                    'value' => $option['value'] ?? null,
+                    'label' => $option['label'] ?? null,
+                ],
+                array_filter($field['options'] ?? [], 'is_array'),
+            ),
+        ], $template->fields());
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function formGroups(FormTemplate $template): array
+    {
+        return array_map(fn (array $group): array => [
+            'key' => $group['key'] ?? null,
+            'label' => $group['label'] ?? null,
+            'min' => (int) ($group['min'] ?? 0),
+            'max' => (int) ($group['max'] ?? 20),
+            'add_label' => $group['add_label'] ?? null,
+            'help' => $group['help'] ?? null,
+            'fields' => array_map(fn (array $field): array => [
+                'key' => $field['key'] ?? null,
+                'label' => $field['label'] ?? null,
+                'type' => $field['type'] ?? 'text',
+                'required' => (bool) ($field['required'] ?? false),
+                'placeholder' => $field['placeholder'] ?? null,
+                'options' => array_map(
+                    fn (array $option): array => [
+                        'value' => $option['value'] ?? null,
+                        'label' => $option['label'] ?? null,
+                    ],
+                    array_filter($field['options'] ?? [], 'is_array'),
+                ),
+            ], array_filter($group['fields'] ?? [], 'is_array')),
+        ], $template->groups());
+    }
+
+    /**
      * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */
@@ -767,9 +1069,23 @@ class CrmToolbox
             return $user;
         }
 
+        $identifier = trim($identifier);
+
+        if ($identifier === '') {
+            throw ValidationException::withMessages([
+                'client_id' => 'Укажите клиента: администратор создаёт заявку на конкретного клиента.',
+            ]);
+        }
+
         $client = User::query()
             ->where('role', UserRole::Client)
-            ->where(fn ($query) => $query->whereKey($identifier)->orWhere('email', $identifier))
+            ->where(function ($query) use ($identifier): void {
+                $query->where('email', $identifier);
+
+                if (Str::isUuid($identifier)) {
+                    $query->orWhereKey($identifier);
+                }
+            })
             ->first();
 
         if (! $client instanceof User) {

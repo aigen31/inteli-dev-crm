@@ -8,6 +8,8 @@ use App\Enums\AiActionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AiAction;
 use App\Models\AiConversation;
+use App\Models\AiMessage;
+use App\Models\FileAttachment;
 use App\Models\User;
 use App\Services\Ai\AgentService;
 use App\Services\Ai\CrmToolbox;
@@ -15,6 +17,8 @@ use App\Services\Ai\PromptFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Server-to-server contract used by the Kiki assistant kernel.
@@ -22,6 +26,9 @@ use Illuminate\Support\Facades\Log;
  * The kernel sends the actor, conversation and tool arguments. CRM resolves
  * the actor, enforces role permissions in CrmToolbox, creates confirmation
  * proposals and executes only approved or non-destructive tools.
+ *
+ * The kernel also pulls images from `/files/{file}` so domain storage and
+ * access checks stay here instead of moving to the kernel.
  */
 class AssistantToolController extends Controller
 {
@@ -29,6 +36,7 @@ class AssistantToolController extends Controller
     private const WRITE_TOOLS = [
         'create_client',
         'create_task',
+        'create_task_from_form',
         'update_task_status',
         'apply_task_template',
         'create_task_template',
@@ -80,6 +88,17 @@ class AssistantToolController extends Controller
         $arguments = is_array($data['arguments'] ?? null) ? $data['arguments'] : [];
 
         if ($toolbox->requiresConfirmation($tool)) {
+            // A form proposal needs a live template and a normalized schema.
+            // If that fails, return the error to the model so it can correct
+            // its arguments instead of rendering a broken confirmation card.
+            try {
+                $form = $toolbox->describesForm($tool)
+                    ? $toolbox->formPayload($user, $arguments)
+                    : null;
+            } catch (\Throwable $exception) {
+                return response()->json(['result' => ['error' => $exception->getMessage()]], 200);
+            }
+
             $action = AiAction::create([
                 'conversation_id' => $conversation->id,
                 'user_id' => $user->id,
@@ -99,6 +118,8 @@ class AssistantToolController extends Controller
                     'tool_name' => $action->tool_name,
                     'summary' => $toolbox->summarize($action->tool_name, $action->arguments),
                     'arguments' => $action->arguments,
+                    'type' => $toolbox->isFormTool($tool) ? 'form' : 'action',
+                    'form' => $form,
                 ],
             ]);
         }
@@ -129,6 +150,47 @@ class AssistantToolController extends Controller
         }
 
         return response()->json(['result' => $result]);
+    }
+
+    /**
+     * Stream one attached image to the kernel.
+     *
+     * Authorization is deliberately narrow: the actor owns the file, the file
+     * is an image, and the file is referenced by a message of that actor's
+     * conversation. The kernel never gets a path or a storage credential.
+     */
+    public function file(Request $request, string $file): StreamedResponse
+    {
+        $data = $request->validate([
+            'conversation_id' => ['required', 'uuid'],
+            'actor_id' => ['required', 'string', 'max:128'],
+        ]);
+
+        $actor = User::query()->find($data['actor_id']);
+        abort_unless($actor instanceof User, 401);
+
+        $attachment = FileAttachment::query()->find($file);
+        abort_unless($attachment instanceof FileAttachment, 404);
+        abort_unless($attachment->uploaded_by === $actor->id, 403);
+        abort_unless(str_starts_with((string) $attachment->mime_type, 'image/'), 415);
+
+        $conversation = AiConversation::query()
+            ->where('user_id', $actor->id)
+            ->find($data['conversation_id']);
+        abort_unless($conversation instanceof AiConversation, 404);
+
+        $attached = AiMessage::query()
+            ->where('conversation_id', $conversation->id)
+            ->get()
+            ->contains(fn (AiMessage $message): bool => collect($message->attachments ?? [])
+                ->contains(fn ($item): bool => is_array($item) && ($item['id'] ?? null) === $attachment->id));
+
+        abort_unless($attached, 404);
+
+        return Storage::disk('local')->response($attachment->stored_path, $attachment->original_name, [
+            'Content-Type' => $attachment->mime_type,
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
     private function actor(Request $request): User
