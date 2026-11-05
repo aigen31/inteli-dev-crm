@@ -38,6 +38,12 @@ services:
       - "traefik.http.routers.crm-prod.entrypoints=websecure"
       - "traefik.http.routers.crm-prod.tls.certresolver=letsencrypt"
       - "traefik.http.routers.crm-prod.service=crm-prod"
+      - "traefik.http.routers.crm-prod-http.rule=Host(`${APP_DOMAIN:-crm.inteli-dev.ru}`)"
+      - "traefik.http.routers.crm-prod-http.entrypoints=web"
+      - "traefik.http.routers.crm-prod-http.middlewares=crm-prod-redirect"
+      - "traefik.http.routers.crm-prod-http.service=crm-prod"
+      - "traefik.http.middlewares.crm-prod-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.crm-prod-redirect.redirectscheme.permanent=true"
       - "traefik.http.services.crm-prod.loadbalancer.server.port=80"
       # ── Landing (inteli-dev.ru) ──
       - "traefik.http.routers.landing-prod.rule=Host(`inteli-dev.ru`)"
