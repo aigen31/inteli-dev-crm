@@ -16,7 +16,15 @@ class TaskPolicy
 
     public function view(User $user, Task $task): bool
     {
-        return $user->isAdmin() || $task->client_id === $user->id;
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if ($task->client_id !== $user->id) {
+            return false;
+        }
+
+        return $task->project === null || $task->project->isVisibleTo($user);
     }
 
     public function create(User $user): bool
@@ -36,7 +44,8 @@ class TaskPolicy
         }
 
         if ($user->isClient() && $task->client_id === $user->id) {
-            return in_array($task->status->value, ['awaiting_review']);
+            return in_array($task->status->value, ['awaiting_review'], true)
+                && ($task->project === null || $task->project->isVisibleTo($user));
         }
 
         return false;

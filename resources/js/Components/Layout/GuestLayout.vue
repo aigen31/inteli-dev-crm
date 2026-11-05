@@ -26,7 +26,13 @@ defineProps({
                 <slot />
             </div>
 
-            <p class="mt-8 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
+            <div class="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-muted">
+                <a href="/legal/privacy" class="hover:text-ink">Политика</a>
+                <a href="/legal/consent" class="hover:text-ink">Согласие</a>
+                <a href="/legal/requisites" class="hover:text-ink">Реквизиты</a>
+            </div>
+
+            <p class="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
                 inteli dev · crm
             </p>
         </div>

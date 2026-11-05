@@ -8,6 +8,7 @@ use App\Enums\InvoiceStatus;
 use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Models\FormTemplate;
+use App\Models\Task;
 use App\Models\TaskTemplate;
 use App\Services\CustomFieldService;
 use Illuminate\Http\Request;
@@ -20,12 +21,12 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $taskStats = $user->clientTasks()
+        $taskStats = Task::query()->visibleTo($user)
             ->selectRaw('status, count(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        $awaitingReview = $user->clientTasks()
+        $awaitingReview = Task::query()->visibleTo($user)
             ->where('status', TaskStatus::AwaitingReview)
             ->latest()
             ->take(5)
@@ -38,7 +39,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $upcomingTasks = $user->clientTasks()
+        $upcomingTasks = Task::query()->visibleTo($user)
             ->whereIn('status', [
                 TaskStatus::PendingReview,
                 TaskStatus::Queued,

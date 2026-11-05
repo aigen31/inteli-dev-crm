@@ -5,6 +5,9 @@ set -e
 # Named volumes are only auto-populated on first creation, so we
 # must refresh them on every container start after a rebuild.
 if [ -d /var/www/public-build ]; then
+    # Named volumes can contain files copied with a read-only mode from an
+    # older image; make them writable before refreshing them.
+    chmod -R u+rwX /var/www/public 2>/dev/null || true
     cp -a /var/www/public-build/. /var/www/public/
 fi
 

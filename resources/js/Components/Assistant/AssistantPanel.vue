@@ -16,6 +16,7 @@ const booted = ref(false);
 const composer = ref(null);
 
 const {
+    project,
     conversationId,
     session,
     messages,
@@ -23,6 +24,7 @@ const {
     suggestions,
     draft,
     attachments,
+    documents,
     loading,
     uploading,
     error,
@@ -35,12 +37,24 @@ const {
     rejectAction,
     uploadFiles,
     removeAttachment,
+    uploadDocuments,
+    removeDocument,
     reset,
 } = useAssistantChat({
     context: () => ({ url: page.url, page: page.component }),
+    projectId: () => state.project?.id ?? null,
 });
 
 const promptSuggestions = computed(() => (suggestions.value?.length ? suggestions.value : []));
+watch(
+    () => state.project?.id,
+    (id) => {
+        if (id && id !== project.value?.id) {
+            reset();
+        }
+    },
+);
+
 const fullPageUrl = computed(() =>
     conversationId.value
         ? `${route('assistant.index')}?c=${encodeURIComponent(conversationId.value)}`
@@ -126,7 +140,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                                 <p class="truncate text-[14px] font-bold text-ink">{{ session?.title || 'Кики' }}</p>
                                 <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-success"></span>
                             </div>
-                            <p class="text-[11px] text-muted">ассистент inteli dev</p>
+                            <p class="text-[11px] text-muted">
+                                <span v-if="state.project" class="mr-1 rounded-full bg-primary-soft px-1.5 py-0.5 font-mono text-[9px] text-primary-800">{{ state.project.key }}</span>
+                                {{ state.project?.name || 'ассистент inteli dev' }}
+                            </p>
                         </div>
                         <div class="ml-auto flex items-center gap-1">
                             <button type="button" class="rounded-xl p-2 text-muted transition hover:bg-ink/[0.05] hover:text-ink" title="Новый диалог" @click="newChat">
@@ -169,6 +186,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                         ref="composer"
                         v-model="draft"
                         :attachments="attachments"
+                        :documents="documents"
                         :uploading="uploading"
                         :loading="loading"
                         :can-send="canSend"
@@ -177,7 +195,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                         @send="submit()"
                         @files="uploadFiles"
                         @remove="removeAttachment"
+                        @document-files="uploadDocuments"
+                        @remove-document="removeDocument"
                     />
+                    <p class="mt-2 text-center text-[9px] leading-relaxed text-faint">
+                        Отправляя сообщение, вы принимаете
+                        <a href="/legal/privacy" target="_blank" class="underline decoration-line underline-offset-2 hover:text-ink">политику</a>
+                        и
+                        <a href="/legal/consent" target="_blank" class="underline decoration-line underline-offset-2 hover:text-ink">согласие</a>
+                        на обработку данных.
+                    </p>
                 </footer>
             </aside>
         </div>

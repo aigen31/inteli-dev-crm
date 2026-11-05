@@ -16,9 +16,11 @@ use App\Enums\TaskPriority;
 use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
+use App\Models\AiDocument;
 use App\Models\CustomField;
 use App\Models\FormTemplate;
 use App\Models\Invoice;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskTemplate;
 use App\Models\User;
@@ -38,6 +40,8 @@ class CrmToolbox
         private readonly CustomFieldService $customFields,
         private readonly TaskTemplateService $templates,
         private readonly FormTemplateService $formTemplates,
+        private readonly KernelClient $kernel,
+        private readonly ProjectContext $project,
         private readonly CreateTaskAction $createTask,
         private readonly ChangeTaskStatusAction $changeTaskStatus,
         private readonly CreateClientAction $createClient,
@@ -94,9 +98,19 @@ class CrmToolbox
         return $this->isFormTool($name);
     }
 
+    public function isPlanTool(string $name): bool
+    {
+        return $name === 'propose_task_plan';
+    }
+
+    public function describesPlan(string $name): bool
+    {
+        return $this->isPlanTool($name);
+    }
+
     public function allowsArgumentOverride(string $name): bool
     {
-        return $this->isFormTool($name);
+        return $this->isFormTool($name) || $this->isPlanTool($name);
     }
 
     /**
@@ -112,6 +126,11 @@ class CrmToolbox
             'create_task_from_form' => 'собрать заявку по форме'.(isset($arguments['title']) && $arguments['title'] !== ''
                 ? ' «'.$arguments['title'].'»'
                 : ''),
+            'propose_task_plan' => 'создать план'.(isset($arguments['tasks']) && is_array($arguments['tasks'])
+                ? ' из '.count($arguments['tasks']).' задач'
+                : ' задач'),
+            'read_document' => 'прочитать документ',
+            'study_project_site' => 'изучить сайт проекта',
             'apply_template' => 'создать задачу из шаблона',
             'set_custom_field' => 'изменить поле «'.($arguments['key'] ?? '').'»',
             default => $name,
@@ -137,6 +156,7 @@ class CrmToolbox
         return match ($name) {
             'overview' => $this->overview($user),
             'list_clients' => $this->listClients($user, $arguments),
+            'list_projects' => $this->listProjects($user),
             'get_client' => $this->getClient($user, $arguments),
             'create_client' => $this->createClient($user, $arguments),
             'list_tasks' => $this->listTasks($user, $arguments),
@@ -144,6 +164,9 @@ class CrmToolbox
             'create_task' => $this->createTaskTool($user, $arguments),
             'create_task_from_form' => $this->createTaskFromForm($user, $arguments),
             'list_form_templates' => $this->listFormTemplates($user),
+            'read_document' => $this->readDocument($user, $arguments),
+            'propose_task_plan' => $this->createPlanTasks($user, $arguments),
+            'study_project_site' => $this->studyProjectSite($user, $arguments),
             'update_task_status' => $this->updateTaskStatus($user, $arguments),
             'list_task_templates' => $this->listTemplates($user),
             'apply_task_template' => $this->applyTemplate($user, $arguments),
@@ -268,6 +291,65 @@ class CrmToolbox
                 'required' => ['form_data'],
                 'roles' => ['admin', 'client'],
                 'confirm' => true,
+            ],
+            'read_document' => [
+                'description' => 'Прочитать фрагмент приложенного документа. В сообщении есть манифест с id и превью. Читай по частям (offset/limit) или ищи по словам (query), чтобы не тратить контекст. Без document_id берётся последний документ пользователя.',
+                'properties' => [
+                    'document_id' => ['type' => 'string', 'description' => 'UUID документа (необязательно).'],
+                    'query' => ['type' => 'string', 'description' => 'Слова для поиска по строкам (необязательно).'],
+                    'offset' => ['type' => 'integer', 'description' => 'С какого символа читать.'],
+                    'limit' => ['type' => 'integer', 'description' => 'Сколько символов вернуть, 1000–12000.'],
+                ],
+                'required' => [],
+                'roles' => ['admin', 'client'],
+                'confirm' => false,
+            ],
+            'list_projects' => [
+                'description' => 'Проекты, к которым можно привязать задачи: ключ, название, клиент, число задач, сайт, есть ли AGENTS.md.',
+                'properties' => (object) [],
+                'required' => [],
+                'roles' => ['admin', 'client'],
+                'confirm' => false,
+            ],
+            'propose_task_plan' => [
+                'description' => 'Предложить план задач из документа или обсуждения. Вызывай один раз со всеми задачами: пользователь проверит и создаст их. Если не хватает данных — сначала задай 1–3 вопроса в тексте и не вызывай инструмент.',
+                'properties' => [
+                    'summary' => ['type' => 'string', 'description' => 'О чём план, одной фразой.'],
+                    'approach' => ['type' => 'string', 'enum' => ['form', 'template', 'free'], 'description' => 'Как собран план: по форме, по шаблону или свободно.'],
+                    'source_document_id' => ['type' => 'string', 'description' => 'UUID документа-источника (необязательно).'],
+                    'client_id' => ['type' => 'string', 'description' => 'UUID клиента (только администратор).'],
+                    'project_id' => ['type' => 'string', 'description' => 'UUID проекта, в который создать задачи. Посмотри list_projects.'],
+                    'questions' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Открытые вопросы к пользователю (необязательно).'],
+                    'tasks' => [
+                        'type' => 'array',
+                        'items' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'title' => ['type' => 'string'],
+                                'description' => ['type' => 'string'],
+                                'checklist' => ['type' => 'array', 'items' => ['type' => 'string']],
+                                'priority' => ['type' => 'string', 'enum' => array_column(TaskPriority::cases(), 'value')],
+                                'due_days' => ['type' => 'integer'],
+                                'template_id' => ['type' => 'string'],
+                            ],
+                            'required' => ['title'],
+                        ],
+                    ],
+                ],
+                'required' => ['tasks'],
+                'roles' => ['admin', 'client'],
+                'confirm' => true,
+            ],
+            'study_project_site' => [
+                'description' => 'Запустить изучение сайта проекта через DeepSeek Harness. Используй, если для задачи не хватает знания о сайте: структура, услуги, цены, термины. Изучение идёт в фоне; результат появится в настройках проекта.',
+                'properties' => [
+                    'url' => ['type' => 'string', 'description' => 'URL сайта; по умолчанию сайт проекта.'],
+                    'focus' => ['type' => 'string', 'description' => 'Что именно изучить: услуги, цены, страницы, термины.'],
+                    'project_id' => ['type' => 'string', 'description' => 'UUID проекта; по умолчанию проект диалога.'],
+                ],
+                'required' => [],
+                'roles' => ['admin', 'client'],
+                'confirm' => false,
             ],
             'update_task_status' => [
                 'description' => 'Перевести задачу в другой статус. Только администратор.',
@@ -506,7 +588,7 @@ class CrmToolbox
         $query = Task::query()->with(['client', 'assignee', 'template']);
 
         if ($user->isClient()) {
-            $query->where('client_id', $user->id);
+            $query->visibleTo($user);
         } elseif (isset($arguments['client_id']) && $arguments['client_id'] !== '') {
             $query->where('client_id', $arguments['client_id']);
         }
@@ -607,6 +689,8 @@ class CrmToolbox
                 'name' => $template->name,
                 'summary' => $template->summary,
                 'category' => $template->category,
+                'field_count' => $template->fieldCount(),
+                'required_count' => $template->requiredCount(),
                 'fields' => $this->formFields($template),
                 'groups' => $this->formGroups($template),
             ])->all(),
@@ -791,15 +875,10 @@ class CrmToolbox
             'label' => $field['label'] ?? null,
             'type' => $field['type'] ?? 'text',
             'required' => (bool) ($field['required'] ?? false),
-            'placeholder' => $field['placeholder'] ?? null,
-            'help' => $field['help'] ?? null,
-            'options' => array_map(
-                fn (array $option): array => [
-                    'value' => $option['value'] ?? null,
-                    'label' => $option['label'] ?? null,
-                ],
+            'options' => array_values(array_map(
+                fn (array $option) => $option['value'] ?? null,
                 array_filter($field['options'] ?? [], 'is_array'),
-            ),
+            )),
         ], $template->fields());
     }
 
@@ -813,23 +892,432 @@ class CrmToolbox
             'label' => $group['label'] ?? null,
             'min' => (int) ($group['min'] ?? 0),
             'max' => (int) ($group['max'] ?? 20),
-            'add_label' => $group['add_label'] ?? null,
-            'help' => $group['help'] ?? null,
             'fields' => array_map(fn (array $field): array => [
                 'key' => $field['key'] ?? null,
                 'label' => $field['label'] ?? null,
                 'type' => $field['type'] ?? 'text',
                 'required' => (bool) ($field['required'] ?? false),
-                'placeholder' => $field['placeholder'] ?? null,
-                'options' => array_map(
-                    fn (array $option): array => [
-                        'value' => $option['value'] ?? null,
-                        'label' => $option['label'] ?? null,
-                    ],
+                'options' => array_values(array_map(
+                    fn (array $option) => $option['value'] ?? null,
                     array_filter($field['options'] ?? [], 'is_array'),
-                ),
+                )),
             ], array_filter($group['fields'] ?? [], 'is_array')),
         ], $template->groups());
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function projectOptions(User $user): array
+    {
+        return Project::query()
+            ->visibleTo($user)
+            ->whereNull('archived_at')
+            ->withCount('tasks')
+            ->orderBy('name')
+            ->limit(100)
+            ->get(['id', 'key', 'name', 'color', 'client_id'])
+            ->map(fn (Project $project): array => [
+                'id' => $project->id,
+                'key' => $project->key,
+                'name' => $project->name,
+                'color' => $project->color,
+                'client_id' => $project->client_id,
+                'tasks_count' => (int) $project->tasks_count,
+            ])
+            ->all();
+    }
+
+    private function listProjects(User $user): array
+    {
+        $projects = Project::query()
+            ->visibleTo($user)
+            ->whereNull('archived_at')
+            ->with('client:id,name')
+            ->withCount('tasks')
+            ->orderBy('name')
+            ->limit(100)
+            ->get();
+
+        return [
+            'count' => $projects->count(),
+            'items' => $projects->map(fn (Project $project): array => [
+                'id' => $project->id,
+                'key' => $project->key,
+                'name' => $project->name,
+                'status' => $project->status->value,
+                'client' => $project->client?->name,
+                'tasks_count' => (int) $project->tasks_count,
+                'site_url' => $project->site_url,
+                'has_agents_md' => filled($project->agents_md),
+                'studied_at' => $project->studied_at?->toDateString(),
+            ])->all(),
+        ];
+    }
+
+    private function resolveProject(User $user, ?string $projectId): ?Project
+    {
+        if ($projectId === null || $projectId === '') {
+            return null;
+        }
+
+        $project = Project::query()
+            ->visibleTo($user)
+            ->find($projectId);
+
+        if (! $project instanceof Project) {
+            throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+        }
+
+        return $project;
+    }
+
+    public function planPayload(User $user, array $arguments): array
+    {
+        $data = $this->validatedPlan($arguments);
+        $project = $this->resolveProject($user, $data['project_id'] ?? null);
+
+        if ($project !== null && ! $project->canCreateTasks($user)) {
+            throw ValidationException::withMessages([
+                'project_id' => 'В этом проекте у вас только просмотр — создавать задачи нельзя.',
+            ]);
+        }
+
+        $clientId = $data['client_id'] ?? $project?->client_id ?? ($user->isClient() ? $user->id : null);
+
+        return [
+            'summary' => $data['summary'] ?? null,
+            'approach' => $data['approach'] ?? 'free',
+            'source_document_id' => $data['source_document_id'] ?? null,
+            'questions' => $data['questions'] ?? [],
+            'client_id' => $clientId,
+            'project_id' => $project?->id,
+            'project' => $project ? [
+                'id' => $project->id,
+                'key' => $project->key,
+                'name' => $project->name,
+                'color' => $project->color,
+            ] : null,
+            'projects' => $this->projectOptions($user),
+            'clients' => $user->isAdmin()
+                ? User::query()
+                    ->where('role', UserRole::Client)
+                    ->orderBy('name')
+                    ->limit(200)
+                    ->get(['id', 'name', 'email'])
+                    ->map(fn (User $client): array => [
+                        'id' => $client->id,
+                        'name' => $client->name,
+                        'email' => $client->email,
+                    ])
+                    ->all()
+                : [],
+            'tasks' => $data['tasks'],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function createPlanTasks(User $user, array $arguments): array
+    {
+        $data = $this->validatedPlan($arguments);
+        $project = $this->resolveProject($user, $data['project_id'] ?? null);
+
+        if ($project !== null && ! $project->canCreateTasks($user)) {
+            throw ValidationException::withMessages([
+                'project_id' => 'В этом проекте у вас только просмотр — создавать задачи нельзя.',
+            ]);
+        }
+
+        $clientId = (string) ($data['client_id'] ?? $project?->client_id ?? '');
+        $client = $user->isClient()
+            ? $user
+            : $this->resolveClient($user, $clientId);
+
+        $created = [];
+
+        foreach ($data['tasks'] as $item) {
+            $deadline = isset($item['due_days']) && $item['due_days'] !== null
+                ? now()->addDays((int) $item['due_days'])->toDateString()
+                : null;
+
+            $templateId = (string) ($item['template_id'] ?? '');
+
+            if ($templateId !== '') {
+                $template = TaskTemplate::query()->visibleTo($user)->find($templateId);
+
+                if (! $template instanceof TaskTemplate) {
+                    throw ValidationException::withMessages([
+                        'tasks' => 'Шаблон задачи не найден: '.$templateId,
+                    ]);
+                }
+
+                $task = $this->templates->apply($template, $client, $user, [
+                    'title' => $item['title'],
+                    'description' => $item['description'] ?? null,
+                    'deadline' => $deadline,
+                    'project_id' => $project?->id,
+                ], TaskSource::Ai);
+            } else {
+                $task = $this->createTask->execute([
+                    'client_id' => $client->id,
+                    'project_id' => $project?->id,
+                    'title' => $item['title'],
+                    'description' => $item['description'] ?? 'Задача из плана Кики.',
+                    'checklist' => $item['checklist'] ?? [],
+                    'priority' => $item['priority'] ?? TaskPriority::Medium,
+                    'deadline' => $deadline,
+                    'source' => TaskSource::Ai,
+                ], $user);
+            }
+
+            $created[] = ['id' => $task->id, 'title' => $task->title];
+        }
+
+        $templateId = $data['source_document_id'] ?? null;
+
+        return [
+            'summary' => $data['summary'] ?? null,
+            'approach' => $data['approach'] ?? 'free',
+            'source_document_id' => $templateId,
+            'count' => count($created),
+            'created' => $created,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function readDocument(User $user, array $arguments): array
+    {
+        $data = Validator::make($arguments, [
+            'document_id' => ['nullable', 'uuid'],
+            'query' => ['nullable', 'string', 'max:200'],
+            'offset' => ['nullable', 'integer', 'min:0'],
+            'limit' => ['nullable', 'integer', 'min:1000', 'max:12000'],
+        ])->validate();
+
+        $query = AiDocument::query()->where('user_id', $user->id);
+
+        if (isset($data['document_id']) && $data['document_id'] !== '') {
+            $query->whereKey($data['document_id']);
+        }
+
+        $document = $query->latest('created_at')->first();
+
+        if (! $document instanceof AiDocument) {
+            throw ValidationException::withMessages([
+                'document_id' => 'Документ не найден. Попросите пользователя прикрепить его снова.',
+            ]);
+        }
+
+        $search = trim((string) ($data['query'] ?? ''));
+
+        if ($search !== '') {
+            $found = $this->searchDocument($document, $search);
+
+            return [
+                'document_id' => $document->id,
+                'name' => $document->name,
+                'total_chars' => $document->char_count,
+                'mode' => 'query',
+                'matches' => $found['matches'],
+                'text' => $found['text'],
+                'note' => $found['matches'] === 0
+                    ? 'По этим словам ничего не нашлось. Попробуй другие формулировки или прочитай документ по offset.'
+                    : null,
+            ];
+        }
+
+        $offset = max(0, (int) ($data['offset'] ?? 0));
+        $limit = (int) ($data['limit'] ?? 12000);
+        $slice = mb_substr($document->text, $offset, $limit);
+        $next = $offset + mb_strlen($slice);
+
+        return [
+            'document_id' => $document->id,
+            'name' => $document->name,
+            'total_chars' => $document->char_count,
+            'mode' => 'slice',
+            'offset' => $offset,
+            'next_offset' => $next < $document->char_count ? $next : null,
+            'text' => $slice,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function validatedPlan(array $arguments): array
+    {
+        $data = Validator::make($arguments, [
+            'summary' => ['nullable', 'string', 'max:300'],
+            'approach' => ['nullable', 'in:form,template,free'],
+            'source_document_id' => ['nullable', 'uuid'],
+            'client_id' => ['nullable', 'string', 'max:128'],
+            'project_id' => ['nullable', 'uuid'],
+            'questions' => ['nullable', 'array', 'max:10'],
+            'questions.*' => ['string', 'max:500'],
+            'tasks' => ['required', 'array', 'min:1', 'max:40'],
+            'tasks.*.title' => ['required', 'string', 'min:3', 'max:255'],
+            'tasks.*.description' => ['nullable', 'string', 'max:8000'],
+            'tasks.*.checklist' => ['nullable', 'array', 'max:30'],
+            'tasks.*.checklist.*' => ['string', 'max:500'],
+            'tasks.*.priority' => ['nullable', Rule::enum(TaskPriority::class)],
+            'tasks.*.due_days' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'tasks.*.template_id' => ['nullable', 'uuid'],
+        ])->validate();
+
+        $data['tasks'] = array_values(array_map(function (array $task): array {
+            $checklist = array_values(array_filter(array_map(
+                fn ($item) => trim((string) (is_array($item) ? ($item['text'] ?? '') : $item)),
+                $task['checklist'] ?? [],
+            ), fn (string $item) => $item !== ''));
+
+            return [
+                'title' => trim((string) $task['title']),
+                'description' => trim((string) ($task['description'] ?? '')),
+                'checklist' => $checklist,
+                'priority' => $task['priority'] ?? TaskPriority::Medium->value,
+                'due_days' => isset($task['due_days']) ? (int) $task['due_days'] : null,
+                'template_id' => $task['template_id'] ?? null,
+            ];
+        }, $data['tasks']));
+
+        return $data;
+    }
+
+    /**
+     * @return array{text: string, matches: int}
+     */
+    private function searchDocument(AiDocument $document, string $query): array
+    {
+        $lines = preg_split('/\n/u', $document->text) ?: [];
+        $terms = array_values(array_filter(
+            preg_split('/\s+/u', mb_strtolower($query)) ?: [],
+            fn (string $term) => mb_strlen($term) >= 2,
+        ));
+
+        if ($terms === []) {
+            return ['text' => '', 'matches' => 0];
+        }
+
+        $hits = [];
+
+        foreach ($lines as $index => $line) {
+            $lower = mb_strtolower($line);
+            $score = 0;
+
+            foreach ($terms as $term) {
+                if (mb_strpos($lower, $term) !== false) {
+                    $score++;
+                }
+            }
+
+            if ($score > 0) {
+                $hits[$index] = $score;
+            }
+
+            if (count($hits) >= 40) {
+                break;
+            }
+        }
+
+        if ($hits === []) {
+            return ['text' => '', 'matches' => 0];
+        }
+
+        $blocks = [];
+        $used = [];
+        $chars = 0;
+
+        foreach (array_keys($hits) as $index) {
+            $start = max(0, $index - 1);
+            $end = min(count($lines) - 1, $index + 1);
+            $block = [];
+
+            for ($lineIndex = $start; $lineIndex <= $end; $lineIndex++) {
+                if (isset($used[$lineIndex])) {
+                    continue;
+                }
+
+                $used[$lineIndex] = true;
+                $block[] = ($lineIndex + 1).': '.$lines[$lineIndex];
+            }
+
+            if ($block === []) {
+                continue;
+            }
+
+            $text = implode("\n", $block);
+
+            if ($chars + mb_strlen($text) > 12000) {
+                break;
+            }
+
+            $blocks[] = $text;
+            $chars += mb_strlen($text);
+        }
+
+        return ['text' => implode("\n…\n", $blocks), 'matches' => count($hits)];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function studyProjectSite(User $user, array $arguments): array
+    {
+        $project = $this->resolveProject($user, $arguments['project_id'] ?? null);
+        $url = trim((string) ($arguments['url'] ?? ''));
+
+        if ($url === '' && $project !== null) {
+            $url = (string) $project->site_url;
+        }
+
+        if ($url === '') {
+            $url = (string) $this->project->siteUrl();
+        }
+
+        if ($url === '') {
+            throw ValidationException::withMessages([
+                'url' => 'Не задан сайт проекта. Укажите его в настройках проекта.',
+            ]);
+        }
+
+        $local = $project?->studies()->create([
+            'actor_id' => $user->id,
+            'status' => 'running',
+            'started_at' => now(),
+        ]);
+
+        $study = $this->kernel->startStudy($user, [
+            'url' => $url,
+            'focus' => $arguments['focus'] ?? $project?->name,
+            'agents_md' => $project?->agents_md ?? ($this->project->agentsMd() ?: null),
+            'instructions' => $project?->instructions ?? ($this->project->instructions() ?: null),
+        ]);
+
+        $local?->update([
+            'kernel_study_id' => $study['id'] ?? null,
+            'events' => $study['events'] ?? [],
+        ]);
+
+        return [
+            'status' => 'started',
+            'study_id' => $study['id'] ?? null,
+            'project_id' => $project?->id,
+            'url' => $url,
+            'message' => 'Изучение сайта запущено. Прогресс и результат — в проекте.',
+        ];
     }
 
     /**
@@ -864,7 +1352,14 @@ class CrmToolbox
 
         return [
             'count' => $templates->count(),
-            'items' => $templates->map(fn (TaskTemplate $template) => $this->serializer->template($template))->all(),
+            'items' => $templates->map(fn (TaskTemplate $template): array => [
+                'id' => $template->id,
+                'name' => $template->name,
+                'summary' => $template->summary,
+                'default_priority' => $template->default_priority?->value,
+                'default_due_days' => $template->default_due_days,
+                'checklist_count' => count($template->normalizedChecklist()),
+            ])->all(),
         ];
     }
 
@@ -924,7 +1419,7 @@ class CrmToolbox
         $query = Invoice::query()->with(['client', 'task']);
 
         if ($user->isClient()) {
-            $query->where('client_id', $user->id);
+            $query->visibleTo($user);
         } elseif (isset($arguments['client_id']) && $arguments['client_id'] !== '') {
             $query->where('client_id', $arguments['client_id']);
         }
@@ -1098,7 +1593,7 @@ class CrmToolbox
     private function resolveTask(User $user, string $id): Task
     {
         $task = Task::query()
-            ->when($user->isClient(), fn ($query) => $query->where('client_id', $user->id))
+            ->when($user->isClient(), fn ($query) => $query->visibleTo($user))
             ->find($id);
 
         if (! $task instanceof Task) {

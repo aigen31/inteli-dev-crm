@@ -6,8 +6,12 @@ namespace App\Http\Controllers;
 
 use App\Models\AiAction;
 use App\Models\AiConversation;
+use App\Models\AiDocument;
 use App\Services\Ai\AgentService;
 use App\Services\Ai\SessionService;
+use App\Services\Documents\DocumentException;
+use App\Services\Documents\DocumentExtractor;
+use App\Services\FileUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -144,6 +148,62 @@ class AssistantController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /**
+     * Accept any text-bearing document, extract its text once and hand the
+     * assistant only a manifest. The full text is read on demand.
+     */
+    public function uploadDocument(
+        Request $request,
+        DocumentExtractor $extractor,
+        FileUploadService $files,
+    ): JsonResponse {
+        $request->validate([
+            'file' => ['required', 'file', 'max:20480'],
+        ]);
+
+        $file = $request->file('file');
+        abort_unless($file !== null, 422, 'Файл не получен.');
+
+        $name = $file->getClientOriginalName();
+        $extension = strtolower($file->getClientOriginalExtension());
+        $allowed = [
+            'xlsx', 'docx', 'pptx', 'pdf', 'csv', 'tsv', 'txt', 'md', 'markdown',
+            'json', 'xml', 'html', 'htm', 'yaml', 'yml', 'log', 'sql', 'ini',
+            'conf', 'rtf', 'tex',
+        ];
+
+        if (! in_array($extension, $allowed, true)) {
+            return response()->json([
+                'message' => 'Этот формат не поддержан. Пришлите DOCX, XLSX, PPTX, PDF, CSV или текст.',
+            ], 422);
+        }
+
+        try {
+            $result = $extractor->extract((string) $file->getRealPath(), $name);
+            $attachment = $files->upload($file, $request->user());
+        } catch (DocumentException|\InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        $document = AiDocument::create([
+            'user_id' => $request->user()->id,
+            'file_attachment_id' => $attachment->id,
+            'name' => $name,
+            'mime_type' => $attachment->mime_type,
+            'text' => $result['text'],
+            'char_count' => $result['chars'],
+        ]);
+
+        return response()->json([
+            'id' => $document->id,
+            'name' => $document->name,
+            'mime' => $document->mime_type,
+            'chars' => $document->char_count,
+            'preview' => $document->preview(),
+            'download_url' => route('files.download', $attachment),
+        ], 201);
+    }
+
     public function chat(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -154,6 +214,9 @@ class AssistantController extends Controller
             'context.page' => ['nullable', 'string', 'max:100'],
             'attachments' => ['nullable', 'array', 'max:'.self::MAX_ATTACHMENTS],
             'attachments.*' => ['uuid'],
+            'documents' => ['nullable', 'array', 'max:5'],
+            'documents.*' => ['uuid'],
+            'project_id' => ['nullable', 'uuid'],
         ]);
 
         $payload = $this->agent->chat(
@@ -162,6 +225,8 @@ class AssistantController extends Controller
             (string) ($data['message'] ?? ''),
             $data['context'] ?? [],
             $data['attachments'] ?? [],
+            $data['documents'] ?? [],
+            $data['project_id'] ?? null,
         );
 
         return response()->json($payload);
@@ -186,6 +251,9 @@ class AssistantController extends Controller
             'arguments.deadline' => ['nullable', 'string', 'max:32'],
             'arguments.form_template_id' => ['nullable', 'uuid'],
             'arguments.client_id' => ['nullable', 'string', 'max:128'],
+            'arguments.summary' => ['nullable', 'string', 'max:300'],
+            'arguments.questions' => ['nullable', 'array'],
+            'arguments.tasks' => ['nullable', 'array', 'max:40'],
         ]);
 
         return response()->json(

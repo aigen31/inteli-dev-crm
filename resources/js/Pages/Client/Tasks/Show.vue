@@ -99,8 +99,17 @@ function addComment() {
                 <Card v-if="task.reports?.length" title="Отчёты">
                     <div class="divide-y divide-line/60">
                         <div v-for="report in task.reports" :key="report.id" class="py-3 first:pt-0">
-                            <p class="text-[11px] font-semibold text-ink">{{ report.author?.name }} <span class="font-normal text-faint">· {{ formatDateTime(report.created_at) }}</span></p>
-                            <p class="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed text-ink-soft">{{ report.content }}</p>
+                            <p class="text-[11px] font-semibold text-ink">{{ report.author?.name }} <span class="font-normal text-faint">· {{ formatDateTime(report.sent_at || report.created_at) }}</span></p>
+                            <p v-if="report.title" class="mt-1 text-[12px] font-semibold text-ink">{{ report.title }}</p>
+                            <div v-for="(item, index) in report.items" :key="item.id" class="mt-2">
+                                <p class="font-mono text-[8px] uppercase tracking-[0.12em] text-faint">Группа {{ index + 1 }}</p>
+                                <p class="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed text-ink-soft">{{ item.content }}</p>
+                                <a v-if="item.test_url" :href="item.test_url" target="_blank" rel="noopener" class="mt-2 inline-flex text-[10px] font-semibold text-primary-700 hover:underline">Страница для тестирования</a>
+                                <a v-if="item.screenshot_id" :href="route('reports.screenshot', { report: report.id, item: item.id })" target="_blank" rel="noopener" class="mt-2 block">
+                                    <img :src="route('reports.screenshot', { report: report.id, item: item.id })" alt="Скриншот отчёта" class="max-h-[220px] w-full rounded-[12px] border border-line object-cover" loading="lazy" />
+                                </a>
+                            </div>
+                            <Link :href="route('reports.show', report.id)" class="mt-2 inline-flex text-[10px] font-semibold text-primary-700 hover:underline">Открыть отчёт</Link>
                         </div>
                     </div>
                 </Card>

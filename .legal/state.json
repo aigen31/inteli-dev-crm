@@ -1,0 +1,39 @@
+{
+  "managed": [
+    {
+      "path": "resources/legal/privacy.md",
+      "sha256": "063c483d108495d5d0f5232a2737fce76c823010bfba95a7bce54121897c6ec2",
+      "kind": "page"
+    },
+    {
+      "path": "resources/legal/consent.md",
+      "sha256": "fbea4d1e5efa81bc4890e9804d196500330e9b6838bf1f6105734ad9c5df0833",
+      "kind": "page"
+    },
+    {
+      "path": "resources/legal/requisites.md",
+      "sha256": "34a911b6c79396e46479297e1b9ca7cd0d7fe5b084acf34222bb7c4fc05e6255",
+      "kind": "page"
+    },
+    {
+      "path": "resources/views/legal/show.blade.php",
+      "sha256": "1fa8f43172cc7db01f47bacaeda44f28ddb04810de70fa0bb52db65c3b4ac35d",
+      "kind": "page"
+    },
+    {
+      "path": "app/Http/Controllers/LegalController.php",
+      "sha256": "462ba92f3ff4b8c14afb1d2b61814d5bfc3b26acc481216522bdfe6a9ffa53e4",
+      "kind": "page"
+    },
+    {
+      "path": "resources/js/Components/Legal/ConsentCheckbox.vue",
+      "sha256": "6c89d1c95b9eb7c4649cd644fc14796f532e72df4111c116f6d02a39bdfe99f1",
+      "kind": "checkbox"
+    },
+    {
+      "path": "database/migrations/2026_11_06_020000_create_consent_logs_table.php",
+      "sha256": "38ce27047f0abec0bb1315e3b4b4d3c1a1f2a7b6dcef514eabb25e6dba0eca10",
+      "kind": "consent-log"
+    }
+  ]
+}

@@ -11,11 +11,13 @@ import SelectInput from '@/Components/Form/SelectInput.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import { ArrowLeftIcon, ArrowRightIcon, RectangleStackIcon, SparklesIcon } from '@heroicons/vue/24/outline';
 import { useAssistant } from '@/Composables/useAssistant';
+import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 
 const props = defineProps({
     forms: { type: Array, default: () => [] },
     scenariosCount: { type: Number, default: 0 },
     priorities: { type: Array, default: () => [] },
+    projects: { type: Array, default: () => [] },
 });
 
 const { open } = useAssistant();
@@ -48,6 +50,8 @@ function emptyFormData(template) {
 const form = useForm({
     title: props.forms[0]?.name || '',
     description: '',
+    project_id: new URLSearchParams(window.location.search).get('project_id') || '',
+    consent: false,
     priority: 'medium',
     deadline: '',
     form_data: emptyFormData(props.forms[0]),
@@ -183,6 +187,15 @@ function submit() {
                         <div class="space-y-4">
                             <TextInput v-model="form.title" label="Название заявки" :error="form.errors.title" placeholder="Коротко: что нужно сделать" />
 
+                            <SelectInput
+                                v-if="freeform && projects.length"
+                                v-model="form.project_id"
+                                label="Проект (необязательно)"
+                                :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))"
+                                placeholder="Без проекта"
+                                :error="form.errors.project_id"
+                            />
+
                             <template v-if="freeform">
                                 <div>
                                     <p class="mb-1.5 text-[11px] font-semibold text-ink-soft">Описание</p>
@@ -203,12 +216,16 @@ function submit() {
                             </div>
                         </div>
 
+                        <div class="mt-4">
+                            <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="task-consent" />
+                        </div>
+
                         <div class="mt-5 flex items-center justify-between gap-3 border-t border-line/70 pt-4">
                             <button type="button" class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-primary-700 hover:underline" @click="open">
                                 <SparklesIcon class="h-3.5 w-3.5" />
                                 Помочь сформулировать
                             </button>
-                            <Button size="sm" :disabled="form.processing" @click="submit">
+                            <Button size="sm" :disabled="form.processing || !form.consent" @click="submit">
                                 Отправить заявку
                                 <ArrowRightIcon class="h-3.5 w-3.5" />
                             </Button>

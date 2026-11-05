@@ -3,10 +3,12 @@ import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import TaskFormFields from '@/Components/Task/TaskFormFields.vue';
+import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     clients: Array,
+    projects: Array,
     assignees: Array,
     templates: Array,
     types: Array,
@@ -19,6 +21,7 @@ const params = new URLSearchParams(window.location.search);
 
 const form = useForm({
     client_id: params.get('client_id') || '',
+    project_id: params.get('project_id') || '',
     task_template_id: '',
     title: '',
     description: '',
@@ -30,6 +33,7 @@ const form = useForm({
     assignee_id: '',
     deadline: '',
     custom_fields: {},
+    consent: false,
 });
 
 function update(next) {
@@ -52,13 +56,18 @@ function submit() {
                     Назад
                 </Button>
             </Link>
-            <Button size="sm" :disabled="form.processing" @click="submit">Создать задачу</Button>
+            <Button size="sm" :disabled="form.processing || !form.consent" @click="submit">Создать задачу</Button>
         </template>
 
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_.7fr]">
+            <div class="mb-5">
+                <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="admin-task-consent" variant="contract" />
+            </div>
+
             <TaskFormFields
                 :model-value="form"
                 :clients="clients"
+                :projects="projects"
                 :assignees="assignees"
                 :templates="templates"
                 :types="types"

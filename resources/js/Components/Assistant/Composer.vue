@@ -1,14 +1,16 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue';
-import { ArrowPathIcon, PaperAirplaneIcon, PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { ArrowPathIcon, DocumentTextIcon, PaperAirplaneIcon, PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     modelValue: { type: String, default: '' },
     attachments: { type: Array, default: () => [] },
+    documents: { type: Array, default: () => [] },
     uploading: { type: Number, default: 0 },
     loading: { type: Boolean, default: false },
     canSend: { type: Boolean, default: false },
     maxAttachments: { type: Number, default: 4 },
+    maxDocuments: { type: Number, default: 3 },
     placeholder: { type: String, default: 'Спросите Кики…' },
     hint: {
         type: String,
@@ -16,14 +18,16 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['update:modelValue', 'send', 'files', 'remove']);
+const emit = defineEmits(['update:modelValue', 'send', 'files', 'remove', 'document-files', 'remove-document']);
 
 const textarea = ref(null);
 const fileInput = ref(null);
+const documentInput = ref(null);
 const dragging = ref(false);
 
 const hasAttachments = computed(() => props.attachments.length > 0);
 const room = computed(() => Math.max(props.maxAttachments - props.attachments.length, 0));
+const documentRoom = computed(() => Math.max(props.maxDocuments - props.documents.length, 0));
 
 function resize() {
     const element = textarea.value;
@@ -53,6 +57,12 @@ function onKeydown(event) {
 function pickFiles(event) {
     const files = event.target.files;
     if (files?.length) emit('files', files);
+    event.target.value = '';
+}
+
+function pickDocuments(event) {
+    const files = event.target.files;
+    if (files?.length) emit('document-files', files);
     event.target.value = '';
 }
 
@@ -88,6 +98,28 @@ defineExpose({ focus: () => textarea.value?.focus() });
             Отпустите изображение, чтобы прикрепить
         </div>
 
+        <div v-if="documents.length" class="mb-2 flex flex-wrap gap-2">
+            <div
+                v-for="document in documents"
+                :key="document.id"
+                class="flex max-w-full items-center gap-2 rounded-[14px] border border-line bg-surface px-2.5 py-1.5"
+            >
+                <DocumentTextIcon class="h-4 w-4 shrink-0 text-primary-600" />
+                <span class="min-w-0">
+                    <span class="block max-w-[220px] truncate text-[11px] font-medium text-ink">{{ document.name }}</span>
+                    <span class="block font-mono text-[9px] text-faint">{{ document.chars }} символов</span>
+                </span>
+                <button
+                    type="button"
+                    class="rounded-md p-0.5 text-faint transition hover:text-danger"
+                    title="Убрать документ"
+                    @click="emit('remove-document', document.id)"
+                >
+                    <XMarkIcon class="h-3.5 w-3.5" />
+                </button>
+            </div>
+        </div>
+
         <div
             v-if="hasAttachments"
             class="mb-2 flex flex-wrap gap-2"
@@ -114,6 +146,24 @@ defineExpose({ focus: () => textarea.value?.focus() });
         </div>
 
         <div class="flex items-end gap-1.5 rounded-[22px] border border-line bg-white/70 p-1.5 pl-2 transition focus-within:border-primary-300 focus-within:ring-2 focus-within:ring-primary-500/10">
+            <button
+                type="button"
+                class="mb-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-ink/[0.05] hover:text-ink disabled:opacity-35"
+                :disabled="documentRoom === 0 || uploading > 0"
+                :title="documentRoom === 0 ? 'Достигнут лимит документов' : 'Прикрепить документ'"
+                @click="documentInput?.click()"
+            >
+                <DocumentTextIcon class="h-[18px] w-[18px]" />
+            </button>
+            <input
+                ref="documentInput"
+                type="file"
+                accept=".xlsx,.docx,.pptx,.pdf,.csv,.tsv,.txt,.md,.json,.xml,.html,.yaml,.yml,.log,.rtf"
+                multiple
+                class="sr-only"
+                @change="pickDocuments"
+            />
+
             <button
                 type="button"
                 class="mb-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-ink/[0.05] hover:text-ink disabled:opacity-35"

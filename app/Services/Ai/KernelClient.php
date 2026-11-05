@@ -23,6 +23,7 @@ class KernelClient
     /**
      * @param  array<string, mixed>  $context
      * @param  list<array{id: string, name?: string|null, mime?: string|null}>  $attachments
+     * @param  list<array{id: string, name?: string|null, mime?: string|null, chars?: int|null, preview?: string|null}>  $documents
      * @return array<string, mixed>
      */
     public function chat(
@@ -31,6 +32,7 @@ class KernelClient
         string $message,
         array $context = [],
         array $attachments = [],
+        array $documents = [],
     ): array {
         $payload = [
             'channel' => config('ai.kernel_channel', 'crm'),
@@ -46,6 +48,16 @@ class KernelClient
 
         if ($attachments !== []) {
             $payload['attachments'] = $attachments;
+        }
+
+        if ($documents !== []) {
+            $payload['documents'] = array_map(fn (array $document): array => [
+                'id' => $document['id'],
+                'name' => $document['name'] ?? null,
+                'mime' => $document['mime'] ?? null,
+                'chars' => $document['chars'] ?? null,
+                'preview' => $document['preview'] ?? null,
+            ], $documents);
         }
 
         return $this->send(fn (PendingRequest $request) => $request->post($this->url('/v1/chat'), $payload));
@@ -101,6 +113,58 @@ class KernelClient
         return $this->send(fn (PendingRequest $request) => $request
             ->withQueryParameters(['actor_id' => $user->id])
             ->patch($this->url('/v1/conversations/'.rawurlencode($conversationId)), $patch));
+    }
+
+    /**
+     * Start a site study in the harness sidecar. Returns immediately: the CRM
+     * settings page polls `study()` and shows the live event stream.
+     *
+     * @param  array{url: string, focus?: string|null, agents_md?: string|null, instructions?: string|null}  $payload
+     * @return array<string, mixed>
+     */
+    public function startStudy(User $user, array $payload): array
+    {
+        return $this->send(fn (PendingRequest $request) => $request->post($this->url('/v1/studies'), [
+            'actor' => ['id' => $user->id, 'role' => $user->role->value],
+            'url' => $payload['url'],
+            'focus' => $payload['focus'] ?? null,
+            'agents_md' => $payload['agents_md'] ?? null,
+            'instructions' => $payload['instructions'] ?? null,
+        ]));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function study(User $user, string $id): array
+    {
+        return $this->send(fn (PendingRequest $request) => $request->get(
+            $this->url('/v1/studies/'.rawurlencode($id)),
+            ['actor_id' => $user->id],
+        ));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function cancelStudy(User $user, string $id): array
+    {
+        return $this->send(fn (PendingRequest $request) => $request
+            ->withQueryParameters(['actor_id' => $user->id])
+            ->post($this->url('/v1/studies/'.rawurlencode($id).'/cancel')));
+    }
+
+    /**
+     * Shared price snapshot from the kernel.
+     *
+     * @return array<string, mixed>
+     */
+    public function prices(bool $force = false): array
+    {
+        return $this->send(fn (PendingRequest $request) => $request->get(
+            $this->url('/v1/knowledge/pricing'),
+            $force ? ['force' => '1'] : [],
+        ));
     }
 
     public function appendNote(string $conversationId, string $content): void

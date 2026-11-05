@@ -7,7 +7,9 @@ import {
     Bars3Icon,
     CheckCircleIcon,
     Cog6ToothIcon,
+    FolderIcon,
     HomeIcon,
+    InboxIcon,
     MagnifyingGlassIcon,
     RectangleStackIcon,
     SparklesIcon,
@@ -46,6 +48,12 @@ const navigation = computed(() =>
                   active: path.value.startsWith('/admin/tasks'),
               },
               {
+                  label: 'Проекты',
+                  href: route('admin.projects.index'),
+                  icon: FolderIcon,
+                  active: path.value.startsWith('/admin/projects'),
+              },
+              {
                   label: 'Библиотека',
                   href: route('admin.forms.index'),
                   icon: RectangleStackIcon,
@@ -53,12 +61,15 @@ const navigation = computed(() =>
               },
               { label: 'Клиенты', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') },
               { label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },
+              { label: 'Отчёты', href: route('admin.reports.index'), icon: InboxIcon, active: path.value.startsWith('/admin/reports') },
               { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
           ]
         : [
               { label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' },
+              { label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') },
               { label: 'Задачи', href: route('client.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/tasks') },
               { label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
+              { label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') },
               { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
           ],
 );

@@ -3,14 +3,16 @@ import { reactive } from 'vue';
 const state = reactive({
     open: false,
     unread: false,
+    project: null,
 });
 
 export function useAssistant() {
     return {
         state,
-        open() {
+        open(project = null) {
             state.open = true;
             state.unread = false;
+            state.project = project;
         },
         close() {
             state.open = false;

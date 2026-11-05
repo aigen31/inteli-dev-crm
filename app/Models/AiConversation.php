@@ -16,6 +16,7 @@ class AiConversation extends Model
     protected $fillable = [
         'id',
         'user_id',
+        'project_id',
         'title',
         'context',
         'last_message_at',
@@ -46,6 +47,11 @@ class AiConversation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 
     public function messages(): HasMany

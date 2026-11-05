@@ -8,10 +8,13 @@ use App\Enums\AiActionStatus;
 use App\Enums\AiMessageRole;
 use App\Models\AiAction;
 use App\Models\AiConversation;
+use App\Models\AiDocument;
 use App\Models\AiMessage;
 use App\Models\FileAttachment;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -30,6 +33,9 @@ class AgentService
     /** Keep in sync with `KERNEL_MAX_ATTACHMENT_BYTES` (8 MB by default). */
     private const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024;
 
+    /** Documents attached to one turn; each one is read on demand. */
+    private const MAX_DOCUMENTS = 5;
+
     public function __construct(
         private readonly KernelClient $kernel,
         private readonly SessionService $sessions,
@@ -39,6 +45,7 @@ class AgentService
     /**
      * @param  array<string, mixed>  $pageContext
      * @param  list<string>  $attachmentIds
+     * @param  list<string>  $documentIds
      * @return array<string, mixed>
      */
     public function chat(
@@ -47,9 +54,16 @@ class AgentService
         string $message,
         array $pageContext = [],
         array $attachmentIds = [],
+        array $documentIds = [],
+        ?string $projectId = null,
     ): array {
         $message = trim($message);
         $attachments = $this->resolveAttachments($user, $attachmentIds);
+        $documents = $this->resolveDocuments($user, $documentIds);
+
+        if ($message === '' && $documents !== []) {
+            $message = 'Разбери документ и предложи план задач.';
+        }
 
         if ($message === '' && $attachments !== []) {
             $message = 'Что на изображении?';
@@ -60,21 +74,48 @@ class AgentService
         }
 
         $conversation = $this->sessions->resolve($user, $conversationId, $message);
+
+        if ($conversation->project_id !== null
+            && ! Project::query()->visibleTo($user)->whereKey($conversation->project_id)->exists()) {
+            $conversation->update(['project_id' => null]);
+            $conversation->refresh();
+        }
+
+        $project = $this->resolveProject($user, $projectId);
+
         $conversation->update([
             'last_message_at' => now(),
             'context' => $pageContext,
+            ...($project !== null ? ['project_id' => $project->id] : []),
         ]);
 
         $attachmentMeta = array_map(fn (array $file): array => [
+            'kind' => 'image',
             'id' => $file['id'],
             'name' => $file['name'],
             'mime' => $file['mime'],
         ], $attachments);
 
-        $this->storeUserMessage($conversation, $message, $attachmentMeta);
+        $documentMeta = array_map(fn (array $document): array => [
+            'kind' => 'document',
+            'id' => $document['id'],
+            'name' => $document['name'],
+            'mime' => $document['mime'],
+            'chars' => $document['chars'],
+            'preview' => $document['preview'],
+        ], $documents);
+
+        $this->storeUserMessage($conversation, $message, [...$attachmentMeta, ...$documentMeta]);
 
         try {
-            $result = $this->kernel->chat($user, $conversation->id, $message, $pageContext, $attachmentMeta);
+            $result = $this->kernel->chat(
+                $user,
+                $conversation->id,
+                $message,
+                $pageContext,
+                $attachmentMeta,
+                $documentMeta,
+            );
         } catch (AiException $exception) {
             $assistant = AiMessage::create([
                 'conversation_id' => $conversation->id,
@@ -105,6 +146,7 @@ class AgentService
             'conversation_id' => $conversation->id,
             'role' => AiMessageRole::Assistant,
             'content' => $answer,
+            'trace' => $result['trace'] ?? null,
             'tokens_in' => (int) ($result['usage']['prompt_tokens'] ?? 0),
             'tokens_out' => (int) ($result['usage']['completion_tokens'] ?? 0),
         ]);
@@ -147,6 +189,7 @@ class AgentService
             'conversation_id' => $conversation->id,
             'role' => AiMessageRole::Assistant,
             'content' => $answer,
+            'trace' => $result['trace'] ?? null,
             'tokens_in' => (int) ($result['usage']['prompt_tokens'] ?? 0),
             'tokens_out' => (int) ($result['usage']['completion_tokens'] ?? 0),
         ]);
@@ -320,6 +363,27 @@ class AgentService
      * @param  array<string, mixed>|null  $overrideAction
      * @return array<string, mixed>
      */
+    private function resolveProject(User $user, ?string $projectId): ?Project
+    {
+        if ($projectId === null || $projectId === '') {
+            return null;
+        }
+
+        if (! Str::isUuid($projectId)) {
+            throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+        }
+
+        $project = Project::query()
+            ->visibleTo($user)
+            ->find($projectId);
+
+        if (! $project instanceof Project) {
+            throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+        }
+
+        return $project;
+    }
+
     private function payload(
         ?AiConversation $conversation,
         ?AiMessage $assistant = null,
@@ -335,10 +399,11 @@ class AgentService
                 'pending_actions' => [],
                 'pending_action' => null,
                 'suggestions' => [],
+                'project' => null,
             ];
         }
 
-        $conversation->refresh()->load(['messages', 'actions']);
+        $conversation->refresh()->load(['messages', 'actions', 'project']);
         $conversation->loadCount('messages');
 
         $messages = $conversation->messages
@@ -347,6 +412,7 @@ class AgentService
             ->values();
 
         $files = $this->attachmentFiles($messages);
+        $documents = $this->documentRecords($messages);
 
         $pending = $conversation->actions
             ->where('status', AiActionStatus::Proposed)
@@ -364,9 +430,9 @@ class AgentService
                 'message_count' => (int) ($conversation->messages_count ?? $messages->count()),
             ],
             'messages' => $messages
-                ->map(fn (AiMessage $message): array => $this->messagePayload($message, $files))
+                ->map(fn (AiMessage $message): array => $this->messagePayload($message, $files, $documents))
                 ->all(),
-            'message' => $assistant !== null ? $this->messagePayload($assistant, $files) : null,
+            'message' => $assistant !== null ? $this->messagePayload($assistant, $files, $documents) : null,
             'pending_actions' => $pending,
             'pending_action' => $overrideAction !== null
                 ? $this->actionPayload($conversation->user, $overrideAction)
@@ -398,18 +464,106 @@ class AgentService
     }
 
     /**
+     * @param  Collection<int, AiMessage>  $messages
+     * @return Collection<string, AiDocument>
+     */
+    private function documentRecords(Collection $messages): Collection
+    {
+        $ids = $messages
+            ->flatMap(fn (AiMessage $message): array => collect($message->attachments ?? [])
+                ->filter(fn ($item) => is_array($item) && ($item['kind'] ?? 'image') === 'document')
+                ->pluck('id')
+                ->filter(fn ($id) => is_string($id))
+                ->all())
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return collect();
+        }
+
+        return AiDocument::query()->whereIn('id', $ids->all())->get()->keyBy('id');
+    }
+
+    /**
+     * @param  list<string>  $ids
+     * @return list<array{id: string, name: string, mime: string, chars: int, preview: string}>
+     */
+    private function resolveDocuments(User $user, array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter($ids, fn ($id) => is_string($id) && $id !== '')));
+
+        if ($ids === []) {
+            return [];
+        }
+
+        if (count($ids) > self::MAX_DOCUMENTS) {
+            throw ValidationException::withMessages([
+                'documents' => 'К одному сообщению можно прикрепить не больше '.self::MAX_DOCUMENTS.' документов.',
+            ]);
+        }
+
+        $documents = AiDocument::query()
+            ->whereIn('id', $ids)
+            ->where('user_id', $user->id)
+            ->get()
+            ->keyBy('id');
+
+        $resolved = [];
+
+        foreach ($ids as $id) {
+            $document = $documents->get($id);
+
+            if (! $document instanceof AiDocument) {
+                throw ValidationException::withMessages([
+                    'documents' => 'Документ не найден. Загрузите его ещё раз.',
+                ]);
+            }
+
+            $resolved[] = [
+                'id' => $document->id,
+                'name' => $document->name,
+                'mime' => (string) $document->mime_type,
+                'chars' => (int) $document->char_count,
+                'preview' => $document->preview(),
+            ];
+        }
+
+        return $resolved;
+    }
+
+    /**
      * @param  Collection<string, FileAttachment>  $files
      * @return array<string, mixed>
      */
-    private function messagePayload(AiMessage $message, Collection $files): array
+    private function messagePayload(AiMessage $message, Collection $files, Collection $documents): array
     {
         $attachments = collect($message->attachments ?? [])
             ->filter(fn ($item) => is_array($item) && isset($item['id']))
-            ->map(function (array $item) use ($files): array {
-                $file = $files->get((string) $item['id']);
+            ->map(function (array $item) use ($files, $documents): array {
+                $id = (string) $item['id'];
+
+                if (($item['kind'] ?? 'image') === 'document') {
+                    $document = $documents->get($id);
+                    $file = $document?->file_attachment_id !== null ? $files->get((string) $document->file_attachment_id) : null;
+
+                    return [
+                        'kind' => 'document',
+                        'id' => $id,
+                        'name' => $document?->name ?? (string) ($item['name'] ?? 'документ'),
+                        'mime' => $document?->mime_type ?? (string) ($item['mime'] ?? 'application/octet-stream'),
+                        'chars' => $document?->char_count ?? (int) ($item['chars'] ?? 0),
+                        'preview' => $document?->preview() ?? (string) ($item['preview'] ?? ''),
+                        'url' => $file !== null ? route('files.preview', $file) : null,
+                        'download_url' => $file !== null ? route('files.download', $file) : null,
+                    ];
+                }
+
+                $file = $files->get($id);
 
                 return [
-                    'id' => (string) $item['id'],
+                    'kind' => 'image',
+                    'id' => $id,
                     'name' => $file?->original_name ?? (string) ($item['name'] ?? 'изображение'),
                     'mime' => $file?->mime_type ?? (string) ($item['mime'] ?? 'image/*'),
                     'size' => $file?->size,
@@ -425,6 +579,7 @@ class AgentService
             'role' => $message->role->value,
             'content' => (string) $message->content,
             'attachments' => $attachments,
+            'trace' => $message->trace ?? [],
             'created_at' => $message->created_at?->toIso8601String(),
         ];
     }
@@ -439,9 +594,14 @@ class AgentService
             'tool_name' => $action->tool_name,
             'summary' => $this->toolbox->summarize($action->tool_name, $action->arguments),
             'arguments' => $action->arguments,
-            'type' => $this->toolbox->isFormTool($action->tool_name) ? 'form' : 'action',
+            'type' => $this->toolbox->isFormTool($action->tool_name)
+                ? 'form'
+                : ($this->toolbox->isPlanTool($action->tool_name) ? 'plan' : 'action'),
             'form' => $this->toolbox->describesForm($action->tool_name)
                 ? $this->toolbox->formPayload($user, $action->arguments ?? [])
+                : null,
+            'plan' => $this->toolbox->describesPlan($action->tool_name)
+                ? $this->toolbox->planPayload($user, $action->arguments ?? [])
                 : null,
             'created_at' => $action->created_at?->toIso8601String(),
         ];
@@ -560,6 +720,7 @@ class AgentService
             'create_client' => 'Клиент создан',
             'create_task', 'apply_task_template' => 'Задача создана',
             'create_task_from_form' => 'Заявка собрана из формы',
+            'propose_task_plan' => 'План задач создан',
             'create_task_template' => 'Шаблон создан',
             'set_custom_field' => 'Поле обновлено',
             default => 'Готово',
@@ -570,6 +731,16 @@ class AgentService
         foreach (['title', 'name', 'amount', 'status_label', 'display', 'email'] as $key) {
             if (isset($result[$key]) && $result[$key] !== '') {
                 $lines[] = '- '.$key.': '.$result[$key];
+            }
+        }
+
+        if ($tool === 'propose_task_plan' && isset($result['count'])) {
+            $lines[] = '- задач: '.$result['count'];
+
+            foreach (array_slice($result['created'] ?? [], 0, 5) as $task) {
+                if (isset($task['title'])) {
+                    $lines[] = '  - '.$task['title'];
+                }
             }
         }
 

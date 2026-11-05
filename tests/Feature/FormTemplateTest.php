@@ -23,6 +23,7 @@ test('client submits a structured bug report and it becomes a task', function ()
     $template = FormTemplate::query()->where('key', 'bug-report')->firstOrFail();
 
     $response = $this->actingAs($this->client)->post(route('client.tasks.forms.store', $template->key), [
+        'consent' => true,
         'title' => 'Не работает вход',
         'priority' => 'high',
         'form_data' => [
@@ -59,6 +60,7 @@ test('required structured fields and repeatable steps are enforced', function ()
 
     $this->actingAs($this->client)
         ->post(route('client.tasks.forms.store', $template->key), [
+            'consent' => true,
             'title' => 'Пустая заявка',
             'form_data' => ['fields' => [], 'groups' => []],
         ])

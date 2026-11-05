@@ -20,6 +20,7 @@ class AiMessage extends Model
         'tool_calls',
         'tool_call_id',
         'attachments',
+        'trace',
         'tokens_in',
         'tokens_out',
     ];
@@ -30,6 +31,7 @@ class AiMessage extends Model
             'role' => AiMessageRole::class,
             'tool_calls' => 'array',
             'attachments' => 'array',
+            'trace' => 'array',
             'tokens_in' => 'integer',
             'tokens_out' => 'integer',
         ];

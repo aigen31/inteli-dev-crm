@@ -45,6 +45,31 @@ class SettingsService
     }
 
     /**
+     * @return array{site_url: string|null, agents_md: string|null, instructions: string|null, studied_at: string|null}
+     */
+    public function project(): array
+    {
+        return [
+            'site_url' => $this->get('project_site_url'),
+            'agents_md' => $this->get('project_agents_md'),
+            'instructions' => $this->get('project_instructions'),
+            'studied_at' => $this->get('project_studied_at'),
+        ];
+    }
+
+    /**
+     * @param  array{site_url?: string|null, agents_md?: string|null, instructions?: string|null, studied_at?: string|null}  $data
+     */
+    public function saveProject(array $data): void
+    {
+        foreach (['project_site_url' => 'site_url', 'project_agents_md' => 'agents_md', 'project_instructions' => 'instructions', 'project_studied_at' => 'studied_at'] as $key => $field) {
+            if (array_key_exists($field, $data)) {
+                $this->put($key, $data[$field]);
+            }
+        }
+    }
+
+    /**
      * @return array<string, string|null>
      */
     public function transferFields(): array

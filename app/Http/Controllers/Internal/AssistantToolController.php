@@ -52,9 +52,24 @@ class AssistantToolController extends Controller
         AgentService $agent,
     ): JsonResponse {
         $user = $this->actor($request);
+        $project = null;
+        $conversationId = (string) $request->query('conversation_id', '');
+
+        if ($conversationId !== '') {
+            $conversation = AiConversation::query()
+                ->where('user_id', $user->id)
+                ->with('project')
+                ->find($conversationId);
+
+            $project = $conversation?->project;
+
+            if ($project !== null && ! $project->isVisibleTo($user)) {
+                $project = null;
+            }
+        }
 
         return response()->json([
-            'system' => $prompts->system($user),
+            'system' => $prompts->system($user, $project),
             'tools' => $toolbox->definitions($user),
             'suggested_next' => array_map(
                 fn (string $text): array => ['text' => $text, 'type' => 'lead_request'],
@@ -87,6 +102,12 @@ class AssistantToolController extends Controller
 
         $arguments = is_array($data['arguments'] ?? null) ? $data['arguments'] : [];
 
+        // The project chosen in the chat is the default for plans and studies,
+        // so the model does not have to repeat it in every tool call.
+        if ($conversation->project_id !== null && empty($arguments['project_id'])) {
+            $arguments['project_id'] = $conversation->project_id;
+        }
+
         if ($toolbox->requiresConfirmation($tool)) {
             // A form proposal needs a live template and a normalized schema.
             // If that fails, return the error to the model so it can correct
@@ -94,6 +115,9 @@ class AssistantToolController extends Controller
             try {
                 $form = $toolbox->describesForm($tool)
                     ? $toolbox->formPayload($user, $arguments)
+                    : null;
+                $plan = $toolbox->describesPlan($tool)
+                    ? $toolbox->planPayload($user, $arguments)
                     : null;
             } catch (\Throwable $exception) {
                 return response()->json(['result' => ['error' => $exception->getMessage()]], 200);
@@ -118,8 +142,9 @@ class AssistantToolController extends Controller
                     'tool_name' => $action->tool_name,
                     'summary' => $toolbox->summarize($action->tool_name, $action->arguments),
                     'arguments' => $action->arguments,
-                    'type' => $toolbox->isFormTool($tool) ? 'form' : 'action',
+                    'type' => $toolbox->isFormTool($tool) ? 'form' : ($toolbox->isPlanTool($tool) ? 'plan' : 'action'),
                     'form' => $form,
+                    'plan' => $plan,
                 ],
             ]);
         }

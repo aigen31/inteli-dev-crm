@@ -22,6 +22,7 @@ class StoreClientRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:50'],
             'messenger_contacts' => ['nullable', 'array'],
             'password' => ['required', 'string', Password::min(8)],
+            'consent' => ['accepted'],
         ];
     }
 }

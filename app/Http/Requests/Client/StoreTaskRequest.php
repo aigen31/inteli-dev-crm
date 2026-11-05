@@ -18,6 +18,8 @@ class StoreTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
+            'consent' => ['accepted'],
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'description' => ['nullable', 'string', 'max:60000'],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],

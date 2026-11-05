@@ -34,6 +34,7 @@ const {
     suggestions,
     draft,
     attachments,
+    documents,
     loading,
     uploading,
     error,
@@ -46,6 +47,8 @@ const {
     rejectAction,
     uploadFiles,
     removeAttachment,
+    uploadDocuments,
+    removeDocument,
     reset,
 } = useAssistantChat({
     initialPayload: props.active,
@@ -304,6 +307,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                                 ref="composer"
                                 v-model="draft"
                                 :attachments="attachments"
+                                :documents="documents"
                                 :uploading="uploading"
                                 :loading="loading"
                                 :can-send="canSend"
@@ -311,6 +315,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                                 @send="submit()"
                                 @files="uploadFiles"
                                 @remove="removeAttachment"
+                                @document-files="uploadDocuments"
+                                @remove-document="removeDocument"
                             />
                         </div>
                     </div>

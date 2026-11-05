@@ -13,9 +13,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ChangeTaskStatusRequest;
 use App\Http\Requests\Admin\StoreTaskRequest;
 use App\Http\Requests\Admin\UpdateTaskRequest;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskTemplate;
 use App\Models\User;
+use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use App\Services\HtmlSanitizer;
 use App\Services\TaskTemplateService;
@@ -36,9 +38,10 @@ class TaskController extends Controller
     public function index(Request $request): Response
     {
         $tasks = Task::query()
-            ->with(['client:id,name', 'assignee:id,name', 'template:id,name'])
+            ->with(['client:id,name', 'assignee:id,name', 'template:id,name', 'project:id,key,name,color'])
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->input('client_id'), fn ($q, $clientId) => $q->where('client_id', $clientId))
+            ->when($request->input('project_id'), fn ($q, $projectId) => $q->where('project_id', $projectId))
             ->when($request->input('type'), fn ($q, $type) => $q->where('type', $type))
             ->when($request->input('q'), fn ($q, $search) => $q->where('title', 'like', "%{$search}%"))
             ->latest()
@@ -47,10 +50,11 @@ class TaskController extends Controller
 
         return Inertia::render('Admin/Tasks/Index', [
             'tasks' => $tasks,
-            'filters' => $request->only('status', 'client_id', 'type', 'q'),
+            'filters' => $request->only('status', 'client_id', 'type', 'project_id', 'q'),
             'statuses' => Options::taskStatuses(),
             'types' => Options::taskTypes(),
             'clients' => User::query()->where('role', UserRole::Client)->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'key', 'name', 'color']),
             'counts' => [
                 'all' => Task::query()->count(),
                 'active' => Task::query()->whereIn('status', [
@@ -75,10 +79,15 @@ class TaskController extends Controller
     public function store(
         StoreTaskRequest $request,
         CreateTaskAction $action,
+        ConsentService $consents,
     ): RedirectResponse {
         $data = $request->validated();
         $customValues = $data['custom_fields'] ?? [];
         unset($data['custom_fields']);
+
+        if (! empty($data['project_id'])) {
+            $this->authorize('createTask', Project::query()->findOrFail($data['project_id']));
+        }
 
         if (! empty($data['task_template_id'])) {
             $template = TaskTemplate::query()->findOrFail($data['task_template_id']);
@@ -88,12 +97,14 @@ class TaskController extends Controller
                 'description' => $data['description'],
                 'deadline' => $data['deadline'] ?? null,
                 'assignee_id' => $data['assignee_id'] ?? null,
+                'project_id' => $data['project_id'] ?? null,
             ]);
         } else {
             $task = $action->execute($data, $request->user());
         }
 
         $this->customFields->sync($task, $customValues, $request->user());
+        $consents->record($task->client, 'admin-task-create', $request, ['confirmed_by' => $request->user()->id, 'task_id' => $task->id, 'basis' => 'contract'], 'privacy');
 
         return redirect()->route('admin.tasks.show', $task)
             ->with('success', 'Задача создана.');
@@ -108,9 +119,13 @@ class TaskController extends Controller
             'template',
             'formTemplate',
             'comments.author',
-            'reports.author',
+            'reports.author:id,name',
+            'reports.recipient:id,name',
+            'reports.screenshot',
+            'reports.items.screenshot',
             'invoices',
             'statusHistory.changedBy',
+            'project',
         ]);
 
         $allowedTransitions = collect($task->status->allowedTransitions())
@@ -146,6 +161,7 @@ class TaskController extends Controller
 
         $task->update($data);
         $this->customFields->sync($task, $customValues, $request->user());
+        $consents->record($task->client, 'admin-task-create', $request, ['confirmed_by' => $request->user()->id, 'task_id' => $task->id, 'basis' => 'contract'], 'privacy');
 
         return redirect()->route('admin.tasks.show', $task)
             ->with('success', 'Задача обновлена.');
@@ -197,6 +213,7 @@ class TaskController extends Controller
             'priorities' => Options::priorities(),
             'statuses' => Options::taskStatuses(),
             'fields' => $this->customFields->serializedDefinitions(CustomFieldEntity::Task),
+            'projects' => Project::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'key', 'name', 'color', 'client_id']),
         ];
     }
 }

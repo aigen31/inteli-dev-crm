@@ -47,22 +47,27 @@ function normalizeErrors(errors) {
  * entry points cannot drift in how they send, upload or confirm.
  */
 export function useAssistantChat(options = {}) {
-    const { initialPayload = null, maxAttachments = 4, context = null } = options;
+    const { initialPayload = null, maxAttachments = 4, maxDocuments = 3, context = null, projectId = null } = options;
 
     const conversationId = ref(initialPayload?.conversation_id ?? null);
     const session = ref(initialPayload?.session ?? null);
     const messages = ref(initialPayload?.messages ?? []);
     const pendingActions = ref(initialPayload?.pending_actions ?? []);
+    const project = ref(initialPayload?.project ?? null);
     const suggestions = ref(initialPayload?.suggestions ?? []);
     const draft = ref('');
     const attachments = ref([]);
+    const documents = ref([]);
     const loading = ref(false);
     const uploading = ref(0);
     const error = ref(null);
     const fieldErrors = ref({});
 
     const canSend = computed(
-        () => !loading.value && uploading.value === 0 && (draft.value.trim() !== '' || attachments.value.length > 0),
+        () =>
+            !loading.value &&
+            uploading.value === 0 &&
+            (draft.value.trim() !== '' || attachments.value.length > 0 || documents.value.length > 0),
     );
 
     const hasMessages = computed(() => messages.value.length > 0);
@@ -84,6 +89,7 @@ export function useAssistantChat(options = {}) {
             (message) => message.role !== 'assistant' || String(message.content ?? '').trim() !== '',
         );
         pendingActions.value = data.pending_actions ?? [];
+        project.value = data.project ?? project.value;
 
         if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
             suggestions.value = data.suggestions;
@@ -100,6 +106,7 @@ export function useAssistantChat(options = {}) {
         pendingActions.value = [];
         draft.value = '';
         attachments.value = [];
+        documents.value = [];
         error.value = null;
         fieldErrors.value = {};
     }
@@ -120,7 +127,7 @@ export function useAssistantChat(options = {}) {
     async function send(text = draft.value) {
         const message = String(text).trim();
 
-        if (loading.value || (message === '' && attachments.value.length === 0)) {
+        if (loading.value || (message === '' && attachments.value.length === 0 && documents.value.length === 0)) {
             return null;
         }
 
@@ -128,22 +135,35 @@ export function useAssistantChat(options = {}) {
         fieldErrors.value = {};
 
         const pending = attachments.value.slice();
+        const pendingDocuments = documents.value.slice();
         const optimistic = {
             id: `local-${Date.now()}`,
             role: 'user',
             content: message,
-            attachments: pending.map((file) => ({
-                id: file.id,
-                name: file.name,
-                mime: file.mime,
-                url: file.url,
-            })),
+            attachments: [
+                ...pending.map((file) => ({
+                    kind: 'image',
+                    id: file.id,
+                    name: file.name,
+                    mime: file.mime,
+                    url: file.url,
+                })),
+                ...pendingDocuments.map((file) => ({
+                    kind: 'document',
+                    id: file.id,
+                    name: file.name,
+                    mime: file.mime,
+                    chars: file.chars,
+                    preview: file.preview,
+                })),
+            ],
             created_at: new Date().toISOString(),
         };
 
         messages.value.push(optimistic);
         draft.value = '';
         attachments.value = [];
+        documents.value = [];
         loading.value = true;
 
         try {
@@ -151,6 +171,8 @@ export function useAssistantChat(options = {}) {
                 message,
                 conversation_id: conversationId.value,
                 attachments: pending.map((file) => file.id),
+                documents: pendingDocuments.map((file) => file.id),
+                project_id: typeof projectId === 'function' ? projectId() : projectId,
                 context: pageContext(),
             });
 
@@ -161,6 +183,7 @@ export function useAssistantChat(options = {}) {
             messages.value = messages.value.filter((item) => item.id !== optimistic.id);
             draft.value = message;
             attachments.value = pending;
+            documents.value = pendingDocuments;
             handleError(exception);
 
             return null;
@@ -276,6 +299,48 @@ export function useAssistantChat(options = {}) {
         attachments.value = attachments.value.filter((file) => file.id !== id);
     }
 
+    async function uploadDocuments(fileList) {
+        const files = Array.from(fileList ?? []);
+        const room = Math.max(maxDocuments - documents.value.length, 0);
+
+        if (files.length === 0) {
+            return;
+        }
+
+        if (room === 0) {
+            error.value = `К сообщению можно прикрепить не больше ${maxDocuments} документов.`;
+            return;
+        }
+
+        error.value = null;
+
+        for (const file of files.slice(0, room)) {
+            uploading.value += 1;
+            const form = new FormData();
+            form.append('file', file);
+
+            try {
+                const { data } = await axios.post(route('assistant.documents.store'), form);
+                documents.value.push({
+                    id: data.id,
+                    name: data.name,
+                    mime: data.mime,
+                    chars: data.chars,
+                    preview: data.preview,
+                    download_url: data.download_url,
+                });
+            } catch (exception) {
+                error.value = exception?.response?.data?.message || 'Не удалось прочитать документ.';
+            } finally {
+                uploading.value -= 1;
+            }
+        }
+    }
+
+    function removeDocument(id) {
+        documents.value = documents.value.filter((file) => file.id !== id);
+    }
+
     async function loadSession(id) {
         if (!id) {
             reset();
@@ -303,9 +368,11 @@ export function useAssistantChat(options = {}) {
         session,
         messages,
         pendingActions,
+        project,
         suggestions,
         draft,
         attachments,
+        documents,
         loading,
         uploading,
         error,
@@ -320,6 +387,8 @@ export function useAssistantChat(options = {}) {
         rejectAction,
         uploadFiles,
         removeAttachment,
+        uploadDocuments,
+        removeDocument,
         reset,
     };
 }

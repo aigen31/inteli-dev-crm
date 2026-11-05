@@ -27,6 +27,7 @@ class StoreInvoiceRequest extends FormRequest
             'is_recurring' => ['sometimes', 'boolean'],
             'recurring_interval' => ['required_if:is_recurring,true', 'nullable', Rule::enum(RecurringInterval::class)],
             'custom_fields' => ['nullable', 'array'],
+            'consent' => ['accepted'],
         ];
     }
 

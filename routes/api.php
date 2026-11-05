@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Internal\AssistantToolController;
+use App\Http\Controllers\McpController;
 use Illuminate\Support\Facades\Route;
 
 // Internal contract for the central Kiki assistant kernel. Service token only.
@@ -62,3 +63,6 @@ Route::prefix('v1')
                 ->whereIn('entity', ['client', 'task', 'invoice']);
         });
     });
+
+// MCP server for DeepSeek Harness and other agents (token auth inside).
+Route::post('/mcp', [McpController::class, 'handle'])->name('mcp.handle');

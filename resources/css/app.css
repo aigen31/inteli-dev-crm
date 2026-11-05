@@ -180,6 +180,10 @@
         @apply my-3 border-l-2 border-primary-300 pl-4 text-muted;
     }
 
+    .prose-kiki h1 {
+        @apply mb-4 mt-0 font-display text-[30px] font-medium leading-[1.08] tracking-[-0.04em] text-ink sm:text-[36px];
+    }
+
     .prose-kiki h2,
     .prose-kiki h3 {
         @apply mt-4 mb-2 font-semibold text-ink;

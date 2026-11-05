@@ -4,6 +4,7 @@ import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import MessageBubble from '@/Components/Assistant/MessageBubble.vue';
 import PendingActionCard from '@/Components/Assistant/PendingActionCard.vue';
 import FormActionCard from '@/Components/Assistant/FormActionCard.vue';
+import TaskPlanCard from '@/Components/Assistant/TaskPlanCard.vue';
 
 const props = defineProps({
     messages: { type: Array, default: () => [] },
@@ -96,6 +97,14 @@ function lastAssistantId() {
             <template v-for="action in pendingActions" :key="action.id">
                 <FormActionCard
                     v-if="action.type === 'form' && action.form"
+                    :action="action"
+                    :busy="busy"
+                    :errors="fieldErrors"
+                    @confirm="(payload) => emit('confirm', action, payload)"
+                    @reject="emit('reject', action)"
+                />
+                <TaskPlanCard
+                    v-else-if="action.type === 'plan' && action.plan"
                     :action="action"
                     :busy="busy"
                     :errors="fieldErrors"
