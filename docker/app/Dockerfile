@@ -1,7 +1,4 @@
-FROM php:8.5-fpm-bookworm AS base
-
-# Use faster Debian mirror
-RUN sed -i 's|deb.debian.org|mirror.yandex.ru|g' /etc/apt/sources.list.d/debian.sources
+FROM php:8.5-fpm-trixie AS base
 
 # Install PHP extensions via install-php-extensions
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/install-php-extensions
