@@ -69,6 +69,7 @@ class AssistantController extends Controller
             'pending_actions' => [],
             'pending_action' => null,
             'suggestions' => $this->agent->suggestions($request->user()),
+            'generating' => false,
         ];
 
         return response()->json($payload);

@@ -987,7 +987,23 @@ class CrmToolbox
             ]);
         }
 
-        $clientId = $data['client_id'] ?? $project?->client_id ?? ($user->isClient() ? $user->id : null);
+        $clientId = $user->isClient() ? $user->id : null;
+
+        if ($user->isAdmin()) {
+            $provided = $data['client_id'] ?? null;
+
+            if (is_string($provided) && trim($provided) !== '') {
+                try {
+                    $clientId = $this->resolveClient($user, $provided)->id;
+                } catch (ValidationException) {
+                    // The model may confuse project_id with client_id. Do not
+                    // surface a stale id to the confirmation form.
+                    $clientId = null;
+                }
+            }
+
+            $clientId ??= $project?->client_id;
+        }
 
         return [
             'summary' => $data['summary'] ?? null,
@@ -995,6 +1011,7 @@ class CrmToolbox
             'source_document_id' => $data['source_document_id'] ?? null,
             'questions' => $data['questions'] ?? [],
             'client_id' => $clientId,
+            'client_required' => $user->isAdmin(),
             'project_id' => $project?->id,
             'project' => $project ? [
                 'id' => $project->id,

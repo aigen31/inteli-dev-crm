@@ -13,6 +13,7 @@ use App\Models\AiMessage;
 use App\Models\FileAttachment;
 use App\Models\Project;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -83,9 +84,12 @@ class AgentService
 
         $project = $this->resolveProject($user, $projectId);
 
+        $context = $pageContext;
+        $context['generating_at'] = now()->toIso8601String();
+
         $conversation->update([
             'last_message_at' => now(),
-            'context' => $pageContext,
+            'context' => $context,
             ...($project !== null ? ['project_id' => $project->id] : []),
         ]);
 
@@ -117,6 +121,8 @@ class AgentService
                 $documentMeta,
             );
         } catch (AiException $exception) {
+            $this->clearGenerating($conversation);
+
             $assistant = AiMessage::create([
                 'conversation_id' => $conversation->id,
                 'role' => AiMessageRole::Assistant,
@@ -164,10 +170,13 @@ class AgentService
     public function regenerate(User $user, AiConversation $conversation, array $pageContext = []): array
     {
         $this->dropTrailingAnswer($conversation);
+        $this->markGenerating($conversation);
 
         try {
             $result = $this->kernel->regenerate($user, $conversation->id, $pageContext);
         } catch (AiException $exception) {
+            $this->clearGenerating($conversation);
+
             $assistant = AiMessage::create([
                 'conversation_id' => $conversation->id,
                 'role' => AiMessageRole::Assistant,
@@ -358,6 +367,25 @@ class AgentService
             : null;
     }
 
+    private function markGenerating(AiConversation $conversation): void
+    {
+        $context = is_array($conversation->context) ? $conversation->context : [];
+        $context['generating_at'] = now()->toIso8601String();
+        $conversation->update(['context' => $context]);
+    }
+
+    private function clearGenerating(AiConversation $conversation): void
+    {
+        $context = is_array($conversation->context) ? $conversation->context : [];
+
+        if (! array_key_exists('generating_at', $context)) {
+            return;
+        }
+
+        unset($context['generating_at']);
+        $conversation->update(['context' => $context]);
+    }
+
     /**
      * @param  array<string, mixed>|null  $action
      * @param  array<string, mixed>|null  $overrideAction
@@ -400,6 +428,7 @@ class AgentService
                 'pending_action' => null,
                 'suggestions' => [],
                 'project' => null,
+                'generating' => false,
             ];
         }
 
@@ -420,6 +449,23 @@ class AgentService
             ->values()
             ->all();
 
+        $context = is_array($conversation->context) ? $conversation->context : [];
+        $generatingAt = $context['generating_at'] ?? null;
+        $generating = false;
+
+        if (is_string($generatingAt) && $generatingAt !== '') {
+            try {
+                $generating = Carbon::parse($generatingAt)->gt(now()->subSeconds(180));
+            } catch (\Throwable) {
+                $generating = false;
+            }
+
+            if (! $generating) {
+                unset($context['generating_at']);
+                $conversation->update(['context' => $context]);
+            }
+        }
+
         return [
             'conversation_id' => $conversation->id,
             'session' => [
@@ -438,6 +484,7 @@ class AgentService
                 ? $this->actionPayload($conversation->user, $overrideAction)
                 : null,
             'suggestions' => $this->suggestions($conversation->user),
+            'generating' => $generating,
             'error_status' => $errorStatus,
         ];
     }

@@ -157,6 +157,8 @@ class SessionService
             $context['model'] = $result['model'];
         }
 
+        unset($context['generating_at']);
+
         $patch['context'] = $context;
         $patch['last_message_at'] = now();
 
