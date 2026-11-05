@@ -85,6 +85,9 @@ set -euo pipefail
 REMOTE_DIR="$1"
 cd "$REMOTE_DIR"
 
+echo "[remote] Checking external Traefik network..."
+docker network inspect traefik-public >/dev/null 2>&1   || { echo "[remote] external network traefik-public is missing; start ~/Work/traefik first"; exit 1; }
+
 echo "[remote] Building Docker images..."
 docker compose build --parallel 2>&1 | tail -5
 

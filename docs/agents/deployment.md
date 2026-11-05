@@ -8,7 +8,24 @@
 
 Скрипт требует SSH к `crm-prod` и `.env.production`. Он rsync-ит проект (без `.git`, `vendor`, `node_modules`, `.env*`, `*.md`, `public/build`), копирует `.env.production` как `.env`, собирает образы и проверяет `/up`.
 
-Прод: Traefik 3.4 + Let's Encrypt, `crm.inteli-dev.ru` и лендинг `inteli-dev.ru` (`promo/`, порт 8080), внешняя сеть `traefik-public`.
+Прод: внешний Traefik из `~/Work/traefik` + Let's Encrypt, `crm.inteli-dev.ru` и лендинг `inteli-dev.ru` (`promo/`, порт 8080), внешняя сеть `traefik-public`.
+
+## TLS и сертификат
+
+Traefik живёт отдельно в `~/Work/traefik` и владеет портами 80/443 и ACME-хранилищем. CRM не поднимает собственный Traefik. Nginx подключён к внешней сети `traefik-public`; labels `traefik.http.routers.crm.tls.certresolver=letsencrypt` запускают HTTP-01 challenge при первом запросе к `https://crm.inteli-dev.ru`.
+
+Перед деплоем:
+
+```bash
+cd ~/Work/traefik && docker compose up -d --wait
+docker network inspect traefik-public >/dev/null
+```
+
+Сертификат появится в `~/Work/traefik/letsencrypt/acme.json` после первого HTTPS-запроса; проверка:
+
+```bash
+curl -I https://crm.inteli-dev.ru/up
+```
 
 ## Entrypoint
 

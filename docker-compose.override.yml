@@ -3,11 +3,7 @@
 # This file is NOT synced to production (excluded in deploy.sh).
 
 services:
-  # Disable Traefik locally
-  traefik:
-    profiles: ["production"]
-
-  # Expose nginx directly for local dev
+  # Traefik is external (~/Work/traefik); locally nginx is exposed directly.
   nginx:
     ports:
       - "${APP_PORT:-80}:80"

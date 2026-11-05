@@ -1,35 +1,4 @@
 services:
-  # ── Traefik reverse-proxy (SSL termination) ──────────
-  traefik:
-    image: traefik:3.4
-    restart: unless-stopped
-    command:
-      - "--api.dashboard=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=traefik-public"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      # HTTP → HTTPS redirect
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      # Let's Encrypt ACME
-      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:?Set ACME_EMAIL in .env}"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      # Logging
-      - "--log.level=WARN"
-      - "--accesslog=true"
-      - "--accesslog.filters.statuscodes=400-599"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - letsencrypt:/letsencrypt
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - traefik-public
-
   # ── PHP-FPM application ──────────────────────────────
   app:
     build:
@@ -64,6 +33,7 @@ services:
     labels:
       # ── CRM (crm.inteli-dev.ru) ──
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
       - "traefik.http.routers.crm.rule=Host(`${APP_DOMAIN:-crm.inteli-dev.ru}`)"
       - "traefik.http.routers.crm.entrypoints=websecure"
       - "traefik.http.routers.crm.tls.certresolver=letsencrypt"
@@ -174,7 +144,6 @@ volumes:
   redisdata:
   storage:
   app-public:
-  letsencrypt:
 
 networks:
   crm:
