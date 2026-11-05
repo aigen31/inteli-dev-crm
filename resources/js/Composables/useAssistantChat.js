@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import axios from 'axios';
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
@@ -58,7 +58,7 @@ export function useAssistantChat(options = {}) {
     const draft = ref('');
     const attachments = ref([]);
     const documents = ref([]);
-    const loading = ref(false);
+    const loading = ref(initialPayload?.generating === true);
     const uploading = ref(0);
     const error = ref(null);
     const fieldErrors = ref({});
@@ -80,6 +80,37 @@ export function useAssistantChat(options = {}) {
         return { url: window.location.pathname };
     }
 
+    let progressTimer = null;
+
+    function stopProgressPolling() {
+        if (progressTimer !== null) {
+            window.clearInterval(progressTimer);
+            progressTimer = null;
+        }
+    }
+
+    async function pollProgress() {
+        if (!conversationId.value || !loading.value) {
+            stopProgressPolling();
+            return;
+        }
+
+        try {
+            const { data } = await axios.get(route('assistant.conversations.show', conversationId.value));
+            applyPayload(data);
+        } catch (exception) {
+            stopProgressPolling();
+            loading.value = false;
+            handleError(exception, 'Не удалось получить прогресс ответа.');
+        }
+    }
+
+    function startProgressPolling() {
+        if (progressTimer !== null || !conversationId.value) return;
+
+        progressTimer = window.setInterval(pollProgress, 2000);
+    }
+
     function applyPayload(data) {
         if (!data) return;
 
@@ -95,11 +126,22 @@ export function useAssistantChat(options = {}) {
             suggestions.value = data.suggestions;
         }
 
+        if (typeof data.generating !== 'undefined') {
+            loading.value = Boolean(data.generating);
+
+            if (loading.value) {
+                startProgressPolling();
+            } else {
+                stopProgressPolling();
+            }
+        }
+
         error.value = null;
         fieldErrors.value = {};
     }
 
     function reset() {
+        stopProgressPolling();
         conversationId.value = null;
         session.value = null;
         messages.value = [];
@@ -109,6 +151,7 @@ export function useAssistantChat(options = {}) {
         documents.value = [];
         error.value = null;
         fieldErrors.value = {};
+        loading.value = false;
     }
 
     function handleError(exception, fallback = 'Кики не ответила. Проверьте соединение и попробуйте снова.') {
@@ -117,7 +160,7 @@ export function useAssistantChat(options = {}) {
 
         if (response?.status === 422 && data?.errors) {
             fieldErrors.value = normalizeErrors(data.errors);
-            error.value = 'Проверьте поля формы.';
+            error.value = Object.values(fieldErrors.value)[0] || 'Проверьте поля формы.';
             return;
         }
 
@@ -347,11 +390,14 @@ export function useAssistantChat(options = {}) {
             return null;
         }
 
+        stopProgressPolling();
         loading.value = true;
         error.value = null;
+        let generating = false;
 
         try {
             const { data } = await axios.get(route('assistant.conversations.show', id));
+            generating = data.generating === true;
             applyPayload(data);
 
             return data;
@@ -359,9 +405,19 @@ export function useAssistantChat(options = {}) {
             handleError(exception, 'Не удалось открыть диалог.');
             return null;
         } finally {
-            loading.value = false;
+            if (!generating) {
+                loading.value = false;
+            }
         }
     }
+
+    onMounted(() => {
+        if (loading.value) {
+            startProgressPolling();
+        }
+    });
+
+    onBeforeUnmount(stopProgressPolling);
 
     return {
         conversationId,

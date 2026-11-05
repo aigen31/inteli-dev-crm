@@ -51,6 +51,9 @@ const clientOptions = computed(() =>
     })),
 );
 
+const clientRequired = computed(() => plan.client_required === true);
+const missingClient = computed(() => clientRequired.value && clientOptions.value.length === 0);
+
 const priorityLabels = { low: 'Низкий', medium: 'Средний', high: 'Высокий' };
 
 const priorityClasses = {
@@ -93,6 +96,10 @@ function removeTask(index) {
 }
 
 function submit() {
+    if (missingClient.value) {
+        return;
+    }
+
     const payload = {
         summary: summary.value,
         approach: plan.approach || 'free',
@@ -144,6 +151,19 @@ function submit() {
                 </div>
                 <span class="shrink-0 rounded-full bg-ink px-2.5 py-1 font-mono text-[10px] text-canvas">{{ total }}</span>
             </div>
+
+            <div v-if="missingClient" class="relative mt-3 rounded-[14px] border border-warning/30 bg-warning/[0.08] px-3 py-2.5">
+                <p class="font-mono text-[8px] uppercase tracking-[0.14em] text-warning">Нужен клиент</p>
+                <p class="mt-1 text-[11px] leading-relaxed text-ink-soft">
+                    Задача должна принадлежать клиенту. Сначала создайте клиента, затем попросите Кики собрать план заново.
+                </p>
+                <a :href="route('admin.clients.create')" class="mt-2 inline-block text-[11px] font-semibold text-primary-700 hover:underline">
+                    Создать клиента →
+                </a>
+            </div>
+            <p v-if="errors.client_id" class="relative mt-3 rounded-[12px] border border-danger/20 bg-danger/[0.06] px-3 py-2 text-[11px] text-danger-ink">
+                {{ errors.client_id }}
+            </p>
 
             <div v-if="questions.length" class="relative mt-3 rounded-[14px] border border-warning/25 bg-warning/[0.07] px-3 py-2.5">
                 <p class="font-mono text-[8px] uppercase tracking-[0.14em] text-warning">Требует уточнения</p>
@@ -265,7 +285,7 @@ function submit() {
             <button
                 type="button"
                 class="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[11px] font-semibold text-canvas transition hover:bg-primary-700 disabled:opacity-50"
-                :disabled="busy || tasks.length === 0"
+                :disabled="busy || tasks.length === 0 || missingClient"
                 @click="submit"
             >
                 <CheckIcon class="h-3.5 w-3.5" />
