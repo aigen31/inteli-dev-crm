@@ -37,13 +37,13 @@ services:
       - "traefik.http.routers.crm-prod.rule=Host(`${APP_DOMAIN:-crm.inteli-dev.ru}`)"
       - "traefik.http.routers.crm-prod.entrypoints=websecure"
       - "traefik.http.routers.crm-prod.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.crm-prod.service=crm"
+      - "traefik.http.routers.crm-prod.service=crm-prod"
       - "traefik.http.services.crm-prod.loadbalancer.server.port=80"
       # ── Landing (inteli-dev.ru) ──
       - "traefik.http.routers.landing-prod.rule=Host(`inteli-dev.ru`)"
       - "traefik.http.routers.landing-prod.entrypoints=websecure"
       - "traefik.http.routers.landing-prod.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.landing-prod.service=landing"
+      - "traefik.http.routers.landing-prod.service=landing-prod"
       - "traefik.http.services.landing-prod.loadbalancer.server.port=8080"
       # Security headers (shared)
       - "traefik.http.middlewares.crm-prod-headers.headers.stsSeconds=63072000"
