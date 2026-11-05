@@ -34,7 +34,8 @@
 | `kiki-thinking.webp` | 384×512, RGBA | размышление |
 | `kiki-avatar.webp` | 640×640, RGBA | классический аватар (резерв) |
 | `kiki-avatar-face.png` | 1024×1024, RGB | сгенерированный в Qwen t2i квадратный аватар с лицом Кики: полная высокая шляпа с запасом, круглый лавандовый медальон, искры; `object-contain` |
-| `kiki-login-calm.png` | 1440×1440, RGBA | вход, правая панель: спокойная сидящая Кики, полная высокая шляпа, без метлы |
+| `kiki-login-calm.png` | 1440×1440, RGBA | резерв: спокойная сидящая Кики |
+| `kiki-login-user-approved.webp` | 1440×1440, RGBA | вход, правая панель: медитация с фиолетовым шаром, утверждённый вариант |
 
 Все файлы — в `public/images/kiki/`.
 
@@ -50,7 +51,7 @@
 ## Код
 
 - `resources/js/Components/Kiki/KikiAvatar.vue` — варианты `avatar`, `hero`, `flight`, `empty`, `thinking`, `seated`, `classic`.
-- `resources/js/Pages/Auth/Login.vue` — `kiki-login-calm.png` (спокойная сидящая поза, без метлы).
+- `resources/js/Pages/Auth/Login.vue` — `kiki-login-user-approved.webp` (медитация с шаром, `mix-blend-multiply` на лавандовой панели).
 - `resources/js/Pages/Admin/Dashboard.vue` — `kiki-flight-hero.webp`; empty — `flight` badge.
 - `resources/js/Pages/Admin/TaskTemplates/Index.vue` — `kiki-seated.webp`.
 - `resources/js/Pages/Admin/Invoices/Index.vue` — `kiki-flight-portrait.webp`.
