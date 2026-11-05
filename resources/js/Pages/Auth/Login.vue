@@ -122,8 +122,8 @@ function submit() {
 
             <div class="relative hidden overflow-hidden rounded-[30px] bg-[#efe8f8] lg:block lg:rounded-l-none lg:border lg:border-l-0 lg:border-line/80">
                 <div class="absolute inset-0 bg-[radial-gradient(90%_80%_at_70%_20%,#fff9f2_0%,#efe6fb_55%,#e6dcf7_100%)]"></div>
-                <div class="absolute inset-x-0 bottom-0 h-[74%]">
-                    <img src="/images/kiki/kiki-flight-portrait.webp" alt="Кики" class="h-full w-full origin-bottom-right scale-125 object-contain object-right-bottom" />
+                <div class="absolute inset-x-0 bottom-0 h-[76%]">
+                    <img src="/images/kiki/kiki-login-calm.png" alt="Кики спокойно сидит" class="h-full w-full object-contain object-bottom" />
                 </div>
 
                 <div class="relative flex h-full flex-col p-10">

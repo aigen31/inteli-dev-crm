@@ -22,7 +22,7 @@
 | Файл | Формат | Где используется |
 |---|---|---|
 | `kiki-flight.webp` | 1280×704, RGBA | светлый вариант полёта после тёмного, источник кропов |
-| `kiki-flight-portrait.webp` | 768×1024, RGBA | вход, правая панель |
+| `kiki-flight-portrait.webp` | 768×1024, RGBA | резерв для вертикальных сцен |
 | `kiki-flight-hero.webp` | 900×620, RGBA | hero админ-дашборда |
 | `kiki-flight-avatar.webp` | 640×640, RGB | аватар из светлого полёта; полная высокая шляпа |
 | `kiki-flight-badge.webp` | 640×640, RGBA | empty states; шляпа целиком |
@@ -34,6 +34,7 @@
 | `kiki-thinking.webp` | 384×512, RGBA | размышление |
 | `kiki-avatar.webp` | 640×640, RGBA | классический аватар (резерв) |
 | `kiki-avatar-face.png` | 1024×1024, RGB | сгенерированный в Qwen t2i квадратный аватар с лицом Кики: полная высокая шляпа с запасом, круглый лавандовый медальон, искры; `object-contain` |
+| `kiki-login-calm.png` | 1440×1440, RGBA | вход, правая панель: спокойная сидящая Кики, полная высокая шляпа, без метлы |
 
 Все файлы — в `public/images/kiki/`.
 
@@ -49,13 +50,12 @@
 ## Код
 
 - `resources/js/Components/Kiki/KikiAvatar.vue` — варианты `avatar`, `hero`, `flight`, `empty`, `thinking`, `seated`, `classic`.
-- `resources/js/Pages/Auth/Login.vue` — `kiki-flight-portrait.webp`.
+- `resources/js/Pages/Auth/Login.vue` — `kiki-login-calm.png` (спокойная сидящая поза, без метлы).
 - `resources/js/Pages/Admin/Dashboard.vue` — `kiki-flight-hero.webp`; empty — `flight` badge.
 - `resources/js/Pages/Admin/TaskTemplates/Index.vue` — `kiki-seated.webp`.
 - `resources/js/Pages/Admin/Invoices/Index.vue` — `kiki-flight-portrait.webp`.
 - `resources/js/Pages/Client/Dashboard.vue` — `kiki-desk.webp` в рамке.
 - `resources/js/Components/Assistant/AssistantPanel.vue` — `kiki-seated.webp` в приветствии, `KikiAvatar variant="face"` в шапке и сообщениях.
 - `resources/js/Components/Layout/AppShell.vue` — `KikiAvatar variant="face"` в кнопке «Спросить Кики», мобильной шапке и нижней навигации.
-- `resources/js/Components/Kiki/KikiChatAvatar.vue` — заглушка: пунктирное кольцо, бейдж `?`, `object-contain`, полная шляпа.
 
 Дизайн-токены и правила — [.superdesign/design-system.md](../../.superdesign/design-system.md).
