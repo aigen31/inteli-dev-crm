@@ -681,13 +681,23 @@ html[data-theme="xp"] [data-i18n-skip] > span:not([class*="flex-1"]) {
 
 /* The active secondary link (Help/Settings) needs the light task-pane
    treatment on the blue rail; the default dark text is unreadable there. */
-html[data-theme="xp"] aside.fixed.inset-y-0 a[class*="bg-ink/"] {
+html[data-theme="xp"] aside.fixed.inset-y-0 a[class*="bg-ink/[0.05]"] {
     background: #ece9d8 !important;
     border: 1px solid #fff !important;
     color: #0a246a !important;
     text-shadow: none !important;
 }
 
-html[data-theme="xp"] aside.fixed.inset-y-0 a[class*="bg-ink/"] svg {
+html[data-theme="xp"] aside.fixed.inset-y-0 a[class*="bg-ink/[0.05]"] svg {
     color: #0a246a !important;
+}
+
+
+/* The small invoices stat-card illustration should show the whole character
+   instead of cropping the hat in the shorter XP stat card. */
+html[data-theme="xp"] img[src*="kiki-invoices-coin"] {
+    object-fit: contain !important;
+    object-position: center bottom !important;
+    background: #ece9d8 !important;
+    padding: 2px;
 }
