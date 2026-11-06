@@ -14,6 +14,39 @@ docker compose exec app php artisan db:seed --force
 
 Приложение — `http://localhost:${APP_PORT}` (в этом workspace — 8099), healthcheck `/up`. Полная настройка, порты и запуск без Docker — [setup.md](docs/agents/setup.md).
 
+## Ветки и деплой — обязательный порядок
+
+Главное правило: **разработка идёт только в `dev`**. `master` и `production` не используются для новых изменений.
+
+1. Начните с обновления `dev`:
+   ```bash
+   git switch dev
+   git pull --ff-only origin dev
+   ```
+2. Делайте изменения и коммиты **только в `dev`**.
+3. Перед мержем проверьте `dev`:
+   ```bash
+   docker compose exec app php artisan test
+   docker compose exec app vendor/bin/pint --test
+   npm run build
+   ```
+   Дополнительно пройдите smoke-проверку затронутых страниц: `/up`, вход, приглашение, настройки и изменённый раздел.
+4. Только после зелёных тестов обновите `master` и `production` merge-коммитами:
+   ```bash
+   git switch master
+   git merge --no-ff dev -m "Merge dev into master"
+
+   git switch production
+   git merge --no-ff master -m "Merge master into production"
+   ```
+5. Production-деплой выполняется **только после** шага 4: пересоберите образ, перезапустите `app` и проверьте `/up` и ключевые страницы.
+
+- `dev` — единственная ветка для разработки.
+- `master` — релизное зеркало для GitHub, обновляется из `dev` после тестов.
+- `production` — ветка боевого деплоя, обновляется только merge-коммитом.
+- Прямые коммиты и пуш в `master`/`production` в обход `dev` запрещены.
+- Если тесты не прошли, исправления продолжаются в `dev`; мерж и деплой не выполняются.
+
 ## Куда читать дальше
 
 | Задача | Документ |
@@ -49,4 +82,5 @@ docker compose exec app php artisan db:seed --force
 - Проекты — отдельная сущность: ключ, клиент, задачи с номерами (`KOR-12`), прогресс, сайт, `AGENTS.md` и указания. Доступ к проекту — владелец + участники с ролями (`manager`/`member`/`viewer`); задачи клиента фильтруются и по проекту. Контекст и изучение сайта принадлежат проекту, а не общим настройкам; прайс-лист отдаёт ядро (`get_price_list`).
 - UI — из `Components/UI`, `Components/Form`, `Components/CustomFields`; тема — токены `resources/css/app.css`.
 - Проверка изменения: `php artisan test` в контейнере + `vendor/bin/pint --test`; MCP — `cd mcp && npm test`.
+- Рабочая ветка — только `dev`; после тестов — merge в `master`/`production`, затем деплой.
 - Секреты — только в `.env` и зашифрованных настройках; `.env*` и `bootstrap/cache/*.php` не коммитятся.
