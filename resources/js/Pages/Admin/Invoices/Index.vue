@@ -40,7 +40,7 @@ function setStatus(value) {
             <StatCard label="Оплачено за месяц" :value="formatMoney(summary?.paid_month ?? 0)" hint="подтверждённые поступления" :icon="BanknotesIcon" tone="sage" mono />
             <StatCard label="Всего счетов" :value="invoices.total" hint="во всех статусах" tone="violet" />
             <div class="relative hidden overflow-hidden rounded-[22px] border border-line/70 bg-white/35 lg:block">
-                <img src="/images/kiki/kiki-invoices-envelope.png" alt="Кики разглядывает монету через монокль" class="pointer-events-none absolute inset-0 h-full w-full select-none object-cover object-[50%_38%]" />
+                <img src="/images/kiki/kiki-invoices-coin.webp" alt="Кики разглядывает монету через монокль" class="pointer-events-none absolute inset-0 h-full w-full select-none object-cover object-[50%_38%]" />
             </div>
         </div>
 
