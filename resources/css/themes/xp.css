@@ -660,3 +660,34 @@ html[data-theme="xp"] input:not([type="checkbox"]):not([type="radio"])[class*="p
 html[data-theme="xp"] input:not([type="checkbox"]):not([type="radio"])[class*="pl-10"] {
     padding-left: 2.5rem !important;
 }
+
+
+/* Kiki hero illustrations must fit the XP window instead of being clipped
+   by its shorter header area (admin and client dashboards). */
+html[data-theme="xp"] div.pointer-events-none.absolute.bottom-0 {
+    top: 0 !important;
+    bottom: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Align the compact language caption and the selected language on one row. */
+html[data-theme="xp"] [data-i18n-skip] > span:not([class*="flex-1"]) {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 16px !important;
+    line-height: 16px !important;
+}
+
+/* The active secondary link (Help/Settings) needs the light task-pane
+   treatment on the blue rail; the default dark text is unreadable there. */
+html[data-theme="xp"] aside.fixed.inset-y-0 a[class*="bg-ink/"] {
+    background: #ece9d8 !important;
+    border: 1px solid #fff !important;
+    color: #0a246a !important;
+    text-shadow: none !important;
+}
+
+html[data-theme="xp"] aside.fixed.inset-y-0 a[class*="bg-ink/"] svg {
+    color: #0a246a !important;
+}
