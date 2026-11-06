@@ -354,3 +354,22 @@ html[data-theme="dark"] div.pointer-events-none.absolute.bottom-0 {
     max-height: 100% !important;
 }
 
+
+
+/* Tailwind's bg-white/* utility has higher specificity than the generic
+   select rule; keep native selects dark everywhere (tasks, projects, filters). */
+html[data-theme="dark"] body select {
+    background-color: #0f0c15 !important;
+    color: #f5f1fb !important;
+    border-color: #3b3150 !important;
+}
+
+html[data-theme="dark"] body select:focus {
+    border-color: #8067c1 !important;
+    box-shadow: 0 0 0 3px rgba(155, 134, 245, 0.12) !important;
+}
+
+html[data-theme="dark"] body select option {
+    background: #15121d !important;
+    color: #f5f1fb !important;
+}
