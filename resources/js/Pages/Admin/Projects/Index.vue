@@ -4,11 +4,13 @@ import { Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
+import SystemProjectCards from '@/Components/Projects/SystemProjectCards.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import { FolderIcon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     projects: Array,
+    systemProjects: { type: Array, default: () => [] },
     filters: Object,
     statuses: Array,
     clients: Array,
@@ -100,6 +102,8 @@ function search() {
                 архив
             </label>
         </div>
+
+        <SystemProjectCards :projects="systemProjects" />
 
         <div v-if="projects.length" class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <Link
