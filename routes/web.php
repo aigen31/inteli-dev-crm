@@ -12,6 +12,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SystemProjectController;
 use App\Http\Controllers\Webhook\YooKassaWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +58,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/files/upload', [FileController::class, 'upload'])->name('files.upload');
         Route::get('/files/{file}/preview', [FileController::class, 'preview'])->name('files.preview');
         Route::get('/files/{file}/download', [FileController::class, 'download'])->name('files.download');
+    });
+
+    // Service projects available to every authenticated user.
+    Route::middleware('is_active')->prefix('projects/system')->name('system-projects.')->group(function () {
+        Route::get('/{project}', [SystemProjectController::class, 'show'])->whereIn('project', ['feedback', 'bugs'])->name('show');
+        Route::post('/{project}', [SystemProjectController::class, 'store'])->whereIn('project', ['feedback', 'bugs'])->name('store');
+        Route::post('/{project}/{item}/vote', [SystemProjectController::class, 'vote'])->whereIn('project', ['feedback', 'bugs'])->name('vote');
+        Route::patch('/{project}/{item}/status', [SystemProjectController::class, 'updateStatus'])->whereIn('project', ['feedback', 'bugs'])->name('status');
     });
 
     // Admin routes

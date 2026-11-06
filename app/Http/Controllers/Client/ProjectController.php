@@ -8,12 +8,17 @@ use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\User;
+use App\Services\SystemProjectService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProjectController extends Controller
 {
+    public function __construct(
+        private readonly SystemProjectService $systemProjects,
+    ) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -39,6 +44,7 @@ class ProjectController extends Controller
 
         return Inertia::render('Client/Projects/Index', [
             'projects' => $projects,
+            'systemProjects' => $this->systemProjects->summaries(),
         ]);
     }
 
