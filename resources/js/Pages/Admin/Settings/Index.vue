@@ -23,6 +23,7 @@ import {
     PencilSquareIcon,
     PlusIcon,
     SparklesIcon,
+    SwatchIcon,
     TrashIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
@@ -39,13 +40,33 @@ const props = defineProps({
     mcp: Object,
 });
 
-const activeTab = ref(props.tab || 'payments');
-const tabs = [
-    { value: 'payments', label: 'Оплата', icon: CreditCardIcon },
-    { value: 'fields', label: 'Поля', icon: AdjustmentsHorizontalIcon },
-    { value: 'api', label: 'API и MCP', icon: CommandLineIcon },
-    { value: 'ai', label: 'Кики', icon: SparklesIcon },
+const tabGroups = [
+    {
+        label: 'Личное',
+        items: [
+            { value: 'appearance', label: 'Интерфейс', icon: SwatchIcon, title: 'Интерфейс и доступ', description: 'Язык, внешний вид и секретные возможности вашего аккаунта.' },
+        ],
+    },
+    {
+        label: 'Рабочее пространство',
+        items: [
+            { value: 'payments', label: 'Оплата', icon: CreditCardIcon, title: 'Оплата и реквизиты', description: 'Как клиенты видят счета и переводят оплату.' },
+            { value: 'fields', label: 'Поля', icon: AdjustmentsHorizontalIcon, title: 'Пользовательские поля', description: 'Данные, которые нужны именно вашему процессу.' },
+        ],
+    },
+    {
+        label: 'Интеграции',
+        items: [
+            { value: 'api', label: 'API и MCP', icon: CommandLineIcon, title: 'API и MCP', description: 'Доступ к данным CRM из внешних инструментов и ИИ-клиентов.' },
+            { value: 'ai', label: 'Кики', icon: SparklesIcon, title: 'Кики и действия ассистента', description: 'Журнал изменений, которые ассистент сделал в рабочем пространстве.' },
+        ],
+    },
 ];
+
+const tabs = tabGroups.flatMap((group) => group.items);
+const allowedTabs = tabs.map((item) => item.value);
+const activeTab = ref(allowedTabs.includes(props.tab) ? props.tab : 'appearance');
+const currentTab = computed(() => tabs.find((item) => item.value === activeTab.value) || tabs[0]);
 
 function go(tab) {
     activeTab.value = tab;
@@ -204,38 +225,62 @@ async function copyMcp() {
 
 <template>
     <AdminLayout title="Настройки">
-        <div class="mb-5 grid max-w-[900px] grid-cols-1 gap-3 lg:grid-cols-[.8fr_1.2fr]">
-            <LocaleSwitcher variant="settings" />
-            <SecretFeaturesCard />
+        <div class="mb-6 max-w-[760px]">
+            <p class="eyebrow">Рабочее пространство</p>
+            <h1 class="page-title mt-1">Настройки</h1>
+            <p class="mt-2 max-w-[620px] text-[12px] leading-relaxed text-muted">
+                Всё, что относится к работе CRM, собрано в четыре понятных блока. Начните с интерфейса или перейдите сразу к нужному разделу.
+            </p>
         </div>
 
-        <div class="grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]">
+        <div class="grid grid-cols-1 gap-5 lg:grid-cols-[240px_1fr]">
             <aside class="lg:sticky lg:top-6 lg:self-start">
-                <nav class="surface-card flex gap-1 overflow-x-auto p-1.5 lg:flex-col">
-                    <button
-                        v-for="item in tabs"
-                        :key="item.value"
-                        type="button"
-                        :class="[
-                            'flex shrink-0 items-center gap-2 rounded-[14px] px-3.5 py-2.5 text-left text-[12px] font-semibold transition',
-                            activeTab === item.value ? 'bg-primary-soft text-primary-800' : 'text-muted hover:bg-ink/[0.04] hover:text-ink',
-                        ]"
-                        @click="go(item.value)"
-                    >
-                        <component :is="item.icon" class="h-4 w-4" />
-                        {{ item.label }}
-                    </button>
+                <nav class="surface-card overflow-x-auto p-2">
+                    <div v-for="group in tabGroups" :key="group.label" class="lg:mb-3 last:mb-0">
+                        <p class="hidden px-2.5 pb-1.5 pt-1 font-mono text-[8px] uppercase tracking-[0.14em] text-faint lg:block">{{ group.label }}</p>
+                        <div class="flex gap-1 lg:block">
+                            <button
+                                v-for="item in group.items"
+                                :key="item.value"
+                                type="button"
+                                :class="[
+                                    'flex shrink-0 items-center gap-2 rounded-[11px] px-3 py-2.5 text-left text-[11px] font-semibold transition lg:w-full',
+                                    activeTab === item.value ? 'bg-primary-soft text-primary-800 shadow-[inset_0_0_0_1px_rgba(109,90,230,.08)]' : 'text-muted hover:bg-ink/[0.04] hover:text-ink',
+                                ]"
+                                @click="go(item.value)"
+                            >
+                                <component :is="item.icon" class="h-4 w-4 shrink-0" />
+                                {{ item.label }}
+                            </button>
+                        </div>
+                    </div>
                 </nav>
-                <div class="surface-card mt-3 hidden p-4 lg:block">
-                    <KikiAvatar :size="42" />
-                    <p class="mt-2 text-[11px] font-semibold text-ink">Кики рядом</p>
-                    <p class="mt-1 text-[10px] leading-relaxed text-muted">Настройте API, и ассистент сможет работать с вашими данными.</p>
-                </div>
             </aside>
 
-            <div class="min-w-0 space-y-5">
+            <div class="min-w-0 space-y-4">
+                <div class="surface-card flex items-start gap-3 p-4 sm:p-5">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-primary-soft text-primary-700">
+                        <component :is="currentTab.icon" class="h-5 w-5" />
+                    </span>
+                    <div class="min-w-0">
+                        <p class="eyebrow">Настройки / {{ currentTab.label }}</p>
+                        <h2 class="mt-1 font-display text-[20px] font-medium tracking-[-0.03em] text-ink">{{ currentTab.title }}</h2>
+                        <p class="mt-1 text-[11px] leading-relaxed text-muted">{{ currentTab.description }}</p>
+                    </div>
+                </div>
+
+                <template v-if="activeTab === 'appearance'">
+                    <div class="grid grid-cols-1 gap-4 xl:grid-cols-[.8fr_1.2fr]">
+                        <LocaleSwitcher variant="settings" />
+                        <SecretFeaturesCard />
+                    </div>
+                    <p class="px-1 text-[10px] leading-relaxed text-muted">
+                        Секретные коды открывают дополнительные возможности только для вашего аккаунта. Уже открытые функции сохраняются, поэтому новый код можно ввести в любой момент.
+                    </p>
+                </template>
+
                 <!-- Payments -->
-                <template v-if="activeTab === 'payments'">
+                <template v-else-if="activeTab === 'payments'">
                     <Card title="Реквизиты для прямого перевода">
                         <p class="mb-5 text-[12px] leading-relaxed text-ink-soft">
                             Клиент увидит эти данные в счетах со способом «Прямой перевод». Оплата приходит напрямую вам, вне кассы.
