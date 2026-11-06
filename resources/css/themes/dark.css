@@ -272,7 +272,7 @@ html[data-theme="dark"] .prose-kiki a { color: #c2b2ff; }
    A subtle light edge keeps the black-robed character readable. */
 html[data-theme="dark"] img[src*="kiki"] {
     background: transparent !important;
-    filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.28)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.4));
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.55)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.72));
 }
 
 
