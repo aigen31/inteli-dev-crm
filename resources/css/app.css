@@ -296,16 +296,24 @@ html[lang="zh-CN"] {
 
 /* Keep the top-bar search control roomy around its shortcut badge. */
 .relative.z-10 > div:first-child button {
-    padding: 6px 14px !important;
+    padding: 6px 16px !important;
     min-height: 33px;
 }
 
 .relative.z-10 > div:first-child button > span {
-    margin-inline: 3px;
+    margin-inline: 4px;
 }
 
 /* Kiki hero and stat illustrations must never be cropped by a short card. */
 img[src*="kiki-invoices-coin"] {
     object-fit: contain !important;
     object-position: center bottom !important;
+}
+
+
+/* Leave breathing room between the desktop header controls and the window
+   border. XP has its own title-bar padding and is excluded. */
+html[data-theme="default"] .relative.z-10 > div:first-child,
+html[data-theme="dark"] .relative.z-10 > div:first-child {
+    padding-bottom: 8px !important;
 }
