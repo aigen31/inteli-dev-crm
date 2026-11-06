@@ -606,8 +606,8 @@ html[data-theme="xp"] nav.fixed.inset-x-0.bottom-0 button {
     font-family: var(--font-sans);
 }
 
-/* Ensure muted text inside blue title bar remains readable. */
-html[data-theme="xp"] .relative.z-10 > div:first-child .font-mono {
+/* Breadcrumbs inherit the white caption; toolbar children set their own ink. */
+html[data-theme="xp"] .relative.z-10 > div:first-child > div:first-child .font-mono {
     color: #fff !important;
 }
 
