@@ -325,3 +325,22 @@ html[data-theme="dark"] .theme-choice[class*="border-primary-300"] {
     background: rgba(155, 134, 245, 0.12) !important;
     border-color: rgba(176, 156, 255, 0.45) !important;
 }
+
+
+/* Covers variants used by the settings language capsule and other small
+   surfaces that are not in the explicit opacity list above. */
+html[data-theme="dark"] [class*="bg-white/"] {
+    background-color: rgba(255, 255, 255, 0.045) !important;
+}
+
+html[data-theme="dark"] aside.fixed.inset-y-0 > a span[class*="bg-white/50"] {
+    background: #211c2b !important;
+    border-color: #3b3150 !important;
+    color: #f1ecf9 !important;
+}
+
+html[data-theme="dark"] aside.fixed.inset-y-0 > a span[class*="bg-warning/10"] {
+    background: rgba(242, 179, 93, 0.12) !important;
+    border-color: rgba(242, 179, 93, 0.28) !important;
+    color: #f5c77e !important;
+}
