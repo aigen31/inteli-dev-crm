@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { localeTag } from '@/i18n';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { ArrowPathIcon, CheckIcon, ClipboardDocumentIcon, DocumentTextIcon } from '@heroicons/vue/24/outline';
@@ -77,7 +78,7 @@ function openImage(index) {
 function formatTime(value) {
     if (!value) return '';
 
-    return new Date(value).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    return new Date(value).toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' });
 }
 
 async function copy() {

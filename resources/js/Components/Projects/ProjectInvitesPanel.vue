@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { localeTag } from '@/i18n';
 import { router } from '@inertiajs/vue3';
 import Button from '@/Components/UI/Button.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
@@ -85,7 +86,7 @@ function revoke(invite) {
 
 function formatDate(value) {
     if (!value) return '';
-    return new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value));
+    return new Intl.DateTimeFormat(localeTag(), { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value));
 }
 </script>
 

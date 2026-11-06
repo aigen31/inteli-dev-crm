@@ -5,6 +5,7 @@ import Card from '@/Components/UI/Card.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import Button from '@/Components/UI/Button.vue';
 import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
+import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
 
 const props = defineProps({
     user: Object,
@@ -38,6 +39,8 @@ function updatePassword() {
 <template>
     <ClientLayout title="Профиль">
         <div class="max-w-2xl space-y-6">
+            <LocaleSwitcher variant="settings" />
+
             <Card title="Контактные данные">
                 <form @submit.prevent="updateProfile" class="space-y-4">
                     <TextInput v-model="profileForm.name" label="Имя" :error="profileForm.errors.name" required />

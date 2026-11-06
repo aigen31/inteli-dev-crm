@@ -27,6 +27,7 @@ class User extends Authenticatable
         'messenger_contacts',
         'password',
         'is_active',
+        'locale',
     ];
 
     protected $hidden = [
