@@ -38,7 +38,7 @@ function change(event) {
             :aria-label="$t('Выберите язык')"
             :class="[
                 'appearance-none bg-transparent font-semibold text-ink outline-none',
-                isSettings ? 'rounded-xl border border-line bg-white/70 px-2.5 py-1.5 text-[12px]' : 'max-w-[88px] text-[11px]',
+                isSettings ? 'rounded-xl border border-line bg-white/70 px-2.5 py-1.5 text-[12px]' : 'max-w-[88px] cursor-pointer border-0 bg-transparent p-0 text-[11px]',
             ]"
             @change="change"
         >
@@ -46,6 +46,6 @@ function change(event) {
                 {{ item.label }}
             </option>
         </select>
-        <ChevronDownIcon :class="isSettings ? 'h-4 w-4 text-muted' : 'h-3 w-3 text-muted'" class="pointer-events-none absolute right-3" :style="isSettings ? 'right: 1rem' : ''" />
+        <ChevronDownIcon :class="isSettings ? 'mr-1 h-4 w-4 text-muted' : 'h-3 w-3 text-muted'" class="pointer-events-none shrink-0" />
     </div>
 </template>

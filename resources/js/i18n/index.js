@@ -103,21 +103,25 @@ function scheduleTranslation() {
     window.requestAnimationFrame(() => {
         scheduled = false;
         translateDom(document.body);
+        translateDocumentTitle();
     });
 }
 
 export function startI18n(initialLocale = 'en') {
     setLocale(initialLocale);
     translateDom(document.body);
+    window.setTimeout(translateDocumentTitle, 100);
 
     if (observer !== null || typeof MutationObserver === 'undefined') return;
 
     observer = new MutationObserver(scheduleTranslation);
-    observer.observe(document.body, {
+    const options = {
         subtree: true,
         childList: true,
         characterData: true,
         attributes: true,
         attributeFilter: TRANSLATABLE_ATTRIBUTES,
-    });
+    };
+    observer.observe(document.body, options);
+    if (document.head) observer.observe(document.head, options);
 }
