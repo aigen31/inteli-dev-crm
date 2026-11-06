@@ -28,6 +28,8 @@ class User extends Authenticatable
         'password',
         'is_active',
         'locale',
+        'theme',
+        'features',
     ];
 
     protected $hidden = [
@@ -41,8 +43,14 @@ class User extends Authenticatable
             'role' => UserRole::class,
             'messenger_contacts' => 'array',
             'password' => 'hashed',
+            'features' => 'array',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function hasFeature(string $feature): bool
+    {
+        return (bool) data_get($this->features ?? [], $feature, false);
     }
 
     public function isAdmin(): bool
