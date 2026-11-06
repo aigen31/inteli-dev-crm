@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
-import { CheckIcon, PlusIcon, SparklesIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { Link } from '@inertiajs/vue3';
+import { ArrowTopRightOnSquareIcon, CheckIcon, FolderIcon, PlusIcon, SparklesIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 
 const props = defineProps({
@@ -43,6 +44,11 @@ const projects = computed(() =>
         label: project.key + ' · ' + project.name,
     })),
 );
+
+const selectedProject = computed(
+    () => projectOptions.find((project) => project.id === projectId.value) || plan.project || null,
+);
+const projectUrl = computed(() => selectedProject.value?.url || plan.project_url || null);
 
 const clientOptions = computed(() =>
     clients.map((client) => ({
@@ -172,6 +178,23 @@ function submit() {
                 </ul>
             </div>
         </header>
+
+        <div v-if="projectUrl" class="flex flex-wrap items-center gap-2 border-b border-line/70 bg-white/45 px-4 py-2.5">
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] bg-primary-soft text-primary-700">
+                <FolderIcon class="h-3.5 w-3.5" />
+            </span>
+            <div class="min-w-0 flex-1">
+                <p class="truncate text-[11px] font-semibold text-ink">{{ selectedProject?.key }} · {{ selectedProject?.name }}</p>
+                <p class="font-mono text-[8px] uppercase tracking-[0.12em] text-muted">куда попадут задачи</p>
+            </div>
+            <Link
+                :href="projectUrl"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary-200 bg-primary-50/70 px-3 py-1.5 text-[10px] font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-100"
+            >
+                Перейти в проект
+                <ArrowTopRightOnSquareIcon class="h-3.5 w-3.5" />
+            </Link>
+        </div>
 
         <div class="max-h-[54vh] overflow-y-auto px-3 py-3">
             <SelectInput
