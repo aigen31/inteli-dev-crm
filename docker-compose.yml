@@ -78,6 +78,7 @@ services:
       assistant:
         aliases:
           - crm-prod-nginx
+          - crm-nginx
 
   # ── Queue worker ─────────────────────────────────────
   worker:
