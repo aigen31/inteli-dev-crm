@@ -129,6 +129,18 @@ html[data-theme="xp"] .relative.z-10 > div:first-child [data-i18n-skip].text-mut
     color: #000 !important;
 }
 
+/* The ⌘K shortcut badge is a child span, not the button label. */
+html[data-theme="xp"] .relative.z-10 > div:first-child button > span {
+    color: #000 !important;
+    background: #fff !important;
+    border-color: #7f9db9 !important;
+    text-shadow: none !important;
+}
+
+html[data-theme="xp"] .relative.z-10 > div:first-child button > span * {
+    color: #000 !important;
+}
+
 html[data-theme="xp"] .relative.z-10 > div:first-child button,
 html[data-theme="xp"] .relative.z-10 > div:first-child > div:last-child > a {
     min-height: 22px !important;
@@ -618,4 +630,33 @@ html[data-theme="xp"] aside.fixed.inset-y-0 > button[class*="bg-gradient-to-br"]
 html[data-theme="xp"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"] .text-muted {
     color: #222 !important;
     font-size: 11px;
+}
+
+
+/* Logo service badges on the blue rail. */
+html[data-theme="xp"] aside.fixed.inset-y-0 > a span[class*="bg-white/50"] {
+    background: #ece9d8 !important;
+    border-color: #7f9db9 !important;
+    color: #000 !important;
+    text-shadow: none !important;
+}
+
+html[data-theme="xp"] aside.fixed.inset-y-0 > a span[class*="bg-warning/10"] {
+    background: #fff3cd !important;
+    border-color: #c9a227 !important;
+    color: #5c3b00 !important;
+    text-shadow: none !important;
+}
+
+/* Keep icon-bearing search fields clear of their leading icon. */
+html[data-theme="xp"] input:not([type="checkbox"]):not([type="radio"])[class*="pl-8"] {
+    padding-left: 2rem !important;
+}
+
+html[data-theme="xp"] input:not([type="checkbox"]):not([type="radio"])[class*="pl-9"] {
+    padding-left: 2.25rem !important;
+}
+
+html[data-theme="xp"] input:not([type="checkbox"]):not([type="radio"])[class*="pl-10"] {
+    padding-left: 2.5rem !important;
 }
