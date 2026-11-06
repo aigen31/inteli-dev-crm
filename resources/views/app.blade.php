@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+@php
+    $currentUser = auth()->user();
+    $interfaceTheme = $currentUser && $currentUser->hasFeature('xp_theme') && $currentUser->theme === 'xp' ? 'xp' : 'default';
+@endphp
+<html lang="ru" data-theme="{{ $interfaceTheme }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">

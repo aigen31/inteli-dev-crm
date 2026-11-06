@@ -45,6 +45,8 @@ class HandleInertiaRequests extends Middleware
                 'api_token' => fn () => $request->session()->get('api_token'),
             ],
             'locale' => $locale,
+            'theme' => $user?->hasFeature('xp_theme') && $user->theme === 'xp' ? 'xp' : 'default',
+            'features' => $user?->features ?? [],
             'locales' => [
                 ['code' => 'en', 'label' => 'English', 'short' => 'EN'],
                 ['code' => 'ru', 'label' => 'Русский', 'short' => 'RU'],

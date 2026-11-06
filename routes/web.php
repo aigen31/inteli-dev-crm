@@ -12,6 +12,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SecretFeatureController;
 use App\Http\Controllers\SystemProjectController;
 use App\Http\Controllers\Webhook\YooKassaWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -66,6 +67,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/{project}', [SystemProjectController::class, 'store'])->whereIn('project', ['feedback', 'bugs'])->name('store');
         Route::post('/{project}/{item}/vote', [SystemProjectController::class, 'vote'])->whereIn('project', ['feedback', 'bugs'])->name('vote');
         Route::patch('/{project}/{item}/status', [SystemProjectController::class, 'updateStatus'])->whereIn('project', ['feedback', 'bugs'])->name('status');
+    });
+
+    // Secret, opt-in interface features.
+    Route::middleware('is_active')->group(function () {
+        Route::post('/settings/unlock', [SecretFeatureController::class, 'unlock'])->middleware('throttle:5,1')->name('settings.unlock');
+        Route::patch('/settings/theme', [SecretFeatureController::class, 'theme'])->name('settings.theme');
     });
 
     // Admin routes

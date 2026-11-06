@@ -10,6 +10,7 @@ import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
+import SecretFeaturesCard from '@/Components/UI/SecretFeaturesCard.vue';
 import { formatDateTime } from '@/Utils/formatters.js';
 import {
     AdjustmentsHorizontalIcon,
@@ -203,8 +204,9 @@ async function copyMcp() {
 
 <template>
     <AdminLayout title="Настройки">
-        <div class="mb-5 max-w-[720px]">
+        <div class="mb-5 grid max-w-[900px] grid-cols-1 gap-3 lg:grid-cols-[.8fr_1.2fr]">
             <LocaleSwitcher variant="settings" />
+            <SecretFeaturesCard />
         </div>
 
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]">
