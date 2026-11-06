@@ -7,6 +7,7 @@ use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\Auth;
 use App\Http\Controllers\Client;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\ReportController;
@@ -22,6 +23,8 @@ Route::middleware('guest')->group(function () {
 
 // Authenticated
 Route::middleware('auth')->group(function () {
+    Route::get('/help', [HelpController::class, 'index'])->name('help.index');
+
     Route::post('/logout', [Auth\LogoutController::class, 'destroy'])->name('logout');
     Route::put('/password', [Auth\PasswordController::class, 'update'])->name('password.update');
 

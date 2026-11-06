@@ -78,7 +78,7 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
             </div>
 
             <div class="pointer-events-none absolute bottom-0 right-2 hidden h-[230px] w-[360px] sm:block lg:h-[245px] lg:w-[420px]">
-                <img src="/images/kiki/kiki-flight-hero.webp" alt="Кики" class="h-full w-full object-contain object-right-bottom" />
+                <img src="/images/kiki/kiki-dashboard-mug.webp" alt="Кики с большой кружкой" class="h-full w-full object-contain object-right-bottom" />
             </div>
         </section>
 

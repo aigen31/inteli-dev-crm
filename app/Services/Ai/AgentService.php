@@ -41,6 +41,7 @@ class AgentService
         private readonly KernelClient $kernel,
         private readonly SessionService $sessions,
         private readonly CrmToolbox $toolbox,
+        private readonly CrmHelpService $help,
     ) {}
 
     /**
@@ -319,7 +320,7 @@ class AgentService
      */
     public function suggestions(User $user): array
     {
-        return $user->isAdmin()
+        $data = $user->isAdmin()
             ? [
                 'Что сегодня в работе?',
                 'Оформить заявку по форме',
@@ -334,6 +335,19 @@ class AgentService
                 'Прикрепи скриншот и опиши проблему',
                 'Когда ближайший срок?',
             ];
+
+        return array_values(array_unique([...$this->help->promptSuggestions($user), ...$data]));
+    }
+
+    /**
+     * @return array{topics: list<array<string, mixed>>, url: string}
+     */
+    public function help(User $user): array
+    {
+        return [
+            'topics' => array_slice($this->help->forUser($user), 0, 8),
+            'url' => route('help.index'),
+        ];
     }
 
     /**

@@ -11,6 +11,7 @@ import {
     HomeIcon,
     InboxIcon,
     MagnifyingGlassIcon,
+    QuestionMarkCircleIcon,
     RectangleStackIcon,
     SparklesIcon,
     UserIcon,
@@ -76,15 +77,17 @@ const navigation = computed(() =>
 
 const mobileNavigation = computed(() => navigation.value.filter((item) => !item.href.endsWith('/assistant')));
 
-const secondary = computed(() =>
-    isAdmin.value
+const secondary = computed(() => [
+    ...(isAdmin.value
         ? [{ label: 'Настройки', href: route('admin.settings.edit'), icon: Cog6ToothIcon, active: path.value.startsWith('/admin/settings') }]
-        : [{ label: 'Профиль', href: route('client.profile.edit'), icon: UserIcon, active: path.value.startsWith('/profile') }],
-);
+        : [{ label: 'Профиль', href: route('client.profile.edit'), icon: UserIcon, active: path.value.startsWith('/profile') }]),
+    { label: 'Помощь', href: route('help.index'), icon: QuestionMarkCircleIcon, active: path.value.startsWith('/help') },
+]);
 
 const sectionLabel = computed(() => {
     if (path.value.startsWith('/admin/settings')) return 'Настройки';
     if (path.value.startsWith('/profile')) return 'Профиль';
+    if (path.value.startsWith('/help')) return 'Помощь';
     return navigation.value.find((item) => item.active)?.label ?? (isAdmin.value ? 'Обзор' : 'Кабинет');
 });
 

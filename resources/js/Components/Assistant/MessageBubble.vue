@@ -41,6 +41,7 @@ const TOOL_LABELS = {
     get_task: 'Открываю задачу',
     get_client: 'Открываю клиента',
     study_project_site: 'Запускаю изучение сайта',
+    crm_help: 'Ищу раздел CRM',
 };
 
 function stepLabel(step) {

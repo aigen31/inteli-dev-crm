@@ -56,7 +56,7 @@ function lastAssistantId() {
     <div ref="scroller" class="h-full overflow-y-auto overscroll-contain px-4 py-4">
         <div v-if="!hasMessages && !loading" class="flex min-h-full flex-col items-center justify-center px-2 py-8 text-center">
             <img
-                src="/images/kiki/kiki-seated.webp"
+                src="/images/kiki/kiki-chat-float.webp"
                 alt="Кики — ассистент inteli dev"
                 class="pointer-events-none w-full max-w-[360px] select-none object-contain"
                 :class="compact ? 'h-[180px]' : 'h-[230px]'"
@@ -69,7 +69,7 @@ function lastAssistantId() {
             </p>
             <div class="mt-5 flex w-full flex-wrap justify-center gap-2">
                 <button
-                    v-for="suggestion in suggestions.slice(0, 4)"
+                    v-for="suggestion in suggestions.slice(0, 6)"
                     :key="suggestion"
                     type="button"
                     class="rounded-full border border-line bg-white/60 px-3 py-1.5 text-[11px] font-medium text-ink-soft transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-800"
@@ -78,6 +78,11 @@ function lastAssistantId() {
                     {{ suggestion }}
                 </button>
             </div>
+
+            <a href="/help" class="mt-4 inline-flex items-center gap-1 text-[10px] font-semibold text-primary-700 hover:underline">
+                Все разделы CRM и инструкции
+                <span aria-hidden="true">→</span>
+            </a>
 
             <div v-if="error" class="mt-5 w-full max-w-[420px] rounded-2xl border border-danger/20 bg-danger/[0.06] px-3.5 py-2.5 text-left text-[12px] text-danger-ink">
                 {{ error }}

@@ -23,10 +23,16 @@
 |---|---|---|
 | `kiki-flight.webp` | 1280×704, RGBA | светлый вариант полёта после тёмного, источник кропов |
 | `kiki-flight-portrait.webp` | 768×1024, RGBA | резерв для вертикальных сцен |
-| `kiki-flight-hero.webp` | 900×620, RGBA | hero админ-дашборда |
+| `kiki-flight-hero.webp` | 900×620, RGBA | резерв: полёт в светлой теме |
 | `kiki-flight-avatar.webp` | 640×640, RGB | аватар из светлого полёта; полная высокая шляпа |
 | `kiki-flight-badge.webp` | 640×640, RGBA | empty states; шляпа целиком |
-| `kiki-seated.webp` | 1200×1200, RGBA | шаблоны задач и ассистент; Qwen RGBA, полное платье, высокая шляпа, светящийся шар в руках (орб из Qwen-рендера) |
+| `kiki-seated.webp` | 1200×1200, RGBA | ассистент; Qwen RGBA, полное платье, высокая шляпа, светящийся шар в руках (орб из Qwen-рендера) |
+| `kiki-template-steps.webp` | 1440×1440, RGBA | сценарии: прыжок по парящим карточкам шаблонов, персиковые искры; Qwen i2i, фон удалён штатным проходом |
+| `kiki-dashboard-mug.webp` | 1440×1440, RGBA | hero админ-дашборда: Кики с огромной кружкой, пар и персиковые искры |
+| `kiki-invoices-coin.webp` | 1440×1440, RGBA | счета: монета-монокль у глаза, лукавый прищур |
+| `kiki-forms-avatar.webp` | 1440×1440, RGBA | аватар структуры формы: Кики выглядывает из-за чистой бумаги; `KikiAvatar variant="peek"` |
+| `kiki-chat-float.webp` | 1440×1440, RGBA | пустой чат ассистента: Кики лежит на животе, подбородок на ладонях |
+| `kiki-client-welcome.webp` | 1440×1440, RGBA | клиентский дашборд: приветственный книксен с подолом платья |
 | `kiki-desk.webp` | 1152×1024, RGB | клиентский дашборд, framed-карточка «за работой»; высокая шляпа |
 | `kiki-standing.webp` | 544×1632, RGBA | резерв: стоячая поза в светлой теме |
 | `kiki-hero.webp` | 1024×576, RGBA | старый спокойный кадр (резерв) |
@@ -51,13 +57,14 @@
 
 ## Код
 
-- `resources/js/Components/Kiki/KikiAvatar.vue` — варианты `avatar`, `hero`, `flight`, `empty`, `thinking`, `seated`, `classic`.
+- `resources/js/Components/Kiki/KikiAvatar.vue` — варианты `avatar`, `hero`, `flight`, `empty`, `thinking`, `seated`, `classic`, `peek`.
 - `resources/js/Pages/Auth/Login.vue` — `kiki-login-meditation-transparent.png` (медитация с шаром, прозрачный фон).
-- `resources/js/Pages/Admin/Dashboard.vue` — `kiki-flight-hero.webp`; empty — `flight` badge.
-- `resources/js/Pages/Admin/TaskTemplates/Index.vue` — `kiki-seated.webp`.
-- `resources/js/Pages/Admin/Invoices/Index.vue` — `kiki-flight-portrait.webp`.
-- `resources/js/Pages/Client/Dashboard.vue` — `kiki-desk.webp` в рамке.
-- `resources/js/Components/Assistant/AssistantPanel.vue` — `kiki-seated.webp` в приветствии, `KikiAvatar variant="face"` в шапке и сообщениях.
+- `resources/js/Pages/Admin/Dashboard.vue` — `kiki-dashboard-mug.webp`; empty — `flight` badge.
+- `resources/js/Pages/Admin/TaskTemplates/Index.vue` — `kiki-template-steps.webp`.
+- `resources/js/Pages/Admin/Invoices/Index.vue` — `kiki-invoices-coin.webp` в плитке сводки.
+- `resources/js/Pages/Admin/Forms/Index.vue` — `KikiAvatar variant="peek"` возле структуры формы.
+- `resources/js/Pages/Client/Dashboard.vue` — `kiki-client-welcome.webp` в hero-приветствии, `kiki-desk.webp` в рамке.
+- `resources/js/Components/Assistant/ChatThread.vue` — `kiki-chat-float.webp` в пустом чате; `AssistantPanel.vue` — `KikiAvatar variant="face"` в шапке и сообщениях.
 - `resources/js/Components/Layout/AppShell.vue` — `KikiAvatar variant="face"` в кнопке «Спросить Кики», мобильной шапке и нижней навигации.
 
 Дизайн-токены и правила — [.superdesign/design-system.md](../../.superdesign/design-system.md).

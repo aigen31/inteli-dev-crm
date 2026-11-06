@@ -50,6 +50,7 @@ class AssistantController extends Controller
             'sessions' => $this->sessions->list($user),
             'active' => $active,
             'suggestions' => $this->agent->suggestions($user),
+            'help' => $this->agent->help($user),
             'limits' => [
                 'attachments' => self::MAX_ATTACHMENTS,
             ],
@@ -69,6 +70,7 @@ class AssistantController extends Controller
             'pending_actions' => [],
             'pending_action' => null,
             'suggestions' => $this->agent->suggestions($request->user()),
+            'help' => $this->agent->help($request->user()),
             'generating' => false,
         ];
 

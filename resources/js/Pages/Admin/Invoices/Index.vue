@@ -39,8 +39,8 @@ function setStatus(value) {
             <StatCard label="Ждут оплаты" :value="formatMoney(summary?.pending ?? 0)" hint="сумма по pending" :icon="BanknotesIcon" tone="peach" mono />
             <StatCard label="Оплачено за месяц" :value="formatMoney(summary?.paid_month ?? 0)" hint="подтверждённые поступления" :icon="BanknotesIcon" tone="sage" mono />
             <StatCard label="Всего счетов" :value="invoices.total" hint="во всех статусах" tone="violet" />
-            <div class="hidden overflow-hidden rounded-[22px] border border-line/70 bg-white/35 lg:block">
-                <img src="/images/kiki/kiki-flight-badge.webp" alt="Кики" class="pointer-events-none h-full w-full select-none object-cover object-center" />
+            <div class="relative hidden overflow-hidden rounded-[22px] border border-line/70 bg-white/35 lg:block">
+                <img src="/images/kiki/kiki-invoices-coin.webp" alt="Кики разглядывает монету через монокль" class="pointer-events-none absolute inset-0 h-full w-full select-none object-cover object-[50%_38%]" />
             </div>
         </div>
 

@@ -81,7 +81,7 @@ function toggle(template) {
                                 <h2 class="mt-1 text-[17px] font-bold text-ink">{{ selected.name }}</h2>
                                 <p class="mt-1 text-[10px] leading-relaxed text-muted">{{ selected.description }}</p>
                             </div>
-                            <KikiAvatar :size="34" />
+                            <KikiAvatar variant="peek" :size="34" />
                         </div>
                     </div>
 
