@@ -45,7 +45,15 @@ class HandleInertiaRequests extends Middleware
                 'api_token' => fn () => $request->session()->get('api_token'),
             ],
             'locale' => $locale,
-            'theme' => $user?->hasFeature('xp_theme') && $user->theme === 'xp' ? 'xp' : 'default',
+            'theme' => (function () use ($user): string {
+                $theme = $user?->theme;
+
+                if ($theme === 'xp' && ! $user?->hasFeature('xp_theme')) {
+                    return 'default';
+                }
+
+                return in_array($theme, ['default', 'dark', 'xp'], true) ? $theme : 'default';
+            })(),
             'features' => $user?->features ?? [],
             'locales' => [
                 ['code' => 'en', 'label' => 'English', 'short' => 'EN'],

@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 @php
     $currentUser = auth()->user();
-    $interfaceTheme = $currentUser && $currentUser->hasFeature('xp_theme') && $currentUser->theme === 'xp' ? 'xp' : 'default';
+    $interfaceTheme = $currentUser?->theme;
+
+    if ($interfaceTheme === 'xp' && ! $currentUser?->hasFeature('xp_theme')) {
+        $interfaceTheme = 'default';
+    }
+
+    $interfaceTheme = in_array($interfaceTheme, ['default', 'dark', 'xp'], true) ? $interfaceTheme : 'default';
 @endphp
 <html lang="ru" data-theme="{{ $interfaceTheme }}">
 <head>

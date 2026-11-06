@@ -11,6 +11,7 @@ import SelectInput from '@/Components/Form/SelectInput.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
 import SecretFeaturesCard from '@/Components/UI/SecretFeaturesCard.vue';
+import ThemePreferenceCard from '@/Components/UI/ThemePreferenceCard.vue';
 import { formatDateTime } from '@/Utils/formatters.js';
 import {
     AdjustmentsHorizontalIcon,
@@ -266,6 +267,7 @@ async function copyMcp() {
                 </div>
 
                 <template v-if="activeTab === 'appearance'">
+                    <ThemePreferenceCard />
                     <div class="grid grid-cols-1 items-start gap-4 xl:grid-cols-[.8fr_1.2fr]">
                         <LocaleSwitcher variant="settings" />
                         <SecretFeaturesCard />

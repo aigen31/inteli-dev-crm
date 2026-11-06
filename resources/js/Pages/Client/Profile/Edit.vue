@@ -8,6 +8,7 @@ import Button from '@/Components/UI/Button.vue';
 import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
 import SecretFeaturesCard from '@/Components/UI/SecretFeaturesCard.vue';
+import ThemePreferenceCard from '@/Components/UI/ThemePreferenceCard.vue';
 import { LockClosedIcon, SwatchIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -118,9 +119,12 @@ function updatePassword() {
                     </form>
                 </Card>
 
-                <div v-else class="grid grid-cols-1 items-start gap-4 xl:grid-cols-[.8fr_1.2fr]">
-                    <LocaleSwitcher variant="settings" />
-                    <SecretFeaturesCard />
+                <div v-else class="space-y-4">
+                    <ThemePreferenceCard />
+                    <div class="grid grid-cols-1 items-start gap-4 xl:grid-cols-[.8fr_1.2fr]">
+                        <LocaleSwitcher variant="settings" />
+                        <SecretFeaturesCard />
+                    </div>
                 </div>
             </div>
         </div>
