@@ -58,7 +58,7 @@ function apply() {
         <div v-if="reports.data.length" class="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
             <ReportCard v-for="report in reports.data" :key="report.id" :report="report" :show-url="route('reports.show', report.id)" />
         </div>
-        <EmptyState v-else class="mt-6" title="Отчётов пока нет" text="Создайте первый отчёт — его увидит выбранный получатель.">
+        <EmptyState v-else class="mt-6" image="/images/kiki/kiki-reports-admin.png" title="Отчётов пока нет" text="Создайте первый отчёт — его увидит выбранный получатель.">
             <Link :href="route('admin.reports.create')"><Button size="sm">Создать отчёт</Button></Link>
         </EmptyState>
 

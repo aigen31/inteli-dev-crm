@@ -100,7 +100,7 @@ function setStatus(value) {
 
         <div class="surface-card overflow-hidden">
             <div v-if="!tasks.data.length" class="p-2">
-                <EmptyState title="Задач пока нет" text="Создайте задачу вручную или начните с шаблона — так описание будет понятным с первого раза.">
+                <EmptyState image="/images/kiki/kiki-tasks-admin.png" title="Задач пока нет" text="Создайте задачу вручную или начните с шаблона — так описание будет понятным с первого раза.">
                     <div class="flex gap-2">
                         <Link :href="route('admin.tasks.create')"><Button size="sm">Создать задачу</Button></Link>
                         <Link :href="route('admin.forms.index')"><Button size="sm" variant="secondary">Открыть формы</Button></Link>

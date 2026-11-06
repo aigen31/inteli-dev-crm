@@ -53,7 +53,7 @@ function setStatus(value) {
         </div>
 
         <div v-if="!tasks.data.length" class="surface-card">
-            <EmptyState title="Заявок пока нет" text="Выберите шаблон или опишите задачу своими словами — владелец увидит её и ответит.">
+            <EmptyState image="/images/kiki/kiki-tasks-client.png" title="Заявок пока нет" text="Выберите шаблон или опишите задачу своими словами — владелец увидит её и ответит.">
                 <Link :href="route('client.tasks.create')"><Button size="sm">Создать заявку</Button></Link>
             </EmptyState>
         </div>
