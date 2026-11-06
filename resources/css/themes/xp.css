@@ -700,3 +700,18 @@ html[data-theme="xp"] img[src*="kiki-invoices-coin"] {
     object-position: center bottom !important;
     background: transparent !important;
 }
+
+
+/* Search is a command button, not a tiny title-bar icon: keep a real
+   padding frame around the label and the ⌘K shortcut. */
+html[data-theme="xp"] .relative.z-10 > div:first-child button {
+    min-height: 30px !important;
+    padding: 4px 12px !important;
+}
+
+html[data-theme="xp"] .relative.z-10 > div:first-child button > span {
+    margin: 0 2px 0 3px !important;
+    padding: 3px 5px !important;
+    height: auto !important;
+    min-height: 18px;
+}

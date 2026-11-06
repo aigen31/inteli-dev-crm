@@ -296,12 +296,12 @@ html[lang="zh-CN"] {
 
 /* Keep the top-bar search control roomy around its shortcut badge. */
 .relative.z-10 > div:first-child button {
-    padding: 6px 12px !important;
+    padding: 6px 14px !important;
     min-height: 33px;
 }
 
 .relative.z-10 > div:first-child button > span {
-    margin-inline: 2px;
+    margin-inline: 3px;
 }
 
 /* Kiki hero and stat illustrations must never be cropped by a short card. */
