@@ -57,3 +57,16 @@ test('dark theme is available to every user without a secret code', function ():
     $this->actingAs($user)->get(route('client.profile.edit'))
         ->assertInertia(fn (Assert $page) => $page->where('theme', 'dark'));
 });
+
+test('unlocked features survive theme changes and later requests', function (): void {
+    config(['features.secret_codes.xp_theme' => 'LunaXP2001']);
+    $user = User::factory()->client()->create(['features' => null]);
+
+    $this->actingAs($user)->post(route('settings.unlock'), ['code' => 'LunaXP2001']);
+    $this->actingAs($user)->patch(route('settings.theme'), ['theme' => 'dark']);
+
+    $this->actingAs($user)->get(route('client.profile.edit'))
+        ->assertInertia(fn (Assert $page) => $page->where('features.xp_theme', true));
+
+    expect($user->fresh()->features)->toMatchArray(['xp_theme' => true]);
+});

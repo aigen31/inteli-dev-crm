@@ -20,7 +20,7 @@ defineProps({
         <div v-if="reports.data.length" class="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
             <ReportCard v-for="report in reports.data" :key="report.id" :report="report" :show-url="route('reports.show', report.id)" />
         </div>
-        <EmptyState v-else class="mt-6" image="/images/kiki/kiki-reports-client.png" title="Отчётов пока нет" text="Когда исполнитель отправит отчёт, он появится здесь." />
+        <EmptyState v-else class="mt-6" image="/images/kiki/kiki-empty-generic.png" title="Отчётов пока нет" text="Когда исполнитель отправит отчёт, он появится здесь." />
 
         <Pagination :links="reports" />
     </ClientLayout>

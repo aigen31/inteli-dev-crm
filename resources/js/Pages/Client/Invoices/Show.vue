@@ -95,7 +95,7 @@ async function copy(value) {
                     </dl>
                 </Card>
                 <div class="surface-card flex items-center gap-3 p-4">
-                    <img src="/images/kiki/kiki-flight-avatar.webp" alt="Кики" class="h-9 w-9 rounded-full object-cover" />
+                    <img src="/images/kiki/kiki-flight-avatar.png" alt="Кики" class="h-9 w-9 rounded-full object-cover" />
                     <p class="text-[11px] leading-relaxed text-muted">Вопрос по счёту? Спросите Кики в панели справа — она знает ваши данные.</p>
                 </div>
             </aside>

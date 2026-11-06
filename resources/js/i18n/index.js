@@ -77,7 +77,7 @@ function translatePhrase(value) {
         if (translated !== stripped) return translated + value.slice(stripped.length);
     }
 
-    const greeting = value.replace(/^(Добрый вечер|Доброй ночи|Доброе утро|Добрый день)([,!]?\s*)/, (_, word, punctuation) => t(word) + punctuation);
+    const greeting = value.replace(/^(Здравствуйте|Привет|Добрый вечер|Доброй ночи|Доброе утро|Добрый день)([,!]?\s*)/, (_, word, punctuation) => t(word) + punctuation);
     if (greeting !== value) return greeting;
 
     const parts = value.split(/(\s*[·|/—–]\s*)/);

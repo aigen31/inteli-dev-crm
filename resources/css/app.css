@@ -292,3 +292,20 @@ html[lang="zh-CN"] {
     align-self: center !important;
     line-height: 1 !important;
 }
+
+
+/* Keep the top-bar search control roomy around its shortcut badge. */
+.relative.z-10 > div:first-child button {
+    padding: 6px 12px !important;
+    min-height: 33px;
+}
+
+.relative.z-10 > div:first-child button > span {
+    margin-inline: 2px;
+}
+
+/* Kiki hero and stat illustrations must never be cropped by a short card. */
+img[src*="kiki-invoices-coin"] {
+    object-fit: contain !important;
+    object-position: center bottom !important;
+}
