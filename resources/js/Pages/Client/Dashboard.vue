@@ -37,7 +37,7 @@ const activeCount = computed(() =>
 
 <template>
     <ClientLayout title="Обзор">
-        <section class="relative mb-5 overflow-hidden rounded-[30px] border border-line bg-gradient-to-br from-[#fbf7ef] via-[#f5f0fb] to-[#ece5fa] p-6 sm:p-8">
+        <section class="relative mb-5 overflow-hidden rounded-[30px] border border-line bg-gradient-to-br from-[#fbf7ef] via-[#f5f0fb] to-[#ece5fa] p-6 sm:p-8 xl:min-h-[360px] 2xl:min-h-[420px]">
             <div class="relative z-10 max-w-[560px]">
                 <p class="eyebrow">Личный кабинет</p>
                 <h2 class="mt-2 font-display text-[26px] font-medium leading-[1.08] tracking-[-0.04em] text-ink sm:text-[33px]">
