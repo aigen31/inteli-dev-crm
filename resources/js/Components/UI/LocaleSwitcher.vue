@@ -10,6 +10,7 @@ const props = defineProps({
 
 const page = usePage();
 const current = computed(() => page.props.locale || 'en');
+const currentLabel = computed(() => locales.find((item) => item.code === current.value)?.label || 'English');
 const isSettings = computed(() => props.variant === 'settings');
 
 function change(event) {
@@ -32,20 +33,18 @@ function change(event) {
             <span class="block text-[12px] font-bold text-ink">{{ $t('Язык интерфейса') }}</span>
             <span class="mt-0.5 block text-[10px] text-muted">{{ $t('Выберите язык интерфейса CRM.') }}</span>
         </span>
-        <span v-else class="hidden text-[9px] font-semibold uppercase tracking-[0.12em] text-muted sm:block">lang</span>
+        <span class="hidden text-[9px] font-semibold uppercase tracking-[0.12em] text-muted sm:block">lang</span>
+        <span :class="['min-w-0 truncate font-semibold text-ink', isSettings ? 'text-[12px]' : 'max-w-[88px] text-[11px]']">{{ currentLabel }}</span>
+        <ChevronDownIcon :class="isSettings ? 'mr-1 h-4 w-4 text-muted' : 'h-3 w-3 text-muted'" class="pointer-events-none shrink-0" />
         <select
             :value="current"
             :aria-label="$t('Выберите язык')"
-            :class="[
-                'appearance-none bg-transparent font-semibold text-ink outline-none',
-                isSettings ? 'rounded-xl border border-line bg-white/70 px-2.5 py-1.5 text-[12px]' : 'max-w-[88px] cursor-pointer border-0 bg-transparent p-0 text-[11px]',
-            ]"
+            class="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-[inherit] opacity-0"
             @change="change"
         >
             <option v-for="item in locales" :key="item.code" :value="item.code">
                 {{ item.label }}
             </option>
         </select>
-        <ChevronDownIcon :class="isSettings ? 'mr-1 h-4 w-4 text-muted' : 'h-3 w-3 text-muted'" class="pointer-events-none shrink-0" />
     </div>
 </template>
