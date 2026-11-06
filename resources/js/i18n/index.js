@@ -47,6 +47,15 @@ function translatePhrase(value) {
     const exact = t(value);
     if (exact !== value) return exact;
 
+    const stripped = value.replace(/^(.+?)([,:;.!?])$/, '$1');
+    if (stripped !== value) {
+        const translated = t(stripped);
+        if (translated !== stripped) return translated + value.slice(stripped.length);
+    }
+
+    const greeting = value.replace(/^(Добрый вечер|Доброй ночи|Доброе утро|Добрый день)([,!]?\s*)/, (_, word, punctuation) => t(word) + punctuation);
+    if (greeting !== value) return greeting;
+
     const parts = value.split(/(\s*[·|/—–]\s*)/);
     if (parts.length > 1) {
         const translated = parts.map((part) => (part.trim() === '' ? part : t(part.trim()))).join('');
