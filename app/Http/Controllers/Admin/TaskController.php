@@ -104,7 +104,6 @@ class TaskController extends Controller
         }
 
         $this->customFields->sync($task, $customValues, $request->user());
-        $consents->record($task->client, 'admin-task-create', $request, ['confirmed_by' => $request->user()->id, 'task_id' => $task->id, 'basis' => 'contract'], 'privacy');
 
         return redirect()->route('admin.tasks.show', $task)
             ->with('success', 'Задача создана.');
@@ -161,7 +160,6 @@ class TaskController extends Controller
 
         $task->update($data);
         $this->customFields->sync($task, $customValues, $request->user());
-        $consents->record($task->client, 'admin-task-create', $request, ['confirmed_by' => $request->user()->id, 'task_id' => $task->id, 'basis' => 'contract'], 'privacy');
 
         return redirect()->route('admin.tasks.show', $task)
             ->with('success', 'Задача обновлена.');
