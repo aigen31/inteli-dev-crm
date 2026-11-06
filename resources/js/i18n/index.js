@@ -43,6 +43,20 @@ function isSkipped(element) {
     return !!element?.closest?.('[data-i18n-skip], .prose-kiki, script, style, noscript, textarea, [contenteditable="true"]');
 }
 
+function translatePhrase(value) {
+    const exact = t(value);
+    if (exact !== value) return exact;
+
+    const parts = value.split(/(\s*[·|/—–]\s*)/);
+    if (parts.length > 1) {
+        const translated = parts.map((part) => (part.trim() === '' ? part : t(part.trim()))).join('');
+        if (translated !== value) return translated;
+    }
+
+    const prefixed = value.replace(/^(Проект|Задача|Счёт|Счет|Клиент)\b/, (word) => t(word));
+    return prefixed;
+}
+
 function translateTextNode(node) {
     if (isSkipped(node.parentElement)) return;
 
@@ -50,7 +64,7 @@ function translateTextNode(node) {
     const key = raw.trim();
     if (key === '') return;
 
-    const translated = t(key);
+    const translated = translatePhrase(key);
     if (translated === key) return;
 
     const start = raw.indexOf(key);
@@ -64,7 +78,7 @@ function translateElementAttributes(element) {
     for (const name of TRANSLATABLE_ATTRIBUTES) {
         const value = element.getAttribute(name);
         if (!value) continue;
-        const translated = t(value.trim());
+        const translated = translatePhrase(value.trim());
         if (translated !== value) element.setAttribute(name, translated);
     }
 }
