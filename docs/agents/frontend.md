@@ -51,7 +51,7 @@
 - `AssistantPanel` — глобальная панель (Teleport), открывается из сайдбара, `⌘K` или мобильной кнопки. Сама панель — только оболочка: лента и композер общие с `Pages/Assistant/Chat.vue`.
 - `useAssistantChat` — единственное место, где живут отправка, загрузка изображений, regenerate и confirm. Новый вход в ассистент подключайте к нему, а не пишите свой `axios.post`.
 - `Composer` принимает изображения тремя путями (кнопка, вставка из буфера, drag&drop) и не отправляет их вместе с текстом в одном запросе: сначала `POST /files/upload`, затем id в `attachments`.
-- `KikiAvatar` — варианты `avatar`, `hero`, `flight`, `empty`, `thinking`, `seated`, `classic`; остальные иллюстрации подключаются напрямую (`kiki-seated`, `kiki-flight-portrait`, `kiki-desk`). Не рисуйте маскота и реквизит заново CSS/вектором. Новый набор и правила — [kiki-assets.md](kiki-assets.md).
+- `KikiAvatar` — варианты `avatar`, `hero`, `flight`, `empty`, `clients`, `projects`, `projectTasks`, `thinking`, `classic`; остальные иллюстрации подключаются напрямую (`kiki-empty-generic`, `kiki-empty-clients`, `kiki-empty-projects`, `kiki-empty-project-tasks`, `kiki-flight-portrait`, `kiki-desk`). Не рисуйте маскота и реквизит заново CSS/вектором. Новый набор и правила — [kiki-assets.md](kiki-assets.md).
 
 ## Сборка
 

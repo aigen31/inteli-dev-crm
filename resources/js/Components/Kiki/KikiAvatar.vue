@@ -12,17 +12,19 @@ const props = defineProps({
 const sources = {
     avatar: '/images/kiki/kiki-flight-avatar.webp',
     hero: '/images/kiki/kiki-flight-portrait.webp',
-    empty: '/images/kiki/kiki-seated.webp',
+    empty: '/images/kiki/kiki-empty-generic.png',
+    clients: '/images/kiki/kiki-empty-clients.png',
+    projects: '/images/kiki/kiki-empty-projects.png',
+    projectTasks: '/images/kiki/kiki-empty-project-tasks.png',
     thinking: '/images/kiki/kiki-thinking.webp',
     flight: '/images/kiki/kiki-flight-badge.webp',
-    seated: '/images/kiki/kiki-seated.webp',
     classic: '/images/kiki/kiki-avatar.webp',
     peek: '/images/kiki/kiki-forms-avatar.webp',
     face: '/images/kiki/kiki-avatar-face.png?v=3',
 };
 
 const src = computed(() => sources[props.variant] ?? sources.avatar);
-const fitClass = computed(() => (props.fit === 'contain' || props.variant === 'hero' || props.variant === 'empty' ? 'object-contain' : 'object-cover'));
+const fitClass = computed(() => (props.fit === 'contain' || props.variant === 'hero' || ['empty', 'clients', 'projects', 'projectTasks'].includes(props.variant) ? 'object-contain' : 'object-cover'));
 const style = computed(() => ({
     width: typeof props.size === 'number' ? `${props.size}px` : props.size,
     height: typeof props.size === 'number' ? `${props.size}px` : props.size,

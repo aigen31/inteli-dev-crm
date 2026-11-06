@@ -91,7 +91,7 @@ function statusTone(label) {
         </div>
 
         <div v-if="!clients.data.length" class="surface-card">
-            <EmptyState title="Клиентов пока нет" text="Создайте первый аккаунт — клиент получит доступ к своим задачам, счетам и шаблонам.">
+            <EmptyState variant="clients" title="Клиентов пока нет" text="Создайте первый аккаунт — клиент получит доступ к своим задачам, счетам и шаблонам.">
                 <Link :href="route('admin.clients.create')"><Button size="sm">Создать клиента</Button></Link>
             </EmptyState>
         </div>
