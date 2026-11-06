@@ -79,7 +79,7 @@ defineProps({
             </div>
 
             <div v-else class="p-2">
-                <EmptyState compact title="Задач пока нет" text="В этом проекте у вас ещё нет задач. Как только они появятся, вы увидите их здесь." />
+                <EmptyState compact variant="projectTasks" title="Задач пока нет" text="В этом проекте у вас ещё нет задач. Как только они появятся, вы увидите их здесь." />
             </div>
         </section>
 

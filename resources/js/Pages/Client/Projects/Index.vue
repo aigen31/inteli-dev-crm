@@ -63,6 +63,7 @@ const colorBar = {
 
         <EmptyState
             v-else
+            variant="projects"
             class="mt-6"
             title="Проектов пока нет"
             text="Когда владелец добавит вас в проект, он появится здесь вместе с вашими задачами."
