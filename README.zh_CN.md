@@ -2,7 +2,7 @@
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh_CN.md)
 
-<img src="public/images/kiki/kiki-flight-avatar.webp" width="110" align="right" alt="Kiki — inteli dev 助手">
+<img src="public/images/kiki/kiki-readme-orbit.png" width="180" align="right" alt="Kiki 手捧发光的紫色球体，纸文件夹和纸飞机环绕飞行">
 
 自由职业者的工作空间：客户、任务、项目、模板、账单、报告和助手 Kiki——尽在一处。
 

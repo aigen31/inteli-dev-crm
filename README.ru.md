@@ -2,7 +2,7 @@
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh_CN.md)
 
-<img src="public/images/kiki/kiki-flight-avatar.webp" width="110" align="right" alt="Кики — ассистент inteli dev">
+<img src="public/images/kiki/kiki-readme-orbit.png" width="180" align="right" alt="Кики с фиолетовым шаром, вокруг которого летают бумажные папки и самолётики">
 
 Рабочее пространство для самозанятого: клиенты, задачи, проекты, шаблоны, счета, отчёты и ассистент Кики — в одном месте.
 
