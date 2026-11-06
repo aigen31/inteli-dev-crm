@@ -142,6 +142,7 @@ function search() {
 
         <EmptyState
             v-else
+            variant="projects"
             class="mt-6"
             title="Проектов пока нет"
             text="Создайте первый проект: к нему можно привязать задачи, сайт и агентскую инструкцию."

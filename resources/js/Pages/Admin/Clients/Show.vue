@@ -87,7 +87,7 @@ function deactivate() {
                         </div>
                     </template>
                     <div v-if="!tasks?.length" class="p-2">
-                        <EmptyState compact title="Задач пока нет" text="Создайте задачу вручную или из шаблона.">
+                        <EmptyState compact variant="projectTasks" title="Задач пока нет" text="Создайте задачу вручную или из шаблона.">
                             <Link :href="route('admin.forms.index')"><Button size="sm" variant="secondary">Формы</Button></Link>
                         </EmptyState>
                     </div>

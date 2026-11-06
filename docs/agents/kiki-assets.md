@@ -12,7 +12,6 @@
 - Workflow: `/home/aigen31/Work/ComfyUI/user/default/workflows/image_qwen_image_2_1_image_edit.json`; рабочие копии — `storage/app/kiki/*-workflow.json`.
 - `<image1>` — изображение, которое редактируется; `<image2>` — identity-кроп или плоский цветовой референс. Для релайта и предметных правок второй референс — сознательно **не персонаж**, иначе Qwen дублирует Кики.
 - Параметры: steps 30, cfg 1, euler/simple, seed индивидуальный, prompt enhancer off.
-- Для прозрачного seated-кадра использован штатный workflow **Remove Background: Qwen Image 2.1** (`image_qwen_image_2_1_background_removal`) — он отдаёт настоящий RGBA-альфа-канал, без ручного GrabCut.
 - Промпты сохраняются в `storage/app/kiki/*-workflow.json` (`459.prompt`).
 
 **Важно:** финальные иллюстрации — только растровые рендеры Qwen. Векторные карточки, монеты, чат-баблы и конфетти не рисуются кодом. Допустима только постобработка растра: кроп, alpha-cutout, выравнивание света.
@@ -26,7 +25,10 @@
 | `kiki-flight-hero.webp` | 900×620, RGBA | резерв: полёт в светлой теме |
 | `kiki-flight-avatar.webp` | 640×640, RGB | аватар из светлого полёта; полная высокая шляпа |
 | `kiki-flight-badge.webp` | 640×640, RGBA | empty states; шляпа целиком |
-| `kiki-seated.webp` | 1200×1200, RGBA | ассистент; Qwen RGBA, полное платье, высокая шляпа, светящийся шар в руках (орб из Qwen-рендера) |
+| `kiki-empty-clients.png` | 1440×1440, RGB | пустой список клиентов: Кики с ростком и пустым мольбертом; Qwen i2i |
+| `kiki-empty-projects.png` | 1440×1440, RGB | пустые проекты: Кики разворачивает пустой чертёж, парящие бумажные дома; Qwen i2i |
+| `kiki-empty-project-tasks.png` | 1440×1440, RGB | пустые задачи проекта: Кики прикалывает чистую карточку к пробковой доске; Qwen i2i |
+| `kiki-empty-generic.png` | 1440×1440, RGB | универсальный empty state: Кики балансирует стопкой чистых карточек; Qwen i2i |
 | `kiki-template-steps.webp` | 1440×1440, RGBA | сценарии: прыжок по парящим карточкам шаблонов, персиковые искры; Qwen i2i, фон удалён штатным проходом |
 | `kiki-dashboard-mug.webp` | 1440×1440, RGBA | hero админ-дашборда: Кики с огромной кружкой, пар и персиковые искры |
 | `kiki-invoices-coin.webp` | 1440×1440, RGBA | счета: монета-монокль у глаза, лукавый прищур |
