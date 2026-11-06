@@ -1,14 +1,30 @@
 /*
  * Windows XP "Luna" theme.
  *
- * Every selector is scoped to html[data-theme="xp"]. New components inherit
- * the tokens and the generic window/input/button rules below; no product
- * component imports this file, so the default theme stays untouched.
+ * Visual values and control anatomy are based on XP.css by Adam Hammad
+ * (https://github.com/botoxparty/XP.css, MIT): #ece9d8 surface, #2267cb
+ * dialog blue, the Luna title-bar gradient, 1px inset field borders, 3px
+ * command-button radius and Tahoma/Trebuchet typography.
+ *
+ * Every selector is scoped to html[data-theme="xp"]. Only CSS is changed;
+ * product components keep their markup and new components inherit these
+ * base controls automatically.
  */
 html[data-theme="xp"] {
     --font-sans: Tahoma, "MS Sans Serif", Verdana, Geneva, sans-serif;
     --font-display: Tahoma, "MS Sans Serif", Verdana, Geneva, sans-serif;
     --font-mono: "Lucida Console", "Courier New", monospace;
+
+    --xp-surface: #ece9d8;
+    --xp-face: #d4d0c8;
+    --xp-border: #919b9c;
+    --xp-field-border: #789dbc;
+    --xp-navy: #0a246a;
+    --xp-blue: #2267cb;
+    --xp-blue-light: #4f9cf0;
+    --xp-text: #000;
+    --xp-muted: #333;
+    --xp-faint: #555;
 
     --color-canvas: #3a6ea5;
     --color-surface: #ece9d8;
@@ -16,27 +32,27 @@ html[data-theme="xp"] {
     --color-paper: #d4d0c8;
     --color-line: #aca899;
     --color-line-strong: #716f64;
-    --color-ink: #000000;
-    --color-ink-soft: #1d1d1d;
-    --color-muted: #4b4b4b;
-    --color-faint: #6b6b6b;
-    --color-primary-50: #eef3fb;
-    --color-primary-100: #dbe7f7;
-    --color-primary-200: #b6cdec;
-    --color-primary-300: #7fa9d8;
-    --color-primary-400: #4b82bc;
-    --color-primary-500: #0a246a;
-    --color-primary-600: #071b52;
-    --color-primary-700: #05143d;
-    --color-primary-800: #04102f;
-    --color-primary-900: #030b22;
+    --color-ink: #000;
+    --color-ink-soft: #111;
+    --color-muted: #333;
+    --color-faint: #555;
+    --color-primary-50: #edf3fc;
+    --color-primary-100: #dce8f8;
+    --color-primary-200: #b9d0ed;
+    --color-primary-300: #86add9;
+    --color-primary-400: #4f82bc;
+    --color-primary-500: #2267cb;
+    --color-primary-600: #1b57b0;
+    --color-primary-700: #0a246a;
+    --color-primary-800: #071b52;
+    --color-primary-900: #04102f;
     --color-primary-950: #020718;
-    --color-primary-soft: #d6dff7;
-    --color-success: #2e7d32;
-    --color-warning: #a15c00;
-    --color-danger: #b00020;
-    --color-danger-ink: #8a0019;
-    --color-accent: #3a6ea5;
+    --color-primary-soft: #d6e3fb;
+    --color-success: #1f6b28;
+    --color-warning: #8a4b00;
+    --color-danger: #a40018;
+    --color-danger-ink: #7a0012;
+    --color-accent: #2267cb;
     --color-peach: #f3d2ab;
     --color-sage: #9ac48f;
     --color-sky: #89b8e8;
@@ -45,61 +61,174 @@ html[data-theme="xp"] {
 
 html[data-theme="xp"] body {
     background: linear-gradient(180deg, #6aa5e8 0%, #3a6ea5 30%, #6a9a43 72%, #4b7c32 100%) fixed;
-    color: #000;
-    font-family: Tahoma, "MS Sans Serif", Verdana, sans-serif;
+    color: var(--xp-text);
+    font-family: var(--font-sans);
     font-size: 11px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
 }
 
+html[data-theme="xp"] ::selection {
+    background: #316ac5;
+    color: #fff;
+}
+
+/* XP scrollbars */
+html[data-theme="xp"] ::-webkit-scrollbar { width: 16px; height: 16px; }
+html[data-theme="xp"] ::-webkit-scrollbar-track { background: #f1efe2; }
+html[data-theme="xp"] ::-webkit-scrollbar-thumb {
+    background: #c8d6fb;
+    border: 1px solid #fff;
+    border-radius: 2px;
+    box-shadow: inset -2px 0 #b7caf5, inset 1px 1px #b7caf5;
+}
+html[data-theme="xp"] ::-webkit-scrollbar-corner { background: var(--xp-face); }
+
+/* ── Desktop / window chrome ─────────────────────────────────────────── */
 html[data-theme="xp"] .relative.z-10 {
     background: transparent;
 }
 
+/* The desktop top strip becomes the Luna title bar of the app window. */
+html[data-theme="xp"] .relative.z-10 > div:first-child {
+    width: calc(100% - 32px);
+    max-width: 1280px;
+    min-height: 30px;
+    margin: 10px auto 0;
+    padding: 3px 7px !important;
+    background: linear-gradient(180deg, #0997ff 0%, #0053ee 8%, #0050ee 40%, #0066ff 88%, #0066ff 93%, #005bff 95%, #003dd7 96%, #003dd7 100%);
+    border: 1px solid #0831d9;
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+    box-shadow: inset 1px 1px 0 #4a9eff, inset -1px 0 0 #001ea0;
+    color: #fff;
+}
+
+html[data-theme="xp"] .relative.z-10 > div:first-child > div:first-child {
+    color: #fff !important;
+    text-shadow: 1px 1px #0f1089;
+    font-family: "Trebuchet MS", Tahoma, sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+}
+
+html[data-theme="xp"] .relative.z-10 > div:first-child > div:first-child .text-faint {
+    color: #cfe0ff !important;
+}
+
+html[data-theme="xp"] .relative.z-10 > div:first-child .text-muted,
+html[data-theme="xp"] .relative.z-10 > div:first-child .text-ink-soft {
+    color: #fff !important;
+}
+
+html[data-theme="xp"] .relative.z-10 > div:first-child button,
+html[data-theme="xp"] .relative.z-10 > div:first-child > div:last-child > a {
+    min-height: 22px !important;
+    padding: 2px 8px !important;
+    color: #000 !important;
+    background: linear-gradient(180deg, #fff 0%, #ece9d8 55%, #d8d0c4 100%) !important;
+    border: 1px solid #003c74 !important;
+    border-radius: 3px !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+html[data-theme="xp"] .relative.z-10 > div:first-child button:hover,
+html[data-theme="xp"] .relative.z-10 > div:first-child > div:last-child > a:hover {
+    box-shadow: inset -1px 1px #fff0cf, inset 1px 2px #fdd889, inset -2px 2px #fbc761, inset 2px -2px #e5a01a !important;
+}
+
+html[data-theme="xp"] .relative.z-10 > div:first-child [data-i18n-skip] {
+    min-height: 22px !important;
+    padding: 0 6px !important;
+    color: #000 !important;
+    background: #ece9d8 !important;
+    border: 1px solid #003c74 !important;
+    border-radius: 3px !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="xp"] .relative.z-10 > div:first-child [data-i18n-skip] * {
+    color: #000 !important;
+}
+
 html[data-theme="xp"] main {
-    background: #ece9d8;
-    border: 2px solid #0a246a;
-    border-radius: 2px !important;
-    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45), inset 1px 1px 0 #fff;
-    margin-top: 10px;
-    margin-bottom: 22px;
-    font-family: Tahoma, "MS Sans Serif", Verdana, sans-serif;
+    margin: 0 auto 22px;
+    padding: 16px 20px 24px !important;
+    background: var(--xp-surface);
+    border: 1px solid #0831d9;
+    border-top: 0;
+    border-radius: 0 0 8px 8px;
+    box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--xp-face), 3px 3px 0 rgba(0, 0, 0, 0.35);
+    font-family: var(--font-sans);
 }
 
+html[data-theme="xp"] main .page-title,
+html[data-theme="xp"] main h1,
+html[data-theme="xp"] main h2,
+html[data-theme="xp"] main h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0;
+    color: var(--xp-navy);
+}
+
+html[data-theme="xp"] main h1 { font-size: 24px; line-height: 1.15; }
+html[data-theme="xp"] main h2 { font-size: 16px; line-height: 1.25; }
+html[data-theme="xp"] main h3 { font-size: 13px; line-height: 1.3; }
+
+@media (max-width: 1023px) {
+    html[data-theme="xp"] main {
+        width: calc(100% - 16px);
+        margin-top: 8px;
+        border-top: 1px solid #0831d9;
+        border-radius: 8px;
+        padding: 12px 12px 18px !important;
+    }
+}
+
+/* ── Sidebar: XP task pane rail ──────────────────────────────────────── */
 html[data-theme="xp"] aside.fixed.inset-y-0 {
-    background: linear-gradient(180deg, #0a246a 0%, #2f5fa9 38%, #0a246a 100%);
-    border-right: 2px solid #00133f;
-    box-shadow: inset -1px 0 0 #6f9bd5;
-}
-
-html[data-theme="xp"] aside.fixed.inset-y-0 .eyebrow,
-html[data-theme="xp"] aside.fixed.inset-y-0 .text-muted,
-html[data-theme="xp"] aside.fixed.inset-y-0 .text-faint,
-html[data-theme="xp"] aside.fixed.inset-y-0 .text-ink-soft {
-    color: #dce8ff !important;
+    background: linear-gradient(180deg, #0a246a 0%, #2e5da7 36%, #0a246a 100%);
+    border-right: 1px solid #00138c;
+    box-shadow: inset -1px 0 0 #6f9bd5, 1px 0 0 #00133f;
 }
 
 html[data-theme="xp"] aside.fixed.inset-y-0 .font-display,
-html[data-theme="xp"] aside.fixed.inset-y-0 a,
-html[data-theme="xp"] aside.fixed.inset-y-0 > span,
-html[data-theme="xp"] aside.fixed.inset-y-0 > p {
-    color: #f4f7ff;
+html[data-theme="xp"] aside.fixed.inset-y-0 > a span,
+html[data-theme="xp"] aside.fixed.inset-y-0 nav a,
+html[data-theme="xp"] aside.fixed.inset-y-0 .eyebrow {
+    color: #fff !important;
+}
+
+html[data-theme="xp"] aside.fixed.inset-y-0 .eyebrow {
+    text-shadow: 1px 1px #00133f;
+    font-size: 9px;
+}
+
+html[data-theme="xp"] aside.fixed.inset-y-0 .text-muted,
+html[data-theme="xp"] aside.fixed.inset-y-0 .text-faint {
+    color: #dce8ff !important;
 }
 
 html[data-theme="xp"] aside.fixed.inset-y-0 nav a {
     border: 1px solid transparent;
     border-radius: 2px;
-    color: #f4f7ff;
-    font-size: 11px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    text-shadow: 1px 1px #00133f;
 }
 
 html[data-theme="xp"] aside.fixed.inset-y-0 nav a:hover {
     background: #316ac5;
     border-color: #fff;
+    color: #fff !important;
 }
 
 html[data-theme="xp"] aside.fixed.inset-y-0 nav a[class*="bg-primary-soft"] {
-    background: linear-gradient(180deg, #fff 0%, #d6dff7 100%);
+    background: linear-gradient(180deg, #fff 0%, #d6e3fb 100%);
     border: 1px solid #fff;
     color: #0a246a !important;
+    text-shadow: none;
     font-weight: 700;
 }
 
@@ -112,31 +241,47 @@ html[data-theme="xp"] aside.fixed.inset-y-0 .rounded-full {
     border-radius: 2px;
 }
 
-html[data-theme="xp"] main .page-title,
-html[data-theme="xp"] main h1,
-html[data-theme="xp"] main h2,
-html[data-theme="xp"] main h3 {
-    font-family: Tahoma, "MS Sans Serif", Verdana, sans-serif;
-    letter-spacing: 0;
-    color: #0a246a;
+/* Kiki promo and the bottom account/language capsules are task-pane cards. */
+html[data-theme="xp"] aside.fixed.inset-y-0 button[class*="bg-gradient-to-br"],
+html[data-theme="xp"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"],
+html[data-theme="xp"] aside.fixed.inset-y-0 > div:last-child [data-i18n-skip] {
+    background: linear-gradient(180deg, #fff 0%, #ece9d8 100%) !important;
+    border: 1px solid #7f9db9 !important;
+    box-shadow: inset 1px 1px #fff, inset -1px -1px #aca899 !important;
+    color: #000 !important;
 }
 
-html[data-theme="xp"] .eyebrow {
-    color: #4b4b4b;
-    font-family: Tahoma, sans-serif;
-    letter-spacing: 0.08em;
+html[data-theme="xp"] aside.fixed.inset-y-0 button[class*="bg-gradient-to-br"] *,
+html[data-theme="xp"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"] *,
+html[data-theme="xp"] aside.fixed.inset-y-0 > div:last-child [data-i18n-skip] * {
+    color: #000 !important;
 }
 
+html[data-theme="xp"] aside.fixed.inset-y-0 button[class*="bg-gradient-to-br"] span,
+html[data-theme="xp"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"] span {
+    color: #000 !important;
+}
+
+html[data-theme="xp"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"] .text-muted {
+    color: #333 !important;
+}
+
+html[data-theme="xp"] aside.fixed.inset-y-0 a[href*="settings"],
+html[data-theme="xp"] aside.fixed.inset-y-0 a[href*="profile"] {
+    color: #fff !important;
+}
+
+/* ── Surfaces and cards ──────────────────────────────────────────────── */
 html[data-theme="xp"] .surface-card {
-    background: #ece9d8;
-    border: 1px solid #aca899;
-    border-radius: 2px !important;
-    box-shadow: inset 1px 1px 0 #fff, 1px 1px 0 #716f64;
+    background: var(--xp-surface);
+    border: 1px solid var(--xp-border);
+    border-radius: 0 !important;
+    box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--xp-face), 1px 1px 0 #716f64;
 }
 
 html[data-theme="xp"] .surface-card-hover:hover {
     background: #f4f1e4;
-    box-shadow: inset 1px 1px 0 #fff, 2px 2px 0 #716f64;
+    box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--xp-face), 2px 2px 0 #716f64;
 }
 
 html[data-theme="xp"] .theme-gradient,
@@ -144,55 +289,46 @@ html[data-theme="xp"] [class*="bg-gradient-to"] {
     background: linear-gradient(180deg, #f7f3e8 0%, #d9d3c2 100%) !important;
 }
 
-html[data-theme="xp"] input:not([type="checkbox"]):not([type="radio"]),
-html[data-theme="xp"] select,
-html[data-theme="xp"] textarea {
-    background: #fff !important;
-    border: 2px inset #7f9db9 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    color: #000 !important;
-    font: 11px Tahoma, "MS Sans Serif", Verdana, sans-serif !important;
-    min-height: 24px;
+html[data-theme="xp"] .bg-white\/60,
+html[data-theme="xp"] .bg-white\/70,
+html[data-theme="xp"] .bg-white\/50,
+html[data-theme="xp"] .bg-white\/45,
+html[data-theme="xp"] .bg-white\/35 {
+    background-color: #f7f4e9 !important;
 }
 
-html[data-theme="xp"] input::placeholder,
-html[data-theme="xp"] textarea::placeholder {
-    color: #777;
+html[data-theme="xp"] .border-line,
+html[data-theme="xp"] .border-line\/70,
+html[data-theme="xp"] .border-line\/80 {
+    border-color: var(--xp-border) !important;
 }
 
-html[data-theme="xp"] button:not([class*="rounded-full"]):not([class*="rounded-[9px]"]):not([class*="rounded-[13px]"]):not([class*="rounded-[14px]"]) {
-    background: linear-gradient(180deg, #fdfdfd 0%, #e4dfd4 55%, #cfc9bd 100%);
-    border: 1px solid #003c74;
-    border-radius: 2px !important;
-    box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #aca899;
-    color: #000;
-    font: 11px Tahoma, sans-serif;
-    text-shadow: none;
+html[data-theme="xp"] .text-muted { color: var(--xp-muted) !important; }
+html[data-theme="xp"] .text-faint { color: var(--xp-faint) !important; }
+html[data-theme="xp"] .text-ink-soft { color: var(--xp-text) !important; }
+html[data-theme="xp"] .text-primary-700,
+html[data-theme="xp"] .text-primary-800 { color: var(--xp-navy) !important; }
+html[data-theme="xp"] a { color: #003399; }
+html[data-theme="xp"] a:hover { color: #b00020; }
+
+html[data-theme="xp"] .eyebrow {
+    color: var(--xp-muted);
+    font-family: var(--font-sans);
+    letter-spacing: 0.08em;
 }
 
-html[data-theme="xp"] button:hover:not(:disabled) {
-    background: linear-gradient(180deg, #fff 0%, #f6e7bd 55%, #e4d39e 100%);
+html[data-theme="xp"] .bg-ink\/\[0\.025\] { background-color: #f4f1e4 !important; }
+
+html[data-theme="xp"] [class*="shadow-"] {
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35) !important;
 }
 
-html[data-theme="xp"] button:active:not(:disabled) {
-    background: #d4d0c8;
-    box-shadow: inset 1px 1px 0 #716f64;
+html[data-theme="xp"] footer,
+html[data-theme="xp"] header {
+    border-color: var(--xp-border);
 }
 
-html[data-theme="xp"] button:disabled {
-    color: #888;
-    text-shadow: 1px 1px 0 #fff;
-}
-
-html[data-theme="xp"] a {
-    color: #003399;
-}
-
-html[data-theme="xp"] a:hover {
-    color: #b00020;
-}
-
+/* Windows XP uses square panels; keep only pills intentionally small. */
 html[data-theme="xp"] .rounded-full,
 html[data-theme="xp"] .rounded-3xl,
 html[data-theme="xp"] .rounded-\[30px\],
@@ -211,97 +347,232 @@ html[data-theme="xp"] .rounded-\[10px\] {
     border-radius: 2px;
 }
 
-html[data-theme="xp"] .rounded-\[9px\] {
-    border-radius: 1px;
+html[data-theme="xp"] .rounded-\[9px\] { border-radius: 1px; }
+
+/* ── Form controls: XP.css form anatomy ─────────────────────────────── */
+html[data-theme="xp"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="xp"] select,
+html[data-theme="xp"] textarea {
+    height: 24px;
+    min-height: 24px;
+    padding: 2px 4px !important;
+    background: #fff !important;
+    border: 1px solid var(--xp-field-border) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #000 !important;
+    font: 11px var(--font-sans) !important;
+    line-height: 17px;
 }
 
-html[data-theme="xp"] .bg-white\/60,
-html[data-theme="xp"] .bg-white\/70,
-html[data-theme="xp"] .bg-white\/50,
-html[data-theme="xp"] .bg-white\/45,
-html[data-theme="xp"] .bg-white\/35 {
-    background-color: #f7f4e9 !important;
+html[data-theme="xp"] textarea {
+    height: auto;
+    min-height: 64px;
+    padding: 4px !important;
+    line-height: 1.45;
 }
 
-html[data-theme="xp"] .border-line,
-html[data-theme="xp"] .border-line\/70,
-html[data-theme="xp"] .border-line\/80 {
-    border-color: #aca899 !important;
+html[data-theme="xp"] select {
+    padding-right: 22px !important;
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #000 50%), linear-gradient(135deg, #000 50%, transparent 50%) !important;
+    background-position: calc(100% - 11px) 10px, calc(100% - 6px) 10px !important;
+    background-size: 5px 5px, 5px 5px !important;
+    background-repeat: no-repeat !important;
 }
 
-html[data-theme="xp"] .text-muted,
-html[data-theme="xp"] .text-faint {
-    color: #4b4b4b !important;
+html[data-theme="xp"] input:focus,
+html[data-theme="xp"] select:focus,
+html[data-theme="xp"] textarea:focus {
+    outline: 1px dotted #000;
+    outline-offset: -4px;
 }
 
-html[data-theme="xp"] .bg-ink\/\[0\.025\] {
-    background-color: #f4f1e4 !important;
+html[data-theme="xp"] input::placeholder,
+html[data-theme="xp"] textarea::placeholder {
+    color: #666;
+    opacity: 1;
 }
 
-html[data-theme="xp"] .shadow-\[0_14px_36px_rgba\(28\,24\,35\,0\.05\)\],
-html[data-theme="xp"] [class*="shadow-"] {
-    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35) !important;
+html[data-theme="xp"] input[type="checkbox"],
+html[data-theme="xp"] input[type="radio"] {
+    accent-color: var(--xp-blue);
+    width: 13px;
+    height: 13px;
 }
 
+html[data-theme="xp"] label {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    color: var(--xp-text);
+}
+
+/* ── Command buttons: XP.css Luna gradient and bevels ────────────────── */
+html[data-theme="xp"] button:not([class*="p-1.5"]):not([class*="p-2"]):not([class*="p-0.5"]):not([class*="p-1 "]) {
+    min-height: 23px;
+    padding: 0 12px;
+    background: linear-gradient(180deg, #fff 0%, #ecebe5 86%, #d8d0c4 100%);
+    border: 1px solid #003c74;
+    border-radius: 3px;
+    box-shadow: none;
+    color: #000;
+    font: 11px var(--font-sans);
+    text-shadow: none;
+}
+
+html[data-theme="xp"] button:hover:not(:disabled):not([class*="p-1.5"]):not([class*="p-2"]):not([class*="p-0.5"]) {
+    box-shadow: inset -1px 1px #fff0cf, inset 1px 2px #fdd889, inset -2px 2px #fbc761, inset 2px -2px #e5a01a;
+}
+
+html[data-theme="xp"] button:active:not(:disabled):not([class*="p-1.5"]):not([class*="p-2"]):not([class*="p-0.5"]) {
+    background: linear-gradient(180deg, #cdcac3 0%, #e3e3db 8%, #e5e5de 94%, #f2f2f1 100%);
+    box-shadow: none;
+}
+
+html[data-theme="xp"] button:focus-visible {
+    outline: 1px dotted #000;
+    outline-offset: -4px;
+}
+
+html[data-theme="xp"] button:disabled {
+    color: #808080;
+    text-shadow: 1px 1px 0 #fff;
+}
+
+html[data-theme="xp"] button[class*="bg-primary-500"],
+html[data-theme="xp"] button[class*="bg-primary-600"] {
+    background: linear-gradient(180deg, #4f9cf0 0%, #2267cb 55%, #174ca4 100%) !important;
+    border-color: #003c74 !important;
+    color: #fff !important;
+    text-shadow: 1px 1px #0a246a;
+}
+
+html[data-theme="xp"] button[class*="bg-danger"] {
+    background: linear-gradient(180deg, #f3a4a4 0%, #c0392b 100%) !important;
+    border-color: #6d0010 !important;
+    color: #fff !important;
+}
+
+/* Compact icon-only buttons stay flat, but readable. */
+html[data-theme="xp"] button[class*="p-1.5"],
+html[data-theme="xp"] button[class*="p-2"],
+html[data-theme="xp"] button[class*="p-0.5"] {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    box-shadow: none;
+    color: #0a246a;
+}
+
+html[data-theme="xp"] button[class*="p-1.5"]:hover,
+html[data-theme="xp"] button[class*="p-2"]:hover,
+html[data-theme="xp"] button[class*="p-0.5"]:hover {
+    background: #d6e3fb;
+    border-color: #7f9db9;
+}
+
+/* ── Tabs / settings navigation ──────────────────────────────────────── */
+html[data-theme="xp"] main aside nav button {
+    min-height: 24px !important;
+    padding: 3px 6px !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #000 !important;
+    font: 11px var(--font-sans);
+    text-align: left;
+}
+
+html[data-theme="xp"] main aside nav button:hover {
+    background: #d6e3fb !important;
+    border-color: #7f9db9 !important;
+}
+
+html[data-theme="xp"] main aside nav button[class*="bg-primary-soft"] {
+    background: linear-gradient(180deg, #fff 0%, #c7d8f8 100%) !important;
+    border-color: #316ac5 !important;
+    color: #0a246a !important;
+    font-weight: 700;
+}
+
+/* ── Components with special XP treatment ────────────────────────────── */
 html[data-theme="xp"] .prose-kiki {
     background: #fff;
-    border: 1px solid #aca899;
+    border: 1px solid var(--xp-border);
     color: #000;
 }
 
-html[data-theme="xp"] .prose-kiki * {
-    color: #000;
-}
-
-html[data-theme="xp"] footer,
-html[data-theme="xp"] header {
-    border-color: #aca899;
-}
+html[data-theme="xp"] .prose-kiki * { color: #000; }
 
 html[data-theme="xp"] .kiki-ring {
     border-radius: 2px !important;
-}
-
-html[data-theme="xp"] svg {
-    stroke: currentColor;
+    border-color: #7f9db9 !important;
 }
 
 html[data-theme="xp"] .bg-primary-500,
 html[data-theme="xp"] .bg-primary-600 {
-    background: linear-gradient(180deg, #3a6ea5 0%, #0a246a 100%) !important;
+    background: linear-gradient(180deg, #4f9cf0 0%, #2267cb 55%, #174ca4 100%) !important;
     color: #fff !important;
 }
 
 html[data-theme="xp"] .bg-primary-soft {
-    background: #d6dff7 !important;
+    background: #d6e3fb !important;
 }
 
-html[data-theme="xp"] .text-primary-700,
-html[data-theme="xp"] .text-primary-800 {
-    color: #0a246a !important;
+html[data-theme="xp"] .bg-success\/10,
+html[data-theme="xp"] .bg-warning\/10,
+html[data-theme="xp"] .bg-danger\/\[0\.08\] {
+    border: 1px solid currentColor !important;
 }
 
-html[data-theme="xp"] [class*="rounded-\[22px\]"] {
-    border-radius: 2px !important;
+html[data-theme="xp"] .prose-kiki pre,
+html[data-theme="xp"] pre {
+    background: #000 !important;
+    color: #c0c0c0 !important;
+    border: 1px solid #808080;
+    font-family: var(--font-mono) !important;
 }
 
-
-/* Sidebar task-pane cards stay legible on the blue XP rail. */
-html[data-theme="xp"] aside.fixed.inset-y-0 .bg-white\/50,
-html[data-theme="xp"] aside.fixed.inset-y-0 .bg-white\/60,
-html[data-theme="xp"] aside.fixed.inset-y-0 .bg-white\/70 {
-    background: linear-gradient(180deg, #f7f4e9 0%, #d6dff7 100%) !important;
-    border-color: #fff !important;
+html[data-theme="xp"] code,
+html[data-theme="xp"] .font-mono {
+    font-family: var(--font-mono) !important;
 }
 
-html[data-theme="xp"] aside.fixed.inset-y-0 .bg-white\/50 *,
-html[data-theme="xp"] aside.fixed.inset-y-0 .bg-white\/60 *,
-html[data-theme="xp"] aside.fixed.inset-y-0 .bg-white\/70 * {
-    color: #0a246a !important;
+/* Mobile top bar and bottom nav become XP chrome. */
+html[data-theme="xp"] header.sticky.top-0 {
+    background: linear-gradient(180deg, #0997ff 0%, #0053ee 8%, #0050ee 40%, #0066ff 88%, #003dd7 100%) !important;
+    border-bottom: 1px solid #00138c !important;
+    color: #fff;
+    text-shadow: 1px 1px #0f1089;
 }
 
-html[data-theme="xp"] aside.fixed.inset-y-0 .bg-white\/50 .text-muted,
-html[data-theme="xp"] aside.fixed.inset-y-0 .bg-white\/60 .text-muted,
-html[data-theme="xp"] aside.fixed.inset-y-0 .bg-white\/70 .text-muted {
-    color: #4b4b4b !important;
+html[data-theme="xp"] header.sticky.top-0 .text-muted,
+html[data-theme="xp"] header.sticky.top-0 .text-faint {
+    color: #eaf2ff !important;
+}
+
+html[data-theme="xp"] header.sticky.top-0 button {
+    background: #ece9d8 !important;
+    border: 1px solid #003c74 !important;
+    border-radius: 3px !important;
+    color: #000 !important;
+    text-shadow: none;
+}
+
+html[data-theme="xp"] nav.fixed.inset-x-0.bottom-0 {
+    background: linear-gradient(180deg, #f7f7f4 0%, #d4d0c8 100%) !important;
+    border-top: 1px solid #003c74 !important;
+    box-shadow: inset 0 1px #fff;
+}
+
+html[data-theme="xp"] nav.fixed.inset-x-0.bottom-0 a,
+html[data-theme="xp"] nav.fixed.inset-x-0.bottom-0 button {
+    color: #000 !important;
+    font-family: var(--font-sans);
+}
+
+/* Ensure muted text inside blue title bar remains readable. */
+html[data-theme="xp"] .relative.z-10 > div:first-child .font-mono {
+    color: #fff !important;
 }
