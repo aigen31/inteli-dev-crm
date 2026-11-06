@@ -48,9 +48,9 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
 
 <template>
     <AdminLayout title="Обзор">
-        <section class="relative mb-6 overflow-hidden rounded-[30px] border border-line bg-gradient-to-br from-[#fbf7ef] via-[#f5f0fb] to-[#ece5fa] p-6 sm:p-8">
+        <section class="relative mb-6 min-h-[260px] overflow-hidden rounded-[30px] border border-line bg-gradient-to-br from-[#fbf7ef] via-[#f5f0fb] to-[#ece5fa] p-6 sm:min-h-[290px] sm:p-8 xl:min-h-[320px] 2xl:min-h-[350px]">
             <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-primary-500/10 blur-3xl"></div>
-            <div class="relative z-10 max-w-[540px]">
+            <div class="relative z-10 max-w-[560px]">
                 <p class="eyebrow">{{ todayLabel }}</p>
                 <h2 class="mt-2 font-display text-[27px] font-medium leading-[1.08] tracking-[-0.04em] text-ink sm:text-[34px]">
                     {{ greeting }}, {{ firstName }}.
@@ -78,7 +78,7 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
                 </div>
             </div>
 
-            <div class="pointer-events-none absolute bottom-0 right-2 hidden h-[230px] w-[360px] sm:block lg:h-[245px] lg:w-[420px]">
+            <div class="pointer-events-none absolute bottom-0 right-2 hidden h-full w-[360px] sm:block sm:w-[400px] lg:w-[430px] xl:w-[480px] 2xl:w-[520px]">
                 <img src="/images/kiki/kiki-dashboard-mug.webp" alt="Кики с большой кружкой" class="h-full w-full object-contain object-right-bottom" />
             </div>
         </section>
