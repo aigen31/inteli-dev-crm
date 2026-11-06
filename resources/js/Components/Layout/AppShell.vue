@@ -53,7 +53,7 @@ const navigation = computed(() =>
                   label: 'Проекты',
                   href: route('admin.projects.index'),
                   icon: FolderIcon,
-                  active: path.value.startsWith('/admin/projects'),
+                  active: path.value.startsWith('/admin/projects') || path.value.startsWith('/projects/system'),
               },
               {
                   label: 'Библиотека',
@@ -89,6 +89,7 @@ const sectionLabel = computed(() => {
     if (path.value.startsWith('/admin/settings')) return 'Настройки';
     if (path.value.startsWith('/profile')) return 'Профиль';
     if (path.value.startsWith('/help')) return 'Помощь';
+    if (path.value.startsWith('/projects/system')) return 'Проекты';
     return navigation.value.find((item) => item.active)?.label ?? (isAdmin.value ? 'Обзор' : 'Кабинет');
 });
 
