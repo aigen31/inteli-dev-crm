@@ -16,6 +16,7 @@ use App\Models\ProjectStudy;
 use App\Models\User;
 use App\Services\Ai\KernelClient;
 use App\Services\ProjectService;
+use App\Services\SystemProjectService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ class ProjectController extends Controller
 {
     public function __construct(
         private readonly ProjectService $projects,
+        private readonly SystemProjectService $systemProjects,
     ) {}
 
     public function index(Request $request): Response
@@ -46,6 +48,7 @@ class ProjectController extends Controller
 
         return Inertia::render('Admin/Projects/Index', [
             'projects' => $projects,
+            'systemProjects' => $this->systemProjects->summaries(),
             'filters' => $request->only('status', 'client_id', 'q', 'archived'),
             'statuses' => $this->statusOptions(),
             'clients' => User::query()->where('role', 'client')->orderBy('name')->get(['id', 'name']),

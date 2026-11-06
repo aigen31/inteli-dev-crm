@@ -2,10 +2,12 @@
 import { Link } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
+import SystemProjectCards from '@/Components/Projects/SystemProjectCards.vue';
 import { FolderIcon } from '@heroicons/vue/24/outline';
 
 defineProps({
     projects: Array,
+    systemProjects: { type: Array, default: () => [] },
 });
 
 const colorBar = {
@@ -22,6 +24,8 @@ const colorBar = {
         <p class="max-w-[560px] text-[12px] leading-relaxed text-muted">
             Здесь собраны проекты, к которым у вас есть доступ. Внутри — ваши задачи, сроки и прогресс.
         </p>
+
+        <SystemProjectCards :projects="systemProjects" class="mt-5" />
 
         <div v-if="projects.length" class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <Link
