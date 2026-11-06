@@ -23,12 +23,10 @@
 | `kiki-flight.webp` | 1280×704, RGBA | светлый вариант полёта после тёмного, источник кропов |
 | `kiki-flight-portrait.webp` | 768×1024, RGBA | резерв для вертикальных сцен |
 | `kiki-flight-hero.webp` | 900×620, RGBA | резерв: полёт в светлой теме |
-| `kiki-flight-avatar.webp` | 640×640, RGB | аватар из светлого полёта; полная высокая шляпа |
 | `kiki-flight-badge.webp` | 640×640, RGBA | empty states; шляпа целиком |
-| `kiki-empty-clients.png` | 1440×1440, RGB | пустой список клиентов: Кики с ростком и пустым мольбертом; Qwen i2i |
-| `kiki-empty-projects.png` | 1440×1440, RGB | пустые проекты: Кики разворачивает пустой чертёж, парящие бумажные дома; Qwen i2i |
-| `kiki-empty-project-tasks.png` | 1440×1440, RGB | пустые задачи проекта: Кики прикалывает чистую карточку к пробковой доске; Qwen i2i |
-| `kiki-empty-generic.png` | 1440×1440, RGB | универсальный empty state: Кики балансирует стопкой чистых карточек; Qwen i2i |
+| `kiki-empty-clients.png` | 1440×1440, RGBA | пустой список клиентов: Кики с ростком и пустым мольбертом; Qwen i2i |
+| `kiki-empty-project-tasks.png` | 1440×1440, RGBA | пустые задачи проекта: Кики прикалывает чистую карточку к пробковой доске; Qwen i2i |
+| `kiki-empty-generic.png` | 1440×1440, RGBA | универсальный empty state: Кики балансирует стопкой чистых карточек; Qwen i2i |
 | `kiki-template-steps.webp` | 1440×1440, RGBA | сценарии: прыжок по парящим карточкам шаблонов, персиковые искры; Qwen i2i, фон удалён штатным проходом |
 | `kiki-dashboard-mug.webp` | 1440×1440, RGBA | hero админ-дашборда: Кики с огромной кружкой, пар и персиковые искры |
 | `kiki-invoices-coin.webp` | 1440×1440, RGBA | счета: монета-монокль у глаза, лукавый прищур |
@@ -39,11 +37,7 @@
 | `kiki-standing.webp` | 544×1632, RGBA | резерв: стоячая поза в светлой теме |
 | `kiki-hero.webp` | 1024×576, RGBA | старый спокойный кадр (резерв) |
 | `kiki-empty.webp` | 640×480, RGBA | старый empty-кадр (резерв) |
-| `kiki-thinking.webp` | 384×512, RGBA | размышление |
-| `kiki-avatar.webp` | 640×640, RGBA | классический аватар (резерв) |
-| `kiki-avatar-face.png` | 1024×1024, RGB | сгенерированный в Qwen t2i квадратный аватар с лицом Кики: полная высокая шляпа с запасом, круглый лавандовый медальон, искры; `object-contain` |
 | `kiki-login-calm.png` | 1440×1440, RGBA | резерв: спокойная сидящая Кики |
-| `kiki-login-user-approved.webp` | 1440×1440, RGBA | утверждённый исходник с фоном (резерв) |
 | `kiki-login-meditation-transparent.png` | 1440×1440, RGBA | вход, правая панель: утверждённая медитация с шаром, фон удалён |
 
 Все файлы — в `public/images/kiki/`.
