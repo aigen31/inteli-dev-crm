@@ -40,33 +40,36 @@ function setTheme(value) {
                     </span>
                 </div>
                 <p class="mt-0.5 text-[10px] leading-relaxed text-muted">
-                    Если у вас есть секретный код, введите его здесь. Разблокированные возможности появятся только у вашего аккаунта.
+                    Введите секретный код. Новые возможности появятся только у вашего аккаунта.
                 </p>
             </div>
             <LockClosedIcon class="h-4 w-4 shrink-0 text-faint" />
         </div>
 
-        <div class="p-5">
-            <form v-if="!unlocked" class="flex flex-wrap items-end gap-2" @submit.prevent="unlock">
+        <div class="space-y-4 p-5">
+            <form class="flex flex-wrap items-end gap-2" @submit.prevent="unlock">
                 <div class="min-w-[220px] flex-1">
-                    <label for="secret-code" class="mb-1.5 block text-[11px] font-semibold text-ink-soft">Код доступа</label>
+                    <label for="secret-code" class="mb-1.5 flex flex-wrap items-center gap-2 text-[11px] font-semibold text-ink-soft">
+                        {{ unlocked ? 'Введите новый код' : 'Код доступа' }}
+                        <span v-if="unlocked" class="rounded-full bg-white/60 px-2 py-0.5 font-normal text-muted">уже разблокированные функции сохранятся</span>
+                    </label>
                     <input
                         id="secret-code"
                         v-model="form.code"
                         type="text"
                         autocomplete="off"
                         spellcheck="false"
-                        placeholder="Введите секретный код"
+                        :placeholder="unlocked ? 'Новый секретный код' : 'Введите секретный код'"
                         class="h-10 w-full rounded-[12px] border border-line bg-white/70 px-3 font-mono text-[12px] text-ink placeholder-faint focus:border-primary-300 focus:outline-none"
                     />
                     <p v-if="form.errors.code" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.code }}</p>
                 </div>
                 <Button type="submit" size="sm" :disabled="form.processing || !form.code">
-                    {{ form.processing ? 'Проверяю…' : 'Разблокировать' }}
+                    {{ form.processing ? 'Проверяю…' : 'Проверить код' }}
                 </Button>
             </form>
 
-            <div v-else class="space-y-4">
+            <div v-if="unlocked" class="space-y-4 border-t border-line/70 pt-4">
                 <div class="flex flex-wrap items-center gap-3 rounded-[16px] border border-line bg-white/45 p-3.5">
                     <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#3a6ea5] to-[#0a246a] text-white shadow-[inset_1px_1px_0_rgba(255,255,255,.4)]">
                         <SparklesIcon class="h-5 w-5" />
