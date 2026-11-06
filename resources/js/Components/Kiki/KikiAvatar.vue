@@ -10,15 +10,15 @@ const props = defineProps({
 });
 
 const sources = {
-    avatar: '/images/kiki/kiki-flight-avatar.webp',
+    avatar: '/images/kiki/kiki-flight-avatar.png',
     hero: '/images/kiki/kiki-flight-portrait.webp',
     empty: '/images/kiki/kiki-empty-generic.png',
     clients: '/images/kiki/kiki-empty-clients.png',
-    projects: '/images/kiki/kiki-empty-projects.png',
+    projects: '/images/kiki/kiki-template-steps.webp',
     projectTasks: '/images/kiki/kiki-empty-project-tasks.png',
-    thinking: '/images/kiki/kiki-thinking.webp',
+    thinking: '/images/kiki/kiki-thinking.png',
     flight: '/images/kiki/kiki-flight-badge.webp',
-    classic: '/images/kiki/kiki-avatar.webp',
+    classic: '/images/kiki/kiki-avatar.png',
     peek: '/images/kiki/kiki-forms-avatar.webp',
     face: '/images/kiki/kiki-avatar-face.png?v=3',
 };
