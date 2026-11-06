@@ -55,6 +55,9 @@ const activeCount = computed(() =>
                     {{ intake.label }}: <strong class="text-ink">{{ intake.display || '—' }}</strong>
                 </div>
             </div>
+            <div class="pointer-events-none absolute bottom-0 right-2 hidden h-[200px] w-[320px] xl:block">
+                <img src="/images/kiki/kiki-client-welcome.webp" alt="Кики приветствует в личном кабинете" class="h-full w-full object-contain object-right-bottom" />
+            </div>
         </section>
 
         <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">

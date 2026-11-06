@@ -17,6 +17,7 @@ const sources = {
     flight: '/images/kiki/kiki-flight-badge.webp',
     seated: '/images/kiki/kiki-seated.webp',
     classic: '/images/kiki/kiki-avatar.webp',
+    peek: '/images/kiki/kiki-forms-avatar.webp',
     face: '/images/kiki/kiki-avatar-face.png?v=3',
 };
 

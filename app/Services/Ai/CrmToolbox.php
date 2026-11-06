@@ -42,6 +42,7 @@ class CrmToolbox
         private readonly FormTemplateService $formTemplates,
         private readonly KernelClient $kernel,
         private readonly ProjectContext $project,
+        private readonly CrmHelpService $help,
         private readonly CreateTaskAction $createTask,
         private readonly ChangeTaskStatusAction $changeTaskStatus,
         private readonly CreateClientAction $createClient,
@@ -177,6 +178,7 @@ class CrmToolbox
             'list_custom_fields' => $this->listCustomFields($arguments),
             'set_custom_field' => $this->setCustomField($user, $arguments),
             'get_payment_link' => $this->paymentLink($user, $arguments),
+            'crm_help' => $this->crmHelp($user, $arguments),
             default => throw ValidationException::withMessages(['tool' => "Инструмент «{$name}» не реализован."]),
         };
     }
@@ -447,6 +449,17 @@ class CrmToolbox
                 ],
                 'required' => ['entity_type', 'entity_id', 'key', 'value'],
                 'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'crm_help' => [
+                'description' => 'Найти раздел CRM и инструкцию по вопросу «где/как/что это/куда нажать». Возвращает title, url, summary и шаги. Вызывай для любых вопросов об интерфейсе, прежде чем отвечать по памяти.',
+                'properties' => [
+                    'query' => ['type' => 'string', 'description' => 'Вопрос или ключевые слова: «счета», «пригласить в проект», «принять работу».'],
+                    'page' => ['type' => 'string', 'description' => 'Необязательно: текущая страница (Inertia component или URL).'],
+                    'limit' => ['type' => 'integer', 'description' => 'Сколько разделов вернуть, 1–8.'],
+                ],
+                'required' => ['query'],
+                'roles' => ['admin', 'client'],
                 'confirm' => false,
             ],
             'get_payment_link' => [
@@ -1547,6 +1560,28 @@ class CrmToolbox
      * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function crmHelp(User $user, array $arguments): array
+    {
+        $query = trim((string) ($arguments['query'] ?? ''));
+        $query = $query !== '' ? $query : 'помощь по CRM';
+        $limit = (int) ($arguments['limit'] ?? 5);
+
+        return [
+            'version' => CrmHelpService::VERSION,
+            'query' => $query,
+            'results' => $this->help->search(
+                $user,
+                $query,
+                isset($arguments['page']) ? (string) $arguments['page'] : null,
+                $limit,
+            ),
+        ];
+    }
+
     private function paymentLink(User $user, array $arguments): array
     {
         if (! $user->isClient()) {

@@ -53,6 +53,7 @@ class AssistantToolController extends Controller
     ): JsonResponse {
         $user = $this->actor($request);
         $project = null;
+        $conversation = null;
         $conversationId = (string) $request->query('conversation_id', '');
 
         if ($conversationId !== '') {
@@ -69,7 +70,7 @@ class AssistantToolController extends Controller
         }
 
         return response()->json([
-            'system' => $prompts->system($user, $project),
+            'system' => $prompts->system($user, $project, is_array($conversation?->context) ? $conversation->context : []),
             'tools' => $toolbox->definitions($user),
             'suggested_next' => array_map(
                 fn (string $text): array => ['text' => $text, 'type' => 'lead_request'],

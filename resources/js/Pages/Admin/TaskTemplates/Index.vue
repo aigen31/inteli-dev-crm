@@ -83,8 +83,8 @@ function toggle(template) {
                 </div>
             </div>
             <img
-                src="/images/kiki/kiki-seated.webp"
-                alt="Кики"
+                src="/images/kiki/kiki-template-steps.webp"
+                alt="Кики перепрыгивает по парящим карточкам сценариев"
                 class="pointer-events-none hidden h-[200px] w-full select-none object-contain object-right lg:block"
             />
         </section>
