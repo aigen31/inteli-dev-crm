@@ -373,3 +373,13 @@ html[data-theme="dark"] body select option {
     background: #15121d !important;
     color: #f5f1fb !important;
 }
+
+
+/* Tailwind bg-white/* on the control itself needs a matching-specificity
+   override; otherwise native selects/textarea become light in dark mode. */
+html[data-theme="dark"] body select[class*="bg-white"],
+html[data-theme="dark"] body textarea[class*="bg-white"] {
+    background-color: #0f0c15 !important;
+    color: #f5f1fb !important;
+    border-color: #3b3150 !important;
+}
