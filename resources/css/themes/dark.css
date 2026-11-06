@@ -1,0 +1,327 @@
+/*
+ * Dark theme — available to every user.
+ *
+ * Deep graphite surfaces with a restrained violet accent. Scoped to
+ * html[data-theme="dark"] so the light and Windows XP themes are untouched.
+ */
+html[data-theme="dark"] {
+    --font-sans: Manrope, ui-sans-serif, system-ui, sans-serif;
+    --font-display: Manrope, ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+
+    --color-canvas: #0c0a11;
+    --color-surface: #15121d;
+    --color-surface-2: #211c2b;
+    --color-paper: #1b1624;
+    --color-line: #332c40;
+    --color-line-strong: #4b405e;
+    --color-ink: #f5f1fb;
+    --color-ink-soft: #e6e0ee;
+    --color-muted: #b8afc8;
+    --color-faint: #968ba8;
+    --color-primary-50: #241d36;
+    --color-primary-100: #2d2443;
+    --color-primary-200: #3c3159;
+    --color-primary-300: #5a477f;
+    --color-primary-400: #8067c1;
+    --color-primary-500: #9b86f5;
+    --color-primary-600: #b09cff;
+    --color-primary-700: #c2b2ff;
+    --color-primary-800: #d7ccff;
+    --color-primary-900: #e9e3ff;
+    --color-primary-950: #f4f0ff;
+    --color-primary-soft: #2b2242;
+    --color-success: #72d49b;
+    --color-warning: #f2b35d;
+    --color-danger: #ff8b9a;
+    --color-danger-ink: #ffadb8;
+    --color-accent: #b09cff;
+    --color-peach: #5b4034;
+    --color-sage: #344d3a;
+    --color-sky: #2f4967;
+    color-scheme: dark;
+}
+
+html[data-theme="dark"] body {
+    background:
+        radial-gradient(1100px 720px at 88% -12%, rgba(155, 134, 245, 0.16), transparent 62%),
+        radial-gradient(900px 620px at -10% 12%, rgba(82, 67, 126, 0.18), transparent 65%),
+        #0c0a11;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+html[data-theme="dark"] ::selection {
+    background: #6f56cd;
+    color: #fff;
+}
+
+/* Scrollbars */
+html[data-theme="dark"] ::-webkit-scrollbar { width: 12px; height: 12px; }
+html[data-theme="dark"] ::-webkit-scrollbar-track { background: #0d0b12; }
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #332a44;
+    border: 2px solid #0d0b12;
+    border-radius: 6px;
+}
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: #4a3c62; }
+
+/* App chrome */
+html[data-theme="dark"] .relative.z-10 { background: transparent; }
+
+html[data-theme="dark"] .relative.z-10 > div:first-child {
+    border-bottom: 1px solid #2c2438;
+    background: rgba(14, 11, 20, 0.74);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.035), 0 12px 30px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(18px);
+}
+
+html[data-theme="dark"] aside.fixed.inset-y-0 {
+    background: linear-gradient(180deg, #100d17 0%, #12101b 55%, #0e0c14 100%);
+    border-right: 1px solid #2c2438;
+    box-shadow: inset -1px 0 rgba(255, 255, 255, 0.035), 6px 0 28px rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] main {
+    margin-top: 10px;
+    margin-bottom: 22px;
+    background: rgba(21, 18, 29, 0.94);
+    border: 1px solid #2c2438;
+    border-radius: 18px;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.035), 0 20px 55px rgba(0, 0, 0, 0.26);
+}
+
+/* Text and links */
+html[data-theme="dark"] main .page-title,
+html[data-theme="dark"] main h1,
+html[data-theme="dark"] main h2,
+html[data-theme="dark"] main h3 { color: var(--color-ink); }
+html[data-theme="dark"] .text-ink { color: var(--color-ink) !important; }
+html[data-theme="dark"] .text-ink-soft { color: var(--color-ink-soft) !important; }
+html[data-theme="dark"] .text-muted { color: var(--color-muted) !important; }
+html[data-theme="dark"] .text-faint { color: var(--color-faint) !important; }
+html[data-theme="dark"] .text-primary-700,
+html[data-theme="dark"] .text-primary-800 { color: var(--color-primary-700) !important; }
+html[data-theme="dark"] .eyebrow { color: var(--color-faint); }
+html[data-theme="dark"] a { color: #b9a8ff; }
+html[data-theme="dark"] a:hover { color: #e0d6ff; }
+
+/* Sidebar navigation */
+html[data-theme="dark"] aside.fixed.inset-y-0 .font-display,
+html[data-theme="dark"] aside.fixed.inset-y-0 a,
+html[data-theme="dark"] aside.fixed.inset-y-0 nav a,
+html[data-theme="dark"] aside.fixed.inset-y-0 .eyebrow { color: #f2edfb !important; }
+html[data-theme="dark"] aside.fixed.inset-y-0 .text-muted,
+html[data-theme="dark"] aside.fixed.inset-y-0 .text-faint { color: #a79bb9 !important; }
+
+html[data-theme="dark"] aside.fixed.inset-y-0 nav a {
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: #d8d1e5 !important;
+}
+html[data-theme="dark"] aside.fixed.inset-y-0 nav a:hover {
+    background: rgba(155, 134, 245, 0.09);
+    border-color: rgba(155, 134, 245, 0.15);
+    color: #fff !important;
+}
+html[data-theme="dark"] aside.fixed.inset-y-0 nav a[class*="bg-primary-soft"] {
+    background: linear-gradient(90deg, rgba(155, 134, 245, 0.2), rgba(155, 134, 245, 0.08));
+    border-color: rgba(176, 156, 255, 0.24);
+    color: #e4dbff !important;
+}
+html[data-theme="dark"] aside.fixed.inset-y-0 nav a[class*="bg-primary-soft"] span { color: #e4dbff !important; }
+html[data-theme="dark"] aside.fixed.inset-y-0 nav a[class*="bg-primary-soft"] svg { color: #c2b2ff !important; }
+
+html[data-theme="dark"] aside.fixed.inset-y-0 button[class*="bg-gradient-to-br"],
+html[data-theme="dark"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"] {
+    background: rgba(255, 255, 255, 0.045) !important;
+    border-color: #332a42 !important;
+    color: #f4effa !important;
+}
+html[data-theme="dark"] aside.fixed.inset-y-0 button[class*="bg-gradient-to-br"] span,
+html[data-theme="dark"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"] span,
+html[data-theme="dark"] aside.fixed.inset-y-0 button[class*="bg-gradient-to-br"] p,
+html[data-theme="dark"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"] p { color: #f4effa !important; }
+html[data-theme="dark"] aside.fixed.inset-y-0 button[class*="bg-gradient-to-br"] .text-muted,
+html[data-theme="dark"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"] .text-muted { color: #a79bb9 !important; }
+html[data-theme="dark"] aside.fixed.inset-y-0 a[class*="bg-ink/[0.05]"] {
+    background: rgba(155, 134, 245, 0.12) !important;
+    color: #e4dbff !important;
+}
+
+/* Surfaces */
+html[data-theme="dark"] .surface-card {
+    background: #1a1623;
+    border-color: #332c40;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.035), 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+html[data-theme="dark"] .surface-card-hover:hover {
+    background: #201a2c;
+    border-color: #4a3d5c;
+}
+html[data-theme="dark"] .border-line,
+html[data-theme="dark"] .border-line\/70,
+html[data-theme="dark"] .border-line\/80 { border-color: #332c40 !important; }
+html[data-theme="dark"] .border-line-strong { border-color: #4b405e !important; }
+html[data-theme="dark"] .bg-white\/60,
+html[data-theme="dark"] .bg-white\/70,
+html[data-theme="dark"] .bg-white\/50,
+html[data-theme="dark"] .bg-white\/45,
+html[data-theme="dark"] .bg-white\/35 { background-color: rgba(255, 255, 255, 0.045) !important; }
+html[data-theme="dark"] .bg-ink\/\[0\.025\] { background-color: rgba(255, 255, 255, 0.025) !important; }
+html[data-theme="dark"] .bg-surface { background-color: var(--color-surface) !important; }
+html[data-theme="dark"] .bg-canvas { background-color: var(--color-canvas) !important; }
+html[data-theme="dark"] .bg-primary-soft { background-color: var(--color-primary-soft) !important; }
+html[data-theme="dark"] .bg-primary-50 { background-color: #241d36 !important; }
+
+html[data-theme="dark"] .theme-gradient,
+html[data-theme="dark"] [class*="bg-gradient-to"] {
+    background: linear-gradient(135deg, #231c31 0%, #191520 55%, #21182c 100%) !important;
+}
+
+html[data-theme="dark"] [class*="shadow-"] { box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25) !important; }
+html[data-theme="dark"] .border { border-color: #332c40; }
+
+/* Tabs / segmented controls */
+html[data-theme="dark"] .rounded-full.border,
+html[data-theme="dark"] .rounded-full[class*="bg-white"] { border-color: #3b3150; }
+html[data-theme="dark"] main aside nav button {
+    background: transparent;
+    border-color: transparent;
+    color: #b8afc8;
+}
+html[data-theme="dark"] main aside nav button:hover {
+    background: rgba(155, 134, 245, 0.08);
+    color: #f5f1fb;
+}
+html[data-theme="dark"] main aside nav button[class*="bg-primary-soft"] {
+    background: rgba(155, 134, 245, 0.15) !important;
+    border-color: rgba(176, 156, 255, 0.2) !important;
+    color: #e4dbff !important;
+}
+
+/* Forms */
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+    background: #0f0c15 !important;
+    border-color: #3b3150 !important;
+    color: #f5f1fb !important;
+}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder { color: #8d829c; opacity: 1; }
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus {
+    border-color: #8067c1 !important;
+    box-shadow: 0 0 0 3px rgba(155, 134, 245, 0.12) !important;
+}
+html[data-theme="dark"] select {
+    background-image: linear-gradient(45deg, transparent 50%, #b8afc8 50%), linear-gradient(135deg, #b8afc8 50%, transparent 50%) !important;
+}
+html[data-theme="dark"] input[type="checkbox"],
+html[data-theme="dark"] input[type="radio"] { accent-color: #9b86f5; }
+html[data-theme="dark"] option { background: #15121d; color: #f5f1fb; }
+
+/* Buttons */
+html[data-theme="dark"] button {
+    color: #f1ecf9;
+}
+html[data-theme="dark"] button.bg-primary-500,
+html[data-theme="dark"] button.bg-primary-600,
+html[data-theme="dark"] .bg-primary-500,
+html[data-theme="dark"] .bg-primary-600 {
+    background: linear-gradient(180deg, #a18bf7 0%, #8067d8 100%) !important;
+    border-color: #b09cff !important;
+    color: #120f19 !important;
+    text-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.28), 0 8px 18px rgba(128, 103, 216, 0.18) !important;
+}
+html[data-theme="dark"] button.bg-primary-500:hover,
+html[data-theme="dark"] button.bg-primary-600:hover { filter: brightness(1.06); }
+html[data-theme="dark"] button.bg-danger { background: #6d2636 !important; border-color: #a83a50 !important; color: #ffe8ed !important; }
+html[data-theme="dark"] button:disabled { opacity: 0.45; }
+html[data-theme="dark"] .bg-primary-500.text-white,
+html[data-theme="dark"] .bg-primary-600.text-white { color: #120f19 !important; }
+
+/* Badges */
+html[data-theme="dark"] .bg-success\/10 { background: rgba(114, 212, 155, 0.12) !important; }
+html[data-theme="dark"] .bg-warning\/10 { background: rgba(242, 179, 93, 0.12) !important; }
+html[data-theme="dark"] .bg-danger\/\[0\.08\] { background: rgba(255, 139, 154, 0.12) !important; }
+html[data-theme="dark"] .text-success { color: #72d49b !important; }
+html[data-theme="dark"] .text-warning { color: #f2b35d !important; }
+html[data-theme="dark"] .text-danger-ink { color: #ffadb8 !important; }
+
+/* Code blocks and assistant prose */
+html[data-theme="dark"] pre {
+    background: #09070d !important;
+    border: 1px solid #332c40;
+    color: #d8d0e5 !important;
+}
+html[data-theme="dark"] .prose-kiki {
+    background: #1b1624;
+    border-color: #332c40;
+    color: #f1ecf9;
+}
+html[data-theme="dark"] .prose-kiki * { color: #f1ecf9; }
+html[data-theme="dark"] .prose-kiki a { color: #c2b2ff; }
+
+/* Illustrations stay legible on dark surfaces. */
+html[data-theme="dark"] .kiki-ring,
+html[data-theme="dark"] img[src*="kiki-empty"],
+html[data-theme="dark"] img[src*="kiki-invoices-coin"] {
+    background: #f4f0f8 !important;
+    border-radius: 12px;
+}
+html[data-theme="dark"] img[src*="kiki-empty"] { padding: 3px; }
+
+/* Top bar controls */
+html[data-theme="dark"] .relative.z-10 > div:first-child .text-muted,
+html[data-theme="dark"] .relative.z-10 > div:first-child .text-ink-soft { color: #b8afc8 !important; }
+html[data-theme="dark"] .relative.z-10 > div:first-child button,
+html[data-theme="dark"] .relative.z-10 > div:first-child > div:last-child > a {
+    background: rgba(255, 255, 255, 0.045) !important;
+    border-color: #3b3150 !important;
+    color: #f1ecf9 !important;
+}
+html[data-theme="dark"] .relative.z-10 > div:first-child [data-i18n-skip] {
+    background: rgba(255, 255, 255, 0.045) !important;
+    border-color: #3b3150 !important;
+    color: #f1ecf9 !important;
+}
+html[data-theme="dark"] .relative.z-10 > div:first-child [data-i18n-skip] * { color: #f1ecf9 !important; }
+html[data-theme="dark"] .relative.z-10 > div:first-child button > span {
+    background: #241d36 !important;
+    border-color: #4b405e !important;
+    color: #d7ccff !important;
+}
+
+/* Mobile chrome */
+html[data-theme="dark"] header.sticky.top-0 {
+    background: rgba(14, 11, 20, 0.9) !important;
+    border-bottom-color: #2c2438 !important;
+}
+html[data-theme="dark"] nav.fixed.inset-x-0.bottom-0 {
+    background: rgba(18, 15, 25, 0.94) !important;
+    border-top-color: #2c2438 !important;
+}
+html[data-theme="dark"] nav.fixed.inset-x-0.bottom-0 a,
+html[data-theme="dark"] nav.fixed.inset-x-0.bottom-0 button { color: #b8afc8 !important; }
+
+/* Modal backdrops / panels inherit the dark tokens. */
+html[data-theme="dark"] .bg-ink\/25 { background: rgba(0, 0, 0, 0.62) !important; }
+
+/* Theme picker tiles */
+html[data-theme="dark"] .theme-choice {
+    background: rgba(255, 255, 255, 0.035) !important;
+    border-color: #332c40 !important;
+}
+html[data-theme="dark"] .theme-choice:hover {
+    background: rgba(255, 255, 255, 0.065) !important;
+    border-color: #4b405e !important;
+}
+html[data-theme="dark"] .theme-choice[class*="border-primary-300"] {
+    background: rgba(155, 134, 245, 0.12) !important;
+    border-color: rgba(176, 156, 255, 0.45) !important;
+}
