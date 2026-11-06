@@ -57,13 +57,9 @@ function updatePassword() {
 
 <template>
     <ClientLayout title="Профиль">
-        <div class="mb-6 max-w-[760px]">
-            <p class="eyebrow">Личный кабинет</p>
-            <h1 class="page-title mt-1">Профиль и настройки</h1>
-            <p class="mt-2 max-w-[620px] text-[12px] leading-relaxed text-muted">
-                Личные данные, безопасность и интерфейс — в трёх отдельных разделах, без лишних блоков на одном экране.
-            </p>
-        </div>
+        <p class="mb-5 max-w-[620px] text-[12px] leading-relaxed text-muted">
+            Личные данные, безопасность и интерфейс — в трёх отдельных разделах, без лишних блоков на одном экране.
+        </p>
 
         <div class="grid max-w-[980px] grid-cols-1 gap-5 lg:grid-cols-[210px_1fr]">
             <aside class="lg:sticky lg:top-6 lg:self-start">
@@ -122,7 +118,7 @@ function updatePassword() {
                     </form>
                 </Card>
 
-                <div v-else class="grid grid-cols-1 gap-4 xl:grid-cols-[.8fr_1.2fr]">
+                <div v-else class="grid grid-cols-1 items-start gap-4 xl:grid-cols-[.8fr_1.2fr]">
                     <LocaleSwitcher variant="settings" />
                     <SecretFeaturesCard />
                 </div>
