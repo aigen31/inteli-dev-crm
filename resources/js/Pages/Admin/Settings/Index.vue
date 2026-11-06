@@ -225,13 +225,9 @@ async function copyMcp() {
 
 <template>
     <AdminLayout title="Настройки">
-        <div class="mb-6 max-w-[760px]">
-            <p class="eyebrow">Рабочее пространство</p>
-            <h1 class="page-title mt-1">Настройки</h1>
-            <p class="mt-2 max-w-[620px] text-[12px] leading-relaxed text-muted">
-                Всё, что относится к работе CRM, собрано в четыре понятных блока. Начните с интерфейса или перейдите сразу к нужному разделу.
-            </p>
-        </div>
+        <p class="mb-5 max-w-[620px] text-[12px] leading-relaxed text-muted">
+            Всё, что относится к работе CRM, собрано в четыре понятных блока. Начните с интерфейса или перейдите сразу к нужному разделу.
+        </p>
 
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[240px_1fr]">
             <aside class="lg:sticky lg:top-6 lg:self-start">
@@ -270,7 +266,7 @@ async function copyMcp() {
                 </div>
 
                 <template v-if="activeTab === 'appearance'">
-                    <div class="grid grid-cols-1 gap-4 xl:grid-cols-[.8fr_1.2fr]">
+                    <div class="grid grid-cols-1 items-start gap-4 xl:grid-cols-[.8fr_1.2fr]">
                         <LocaleSwitcher variant="settings" />
                         <SecretFeaturesCard />
                     </div>
