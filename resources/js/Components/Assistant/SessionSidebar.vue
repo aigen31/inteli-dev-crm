@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { localeTag } from '@/i18n';
 import {
     ArchiveBoxIcon,
     ChatBubbleLeftRightIcon,
@@ -79,10 +80,10 @@ function timeLabel(value) {
     const today = new Date();
 
     if (date.toDateString() === today.toDateString()) {
-        return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' });
     }
 
-    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+    return date.toLocaleDateString(localeTag(), { day: '2-digit', month: '2-digit' });
 }
 
 function onSearch() {

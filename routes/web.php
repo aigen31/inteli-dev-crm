@@ -10,6 +10,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Webhook\YooKassaWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -20,6 +21,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [Auth\LoginController::class, 'create'])->name('login');
     Route::post('/login', [Auth\LoginController::class, 'store']);
 });
+
+// UI language can be changed before login too.
+Route::get('/locale/{locale}', LocaleController::class)->name('locale.update');
 
 // Authenticated
 Route::middleware('auth')->group(function () {

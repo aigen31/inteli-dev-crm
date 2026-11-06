@@ -1,5 +1,6 @@
 <script setup>
 import { computed, watch } from 'vue';
+import { localeTag } from '@/i18n';
 import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -86,7 +87,7 @@ function submit() {
                 </section>
                 <section class="surface-card p-5">
                     <p class="eyebrow">Итого</p>
-                    <p class="mt-2 font-display text-[26px] font-medium tracking-[-0.04em] text-ink">{{ form.amount ? `${Number(form.amount).toLocaleString('ru-RU')} ₽` : '—' }}</p>
+                    <p class="mt-2 font-display text-[26px] font-medium tracking-[-0.04em] text-ink">{{ form.amount ? `${Number(form.amount).toLocaleString(localeTag())} ₽` : '—' }}</p>
                     <p class="mt-1 text-[10px] text-muted">{{ isTransfer ? 'прямой перевод' : 'ЮКасса' }}</p>
                 </section>
             </aside>

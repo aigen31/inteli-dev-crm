@@ -21,6 +21,11 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $locale = $request->session()->get('locale') ?? $user?->locale ?? 'en';
+
+        if (! in_array($locale, ['en', 'ru', 'zh_CN'], true)) {
+            $locale = 'en';
+        }
 
         return [
             ...parent::share($request),
@@ -38,6 +43,12 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'api_token' => fn () => $request->session()->get('api_token'),
+            ],
+            'locale' => $locale,
+            'locales' => [
+                ['code' => 'en', 'label' => 'English', 'short' => 'EN'],
+                ['code' => 'ru', 'label' => 'Русский', 'short' => 'RU'],
+                ['code' => 'zh_CN', 'label' => '中文', 'short' => 'ZH'],
             ],
             'assistant' => [
                 'enabled' => (bool) config('ai.enabled', true),

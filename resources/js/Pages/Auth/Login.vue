@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ArrowRightIcon, CheckCircleIcon, EyeIcon, EyeSlashIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
+import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
 
 const showPassword = ref(false);
 
@@ -25,6 +26,10 @@ function submit() {
     <div class="relative min-h-screen overflow-hidden bg-canvas">
         <div class="pointer-events-none absolute -left-40 top-1/3 h-[420px] w-[420px] rounded-full bg-accent/[0.12] blur-3xl"></div>
         <div class="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-primary-500/[0.12] blur-3xl"></div>
+
+        <div class="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+            <LocaleSwitcher />
+        </div>
 
         <div class="relative mx-auto grid min-h-screen max-w-[1240px] items-stretch gap-0 px-4 py-4 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:px-8 lg:py-6">
             <div class="flex flex-col justify-between rounded-[30px] bg-surface/70 px-5 py-6 backdrop-blur-sm sm:px-10 lg:rounded-r-none lg:border lg:border-line/80 lg:px-12 lg:py-10">
