@@ -73,12 +73,12 @@ services:
       - "traefik.http.routers.crm-prod.middlewares=crm-prod-headers,crm-prod-ratelimit"
       - "traefik.http.routers.landing-prod.middlewares=crm-prod-headers,crm-prod-ratelimit"
     networks:
-      crm:
-      traefik-public:
       assistant:
         aliases:
           - crm-prod-nginx
           - crm-nginx
+      crm:
+      traefik-public:
 
   # ── Queue worker ─────────────────────────────────────
   worker:
