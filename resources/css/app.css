@@ -49,6 +49,11 @@
     --color-danger-ink: #a33a33;
 }
 
+html[lang="zh-CN"] {
+    --font-sans: 'Noto Sans SC', 'Manrope', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Noto Sans SC', 'Unbounded', 'Manrope', ui-sans-serif, system-ui, sans-serif;
+}
+
 @layer base {
     html {
         color-scheme: light;
