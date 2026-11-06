@@ -30,7 +30,8 @@ export function setLocale(value) {
 export function t(key) {
     if (!key || current === 'ru') return key;
     const row = messages[key];
-    return row?.[current] ?? key;
+    const column = current === 'zh_CN' ? 'zh' : current;
+    return row?.[column] ?? key;
 }
 
 const TRANSLATABLE_ATTRIBUTES = ['placeholder', 'title', 'aria-label', 'alt'];
