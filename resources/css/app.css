@@ -283,3 +283,12 @@ html[lang="zh-CN"] {
         color: var(--color-faint);
     }
 }
+
+/* Keep the ⌘K shortcut optically centred inside the top-bar search button. */
+.relative.z-10 > div:first-child button > span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: center !important;
+    line-height: 1 !important;
+}
