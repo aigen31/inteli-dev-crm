@@ -155,6 +155,7 @@ test('a plan proposal becomes several tasks with checklists and priority', funct
     $proposal->assertJsonPath('pending_action.type', 'plan');
     expect($proposal->json('pending_action.plan.tasks'))->toHaveCount(2);
     expect($proposal->json('pending_action.plan.clients'))->not->toBeEmpty();
+    expect($proposal->json('pending_action.plan.project_url'))->toContain(route('admin.projects.show', $project));
 
     $action = AiAction::query()->findOrFail($proposal->json('pending_action.id'));
 

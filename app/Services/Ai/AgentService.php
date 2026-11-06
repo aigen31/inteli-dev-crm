@@ -803,6 +803,10 @@ class AgentService
                     $lines[] = '  - '.$task['title'];
                 }
             }
+
+            if (isset($result['project_url'])) {
+                $lines[] = '- [Перейти в проект]('.$result['project_url'].')';
+            }
         }
 
         if (isset($result['id'])) {

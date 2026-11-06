@@ -941,6 +941,9 @@ class CrmToolbox
                 'color' => $project->color,
                 'client_id' => $project->client_id,
                 'tasks_count' => (int) $project->tasks_count,
+                'url' => $user->isAdmin()
+                    ? route('admin.projects.show', $project)
+                    : route('client.projects.show', $project),
             ])
             ->all();
     }
@@ -1026,11 +1029,19 @@ class CrmToolbox
             'client_id' => $clientId,
             'client_required' => $user->isAdmin(),
             'project_id' => $project?->id,
+            'project_url' => $project !== null
+                ? ($user->isAdmin()
+                    ? route('admin.projects.show', $project)
+                    : route('client.projects.show', $project))
+                : null,
             'project' => $project ? [
                 'id' => $project->id,
                 'key' => $project->key,
                 'name' => $project->name,
                 'color' => $project->color,
+                'url' => $user->isAdmin()
+                    ? route('admin.projects.show', $project)
+                    : route('client.projects.show', $project),
             ] : null,
             'projects' => $this->projectOptions($user),
             'clients' => $user->isAdmin()
@@ -1118,6 +1129,14 @@ class CrmToolbox
             'source_document_id' => $templateId,
             'count' => count($created),
             'created' => $created,
+            'project_id' => $project?->id,
+            'project_key' => $project?->key,
+            'project_name' => $project?->name,
+            'project_url' => $project !== null
+                ? ($user->isAdmin()
+                    ? route('admin.projects.show', $project)
+                    : route('client.projects.show', $project))
+                : null,
         ];
     }
 
