@@ -7,6 +7,10 @@ import { setLocale, startI18n, t, translateDom } from '@/i18n';
 
 const appName = 'CRM';
 
+function applyTheme(theme) {
+    document.documentElement.dataset.theme = ['default', 'dark', 'xp'].includes(theme) ? theme : 'default';
+}
+
 createInertiaApp({
     title: (title) => title ? `${title} — ${appName}` : appName,
     resolve: (name) =>
@@ -14,6 +18,7 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         const initialLocale = props.initialPage.props.locale || 'en';
         setLocale(initialLocale);
+        applyTheme(props.initialPage.props.theme);
 
         const app = createApp({ render: () => h(App, props) })
             .use(plugin)
@@ -25,6 +30,7 @@ createInertiaApp({
         router.on('success', (event) => {
             const locale = event.detail.page.props.locale || 'en';
             setLocale(locale);
+            applyTheme(event.detail.page.props.theme);
             window.requestAnimationFrame(() => translateDom(document.body));
         });
 
