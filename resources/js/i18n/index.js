@@ -30,7 +30,9 @@ export function setLocale(value) {
 export function t(key) {
     if (!key || current === 'ru') return key;
     const column = current === 'zh_CN' ? 'zh' : current;
-    const row = messages[key] ?? messages[key.toLocaleLowerCase('ru-RU')];
+    const lower = key.toLocaleLowerCase('ru-RU');
+    const title = lower.charAt(0).toLocaleUpperCase('ru-RU') + lower.slice(1);
+    const row = messages[key] ?? messages[lower] ?? messages[title];
 
     return row?.[column] ?? key;
 }
