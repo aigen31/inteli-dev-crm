@@ -46,3 +46,14 @@ test('the xp theme is not shared before unlocking', function (): void {
     $this->actingAs($user)->get(route('client.profile.edit'))
         ->assertInertia(fn (Assert $page) => $page->where('theme', 'default'));
 });
+test('dark theme is available to every user without a secret code', function (): void {
+    $user = User::factory()->client()->create(['features' => null]);
+
+    $this->actingAs($user)->patch(route('settings.theme'), ['theme' => 'dark'])
+        ->assertRedirect();
+
+    expect($user->fresh()->theme)->toBe('dark');
+
+    $this->actingAs($user)->get(route('client.profile.edit'))
+        ->assertInertia(fn (Assert $page) => $page->where('theme', 'dark'));
+});

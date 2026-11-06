@@ -1,12 +1,11 @@
 <script setup>
 import { computed } from 'vue';
-import { router, useForm, usePage } from '@inertiajs/vue3';
-import { CheckIcon, KeyIcon, LockClosedIcon, SparklesIcon } from '@heroicons/vue/24/outline';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { CheckIcon, KeyIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
 import Button from '@/Components/UI/Button.vue';
 
 const page = usePage();
 const features = computed(() => page.props.features || {});
-const theme = computed(() => page.props.theme || 'default');
 const unlocked = computed(() => features.value.xp_theme === true);
 
 const form = useForm({ code: '' });
@@ -15,13 +14,6 @@ function unlock() {
     form.post(route('settings.unlock'), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
-    });
-}
-
-function setTheme(value) {
-    router.patch(route('settings.theme'), { theme: value }, {
-        preserveScroll: true,
-        onSuccess: () => window.location.reload(),
     });
 }
 </script>
@@ -69,26 +61,10 @@ function setTheme(value) {
                 </Button>
             </form>
 
-            <div v-if="unlocked" class="space-y-4 border-t border-line/70 pt-4">
-                <div class="flex flex-wrap items-center gap-3 rounded-[16px] border border-line bg-white/45 p-3.5">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#3a6ea5] to-[#0a246a] text-white shadow-[inset_1px_1px_0_rgba(255,255,255,.4)]">
-                        <SparklesIcon class="h-5 w-5" />
-                    </span>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-[12px] font-bold text-ink">Windows XP</p>
-                        <p class="mt-0.5 text-[10px] text-muted">Luna Blue: окна, кнопки, Tahoma и классические тени.</p>
-                    </div>
-                    <div class="flex items-center gap-1 rounded-full border border-line bg-white/60 p-1">
-                        <button type="button" :class="['rounded-full px-3 py-1.5 text-[10px] font-semibold transition', theme !== 'xp' ? 'bg-ink text-canvas' : 'text-muted']" @click="setTheme('default')">
-                            Обычная
-                        </button>
-                        <button type="button" :class="['rounded-full px-3 py-1.5 text-[10px] font-semibold transition', theme === 'xp' ? 'bg-[#0a246a] text-white' : 'text-muted']" @click="setTheme('xp')">
-                            Windows XP
-                        </button>
-                    </div>
-                </div>
-                <p class="text-[10px] leading-relaxed text-muted">
-                    Тема применяется ко всем разделам CRM. Переключение обратимо: вернуться к «Обычной» можно в любой момент.
+            <div v-if="unlocked" class="flex flex-wrap items-center gap-2 rounded-[14px] border border-line bg-white/45 px-3.5 py-3">
+                <CheckIcon class="h-4 w-4 shrink-0 text-success" />
+                <p class="text-[10px] leading-relaxed text-ink-soft">
+                    Windows XP разблокирована. Выберите её в блоке <strong class="font-semibold text-ink">«Тема оформления»</strong>.
                 </p>
             </div>
         </div>
