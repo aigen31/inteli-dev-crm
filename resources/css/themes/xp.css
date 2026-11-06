@@ -616,6 +616,6 @@ html[data-theme="xp"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-wh
 
 html[data-theme="xp"] aside.fixed.inset-y-0 > button[class*="bg-gradient-to-br"] .text-muted,
 html[data-theme="xp"] aside.fixed.inset-y-0 > div:last-child > div[class*="bg-white/50"] .text-muted {
-    color: #333 !important;
-    font-size: 10.5px;
+    color: #222 !important;
+    font-size: 11px;
 }
