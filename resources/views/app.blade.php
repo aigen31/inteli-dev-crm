@@ -7,7 +7,7 @@
     <title data-inertia>CRM</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link
-        href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800|unbounded:400,500,600|jetbrains-mono:400,500"
+        href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800|unbounded:400,500,600|jetbrains-mono:400,500|noto-sans-sc:400,500,600,700,800"
         rel="stylesheet"
     />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
