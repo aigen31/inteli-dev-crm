@@ -354,7 +354,3 @@ html[data-theme="dark"] div.pointer-events-none.absolute.bottom-0 {
     max-height: 100% !important;
 }
 
-/* The invoices coin is a small stat illustration, not a cover image. */
-html[data-theme="dark"] img[src*="kiki-invoices-coin"] {
-    background: #211c2b !important;
-}

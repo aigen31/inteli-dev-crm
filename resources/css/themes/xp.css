@@ -698,6 +698,5 @@ html[data-theme="xp"] aside.fixed.inset-y-0 a[class*="bg-ink/[0.05]"] svg {
 html[data-theme="xp"] img[src*="kiki-invoices-coin"] {
     object-fit: contain !important;
     object-position: center bottom !important;
-    background: #ece9d8 !important;
-    padding: 2px;
+    background: transparent !important;
 }
