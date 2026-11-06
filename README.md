@@ -2,7 +2,7 @@
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh_CN.md)
 
-<img src="public/images/kiki/kiki-flight-avatar.webp" width="110" align="right" alt="Kiki — inteli dev assistant">
+<img src="public/images/kiki/kiki-readme-orbit.png" width="180" align="right" alt="Kiki holding a glowing violet orb with paper folders and paper planes orbiting it">
 
 A workspace for the self-employed: clients, tasks, projects, templates, invoices, reports and the Kiki assistant — all in one place.
 
