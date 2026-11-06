@@ -49,7 +49,7 @@ class SettingsController extends Controller
             ]);
 
         return Inertia::render('Admin/Settings/Index', [
-            'tab' => $request->query('tab', 'payments'),
+            'tab' => $request->query('tab', 'appearance'),
             'yookassa' => [
                 'shop_id' => config('services.yookassa.shop_id') ? '••••'.substr((string) config('services.yookassa.shop_id'), -4) : null,
                 'is_configured' => (bool) config('services.yookassa.shop_id'),
