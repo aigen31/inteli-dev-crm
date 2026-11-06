@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { localeTag } from '@/i18n';
 import { Link, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -39,7 +40,7 @@ const { open } = useAssistant();
 const hour = new Date().getHours();
 const greeting = hour < 6 ? 'Доброй ночи' : hour < 12 ? 'Доброе утро' : hour < 18 ? 'Добрый день' : 'Добрый вечер';
 const firstName = computed(() => (page.props.auth?.user?.name || '').split(' ')[0]);
-const todayLabel = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+const todayLabel = new Date().toLocaleDateString(localeTag(), { weekday: 'long', day: 'numeric', month: 'long' });
 
 const focusTasks = computed(() => (props.todayTasks?.length ? props.todayTasks : props.pendingTasks ?? []));
 const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, invoice) => sum + Number(invoice.amount || 0), 0));

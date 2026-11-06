@@ -21,6 +21,7 @@ import {
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import AssistantPanel from '@/Components/Assistant/AssistantPanel.vue';
 import EarlyAccessBanner from '@/Components/UI/EarlyAccessBanner.vue';
+import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
 import { useAssistant } from '@/Composables/useAssistant';
 
 const props = defineProps({
@@ -159,6 +160,10 @@ function logout() {
                     {{ item.label }}
                 </Link>
 
+                <div class="mb-3">
+                    <LocaleSwitcher />
+                </div>
+
                 <div class="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-white/50 px-3 py-2.5">
                     <span class="flex h-9 w-9 items-center justify-center rounded-full bg-primary-500 text-[11px] font-bold text-white">
                         {{ user?.initials }}
@@ -240,6 +245,7 @@ function logout() {
                         Найти или спросить
                         <span class="rounded-md border border-line bg-surface px-1.5 py-0.5 font-mono text-[9px]">⌘K</span>
                     </button>
+                    <LocaleSwitcher />
                     <Link
                         :href="isAdmin ? route('admin.settings.edit') : route('client.profile.edit')"
                         class="rounded-full border border-line bg-white/50 p-2 text-muted transition hover:border-line-strong hover:text-ink"

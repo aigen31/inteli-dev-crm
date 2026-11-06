@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ArrowRightIcon, CheckCircleIcon, EyeIcon, EyeSlashIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
+import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
 
 const showPassword = ref(false);
 
@@ -32,6 +33,9 @@ function submit() {
                     <span class="font-display text-[18px] font-medium tracking-[-0.04em] text-ink">inteli dev</span>
                     <span class="rounded-full border border-line bg-white/60 px-2 py-[3px] font-mono text-[8px] uppercase tracking-[0.18em] text-muted">crm</span>
                     <span class="rounded-full border border-warning/25 bg-warning/10 px-2 py-[3px] font-mono text-[8px] uppercase tracking-[0.14em] text-warning">beta</span>
+                    <div class="ml-auto">
+                        <LocaleSwitcher />
+                    </div>
                 </div>
 
                 <div class="mx-auto w-full max-w-[380px] py-10">

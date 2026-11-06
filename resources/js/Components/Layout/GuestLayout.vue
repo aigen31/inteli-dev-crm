@@ -1,5 +1,6 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
+import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
 
 defineProps({
     title: { type: String, default: null },
@@ -9,6 +10,10 @@ defineProps({
 <template>
     <div class="relative flex min-h-screen items-center justify-center px-4 py-12">
         <Head :title="title" />
+
+        <div class="absolute right-4 top-4 z-10 sm:right-6 sm:top-6">
+            <LocaleSwitcher />
+        </div>
 
         <div class="w-full max-w-[420px]">
             <div class="mb-8 flex items-center justify-center gap-2">
