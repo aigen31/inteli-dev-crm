@@ -691,3 +691,13 @@ html[data-theme="xp"] aside.fixed.inset-y-0 a[class*="bg-ink/[0.05]"] {
 html[data-theme="xp"] aside.fixed.inset-y-0 a[class*="bg-ink/[0.05]"] svg {
     color: #0a246a !important;
 }
+
+
+/* The small invoices stat-card illustration should show the whole character
+   instead of cropping the hat in the shorter XP stat card. */
+html[data-theme="xp"] img[src*="kiki-invoices-coin"] {
+    object-fit: contain !important;
+    object-position: center bottom !important;
+    background: #ece9d8 !important;
+    padding: 2px;
+}
