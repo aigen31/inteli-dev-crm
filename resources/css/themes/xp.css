@@ -98,7 +98,7 @@ html[data-theme="xp"] .relative.z-10 > div:first-child {
     width: calc(100% - 32px);
     max-width: 1280px;
     min-height: 30px;
-    margin: 10px auto 0;
+    margin: 0 auto;
     padding: 3px 7px !important;
     background: linear-gradient(180deg, #0997ff 0%, #0053ee 8%, #0050ee 40%, #0066ff 88%, #0066ff 93%, #005bff 95%, #003dd7 96%, #003dd7 100%);
     border: 1px solid #0831d9;
