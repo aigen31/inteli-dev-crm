@@ -30,7 +30,7 @@ function change(event) {
         <GlobeAltIcon :class="isSettings ? 'h-5 w-5 text-primary-600' : 'h-3.5 w-3.5 text-muted'" />
         <span v-if="isSettings" class="min-w-0 flex-1">
             <span class="block text-[12px] font-bold text-ink">{{ $t('Язык интерфейса') }}</span>
-            <span class="mt-0.5 block text-[10px] text-muted">{{ $t('Интерфейс CRM будет показан на выбранном языке. Это также влияет на письма и уведомления.') }}</span>
+            <span class="mt-0.5 block text-[10px] text-muted">{{ $t('Выберите язык интерфейса CRM.') }}</span>
         </span>
         <span v-else class="hidden text-[9px] font-semibold uppercase tracking-[0.12em] text-muted sm:block">lang</span>
         <select
