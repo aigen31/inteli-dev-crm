@@ -29,8 +29,9 @@ export function setLocale(value) {
 
 export function t(key) {
     if (!key || current === 'ru') return key;
-    const row = messages[key];
     const column = current === 'zh_CN' ? 'zh' : current;
+    const row = messages[key] ?? messages[key.toLocaleLowerCase('ru-RU')];
+
     return row?.[column] ?? key;
 }
 
