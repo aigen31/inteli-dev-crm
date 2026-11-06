@@ -37,6 +37,30 @@ export function t(key) {
     return row?.[column] ?? key;
 }
 
+const PHRASE_FRAGMENTS = [
+    'Кики собрала главное на сегодня.',
+    'Кики собрала главное на сегодня',
+    'Добрый вечер',
+    'Доброй ночи',
+    'Доброе утро',
+    'Добрый день',
+    'Администратор',
+    'непрочитанных',
+    'просрочено.',
+    'просрочено',
+    'В работе',
+    'в работе',
+    'на паузе',
+    'всего',
+    'задач,',
+    'задач',
+    'счетов',
+    'шагов',
+    'КЛИЕНТОВ',
+    'ЗАДАЧ',
+    'СЧЕТОВ',
+];
+
 const TRANSLATABLE_ATTRIBUTES = ['placeholder', 'title', 'aria-label', 'alt'];
 
 function isSkipped(element) {
@@ -63,7 +87,15 @@ function translatePhrase(value) {
     }
 
     const prefixed = value.replace(/^(Проект|Задача|Счёт|Счет|Клиент)\b/, (word) => t(word));
-    return prefixed;
+    if (prefixed !== value) return prefixed;
+
+    let replaced = value;
+    for (const fragment of PHRASE_FRAGMENTS) {
+        if (!replaced.includes(fragment)) continue;
+        replaced = replaced.split(fragment).join(t(fragment));
+    }
+
+    return replaced;
 }
 
 function translateTextNode(node) {
