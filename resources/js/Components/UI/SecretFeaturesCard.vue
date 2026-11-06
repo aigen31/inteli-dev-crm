@@ -19,7 +19,10 @@ function unlock() {
 }
 
 function setTheme(value) {
-    router.patch(route('settings.theme'), { theme: value }, { preserveScroll: true });
+    router.patch(route('settings.theme'), { theme: value }, {
+        preserveScroll: true,
+        onSuccess: () => window.location.reload(),
+    });
 }
 </script>
 
