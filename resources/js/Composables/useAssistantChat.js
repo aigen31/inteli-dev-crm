@@ -18,7 +18,7 @@ const VALIDATION_FALLBACKS = {
     'validation.boolean': 'Некорректное значение',
     'validation.accepted': 'Нужно подтвердить',
     'validation.in': 'Недопустимое значение',
-    'validation.uuid': 'Некорректный файл',
+    'validation.uuid': 'Некорректный идентификатор',
     'validation.min.array': 'Добавьте хотя бы одну запись',
     'validation.max.array': 'Слишком много записей',
 };

@@ -74,6 +74,7 @@ class CrmSerializer
             'template' => $task->template ? ['id' => $task->template->id, 'name' => $task->template->name] : null,
             'checklist' => $task->normalizedChecklist(),
             'estimated_minutes' => $task->estimated_minutes,
+            'budget' => $task->budget,
             'deadline' => $task->deadline?->toDateString(),
             'completed_at' => $task->completed_at?->toIso8601String(),
             'custom_fields' => $this->customFields->valuesFor($task),
