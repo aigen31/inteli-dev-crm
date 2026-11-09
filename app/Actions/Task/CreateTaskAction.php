@@ -53,6 +53,7 @@ class CreateTaskAction
                 : ($data['status'] ?? TaskStatus::PendingReview),
             'priority' => $data['priority'] ?? TaskPriority::Medium,
             'estimated_minutes' => $data['estimated_minutes'] ?? null,
+            'budget' => $data['budget'] ?? null,
             'deadline' => $data['deadline'] ?? null,
         ]);
 

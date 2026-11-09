@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -17,6 +17,9 @@ const props = defineProps({
 });
 
 const copied = ref(null);
+const invoiceTasks = computed(() => props.invoice.tasks?.length
+    ? props.invoice.tasks
+    : (props.invoice.task ? [{ ...props.invoice.task, pivot: { amount: props.invoice.amount } }] : []));
 
 async function copy(value) {
     try {
@@ -48,9 +51,16 @@ async function copy(value) {
                     <div class="mt-4 flex flex-wrap gap-2">
                         <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
                         <Badge :status="invoice.payment_method" type="payment">{{ paymentMethodLabels[invoice.payment_method] }}</Badge>
-                        <span class="rounded-full bg-surface-2 px-2.5 py-1 font-mono text-[9px] text-muted">{{ invoice.task?.title || 'без задачи' }}</span>
+                        <span class="rounded-full bg-surface-2 px-2.5 py-1 font-mono text-[9px] text-muted">{{ invoiceTasks.length }} {{ invoiceTasks.length === 1 ? 'задача' : 'задач' }}</span>
                     </div>
                     <p v-if="invoice.paid_at" class="mt-3 text-[11px] text-success">Оплачен {{ formatDateTime(invoice.paid_at) }}</p>
+                    <div v-if="invoiceTasks.length" class="mt-4 space-y-1.5 border-t border-line/70 pt-3">
+                        <p class="text-[9px] uppercase tracking-[0.08em] text-muted">Что входит</p>
+                        <div v-for="task in invoiceTasks" :key="task.id" class="flex items-center justify-between gap-3 text-[11px]">
+                            <span class="min-w-0 truncate text-ink-soft">{{ task.title }}</span>
+                            <span class="shrink-0 font-mono text-[10px] text-muted">{{ formatMoney(task.pivot?.amount ?? task.budget) }}</span>
+                        </div>
+                    </div>
                 </section>
 
                 <section v-if="invoice.status === 'pending' && invoice.payment_method === 'yookassa'" class="surface-card p-5">
@@ -90,7 +100,7 @@ async function copy(value) {
                     <dl class="space-y-3 text-[12px]">
                         <div class="flex justify-between gap-3"><dt class="text-muted">Счёт</dt><dd class="font-mono text-[10px] text-ink">INV-{{ invoice.id.slice(0, 8).toUpperCase() }}</dd></div>
                         <div class="flex justify-between gap-3"><dt class="text-muted">Выставлен</dt><dd class="text-ink">{{ formatDateTime(invoice.created_at) }}</dd></div>
-                        <div class="flex justify-between gap-3"><dt class="text-muted">Задача</dt><dd class="max-w-[180px] truncate text-ink">{{ invoice.task?.title || '—' }}</dd></div>
+                        <div class="flex justify-between gap-3"><dt class="text-muted">Задачи</dt><dd class="max-w-[180px] text-right text-ink">{{ invoiceTasks.length }}</dd></div>
                         <div class="flex justify-between gap-3"><dt class="text-muted">Способ</dt><dd class="text-ink">{{ paymentMethodLabels[invoice.payment_method] }}</dd></div>
                     </dl>
                 </Card>

@@ -34,6 +34,11 @@ class InvoiceResource extends JsonResource
                 'id' => $this->task->id,
                 'title' => $this->task->title,
             ] : null),
+            'tasks' => $this->whenLoaded('tasks', fn () => $this->tasks->map(fn ($task) => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'amount' => (float) ($task->pivot->amount ?? 0),
+            ])->values()),
             'custom_fields' => app(CustomFieldService::class)->customFieldsWithDefaults($this->resource),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

@@ -54,7 +54,7 @@ function setStatus(value) {
             >
                 <span class="min-w-0 flex-1">
                     <span class="block truncate text-[13px] font-bold text-ink">{{ invoice.description }}</span>
-                    <span class="mt-1 block text-[10px] text-muted">{{ invoice.task?.title || 'без задачи' }} · {{ formatDateTime(invoice.created_at) }}</span>
+                    <span class="mt-1 block text-[10px] text-muted">{{ invoice.tasks?.length ? `${invoice.tasks.length} задач(и)` : (invoice.task?.title || 'без задачи') }} · {{ formatDateTime(invoice.created_at) }}</span>
                 </span>
                 <span class="font-mono text-[14px] font-semibold text-ink">{{ formatMoney(invoice.amount) }}</span>
                 <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>

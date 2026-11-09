@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -13,6 +14,10 @@ const props = defineProps({
     invoice: Object,
     customFields: Array,
 });
+
+const invoiceTasks = computed(() => props.invoice.tasks?.length
+    ? props.invoice.tasks
+    : (props.invoice.task ? [{ ...props.invoice.task, pivot: { amount: props.invoice.amount } }] : []));
 
 function cancelInvoice() {
     if (window.confirm('Отменить счёт?')) router.patch(route('admin.invoices.cancel', props.invoice.id));
@@ -53,7 +58,15 @@ function refundInvoice() {
                 <Card title="Детали">
                     <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div><dt class="text-[10px] uppercase tracking-[0.08em] text-muted">Клиент</dt><dd class="mt-1 text-[12px] text-ink"><Link :href="route('admin.clients.show', invoice.client_id)" class="text-primary-700 hover:underline">{{ invoice.client?.name }}</Link></dd></div>
-                        <div><dt class="text-[10px] uppercase tracking-[0.08em] text-muted">Задача</dt><dd class="mt-1 text-[12px] text-ink"><Link :href="route('admin.tasks.show', invoice.task_id)" class="text-primary-700 hover:underline">{{ invoice.task?.title }}</Link></dd></div>
+                        <div class="sm:col-span-2">
+                            <dt class="text-[10px] uppercase tracking-[0.08em] text-muted">Задачи в счёте · {{ invoiceTasks.length }}</dt>
+                            <dd class="mt-2 space-y-1.5">
+                                <Link v-for="task in invoiceTasks" :key="task.id" :href="route('admin.tasks.show', task.id)" class="flex items-center justify-between gap-3 rounded-[12px] border border-line/60 px-3 py-2 text-[12px] text-ink transition hover:border-primary-200 hover:bg-primary-50/30">
+                                    <span class="min-w-0 truncate">{{ task.title }}</span>
+                                    <span class="shrink-0 font-mono text-[10px] text-muted">{{ formatMoney(task.pivot?.amount ?? task.budget) }}</span>
+                                </Link>
+                            </dd>
+                        </div>
                         <div><dt class="text-[10px] uppercase tracking-[0.08em] text-muted">Создан</dt><dd class="mt-1 text-[12px] text-ink">{{ formatDateTime(invoice.created_at) }}</dd></div>
                         <div v-if="invoice.paid_at"><dt class="text-[10px] uppercase tracking-[0.08em] text-muted">Оплачен</dt><dd class="mt-1 text-[12px] text-success">{{ formatDateTime(invoice.paid_at) }}</dd></div>
                         <div v-if="invoice.is_recurring"><dt class="text-[10px] uppercase tracking-[0.08em] text-muted">Интервал</dt><dd class="mt-1 text-[12px] text-ink">{{ recurringIntervalLabels[invoice.recurring_interval] }}</dd></div>

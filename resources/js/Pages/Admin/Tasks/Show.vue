@@ -177,6 +177,7 @@ function addComment() {
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Тип</dt><dd class="text-ink">{{ taskTypeLabels[task.type] }}</dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Дедлайн</dt><dd class="font-mono text-[11px] text-ink">{{ formatDate(task.deadline) }}</dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Оценка</dt><dd class="text-ink">{{ task.estimated_minutes ? `${task.estimated_minutes} мин` : '—' }}</dd></div>
+                        <div class="flex items-center justify-between gap-3"><dt class="text-muted">Бюджет</dt><dd class="font-mono text-[11px] text-ink">{{ task.budget ? formatMoney(task.budget) : '—' }}</dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Источник</dt><dd class="text-ink">{{ taskSourceLabels[task.source] || task.source }}</dd></div>
                     </dl>
                 </Card>
