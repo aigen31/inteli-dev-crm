@@ -98,6 +98,7 @@ class TaskController extends Controller
                 'deadline' => $data['deadline'] ?? null,
                 'assignee_id' => $data['assignee_id'] ?? null,
                 'project_id' => $data['project_id'] ?? null,
+                'budget' => $data['budget'] ?? null,
             ]);
         } else {
             $task = $action->execute($data, $request->user());

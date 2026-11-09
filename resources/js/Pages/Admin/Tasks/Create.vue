@@ -42,6 +42,7 @@ const form = useForm({
     status: 'pending_review',
     priority: 'medium',
     estimated_minutes: '',
+    budget: '',
     assignee_id: '',
     deadline: '',
     custom_fields: {},
@@ -157,6 +158,13 @@ function submit() {
                                 <div class="min-w-0 flex-1">
                                     <p class="text-[9px] uppercase tracking-[0.1em] text-faint">Формат</p>
                                     <p class="mt-0.5 text-[11px] font-semibold text-ink">{{ typeLabel }} · {{ priorityLabel }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2.5">
+                                <span class="mt-0.5 font-mono text-[11px] text-faint">₽</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-[9px] uppercase tracking-[0.1em] text-faint">Бюджет</p>
+                                    <p class="mt-0.5 text-[11px] font-semibold text-ink">{{ form.budget ? Number(form.budget).toLocaleString('ru-RU') + ' ₽' : 'не указан' }}</p>
                                 </div>
                             </div>
                             <div class="flex items-start gap-2.5">

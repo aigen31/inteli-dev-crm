@@ -85,6 +85,7 @@ class TaskTemplateService
             'checklist' => $template->normalizedChecklist(),
             'source' => $source ?? ($creator->isClient() ? TaskSource::Client : TaskSource::Template),
             'estimated_minutes' => $template->estimated_minutes,
+            'budget' => Arr::get($overrides, 'budget'),
         ], $creator);
 
         $template->increment('usage_count');

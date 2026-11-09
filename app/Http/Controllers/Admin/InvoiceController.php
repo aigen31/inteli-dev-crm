@@ -9,10 +9,12 @@ use App\Actions\Invoice\CreateInvoiceAction;
 use App\Actions\Invoice\MarkInvoiceAsPaidAction;
 use App\Actions\Invoice\ProcessRefundAction;
 use App\Enums\InvoiceStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreInvoiceRequest;
 use App\Models\Invoice;
 use App\Models\Task;
+use App\Models\User;
 use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +30,7 @@ class InvoiceController extends Controller
 
     public function index(Request $request): Response
     {
-        $invoices = Invoice::with(['task', 'client'])
+        $invoices = Invoice::with(['task', 'tasks', 'client'])
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('client_id'), fn ($q, $id) => $q->where('client_id', $id))
             ->latest()
@@ -52,12 +54,14 @@ class InvoiceController extends Controller
 
     public function create(Request $request): Response
     {
-        $tasks = Task::with('client')
+        $tasks = Task::with(['client:id,name', 'project:id,key,name'])
             ->whereNotIn('status', ['rejected_by_admin'])
-            ->get(['id', 'title', 'client_id', 'type']);
+            ->latest()
+            ->get(['id', 'title', 'client_id', 'project_id', 'type', 'status', 'budget']);
 
         return Inertia::render('Admin/Invoices/Create', [
             'tasks' => $tasks,
+            'clients' => User::query()->where('role', UserRole::Client)->orderBy('name')->get(['id', 'name']),
             'selectedTaskId' => $request->query('task_id'),
         ]);
     }
@@ -78,7 +82,7 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice): Response
     {
-        $invoice->load(['task', 'client', 'customFieldValues.customField']);
+        $invoice->load(['task', 'tasks', 'client', 'customFieldValues.customField']);
 
         return Inertia::render('Admin/Invoices/Show', [
             'invoice' => $invoice,

@@ -22,7 +22,7 @@ class InvoiceController extends Controller
         $user = $request->user();
 
         $invoices = Invoice::query()
-            ->with(['client', 'task', 'customFieldValues.customField'])
+            ->with(['client', 'task', 'tasks', 'customFieldValues.customField'])
             ->when($user->isClient(), fn ($query) => $query->where('client_id', $user->id))
             ->when($request->input('status'), fn ($query, $status) => $query->where('status', $status))
             ->when($request->input('client_id') && $user->isAdmin(), fn ($query, $clientId) => $query->where('client_id', $clientId))
@@ -36,17 +36,23 @@ class InvoiceController extends Controller
     {
         $this->authorizeInvoice($request, $invoice);
 
-        return new InvoiceResource($invoice->load(['client', 'task', 'customFieldValues.customField']));
+        return new InvoiceResource($invoice->load(['client', 'task', 'tasks', 'customFieldValues.customField']));
     }
 
     public function store(Request $request, CreateInvoiceAction $action): JsonResponse
     {
         abort_unless($request->user()->isAdmin(), 403);
 
+        if (! $request->has('task_ids') && $request->filled('task_id')) {
+            $request->merge(['task_ids' => [$request->input('task_id')]]);
+        }
+
         $data = $request->validate([
-            'task_id' => ['required', 'uuid', 'exists:tasks,id'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
-            'description' => ['required', 'string', 'max:500'],
+            'task_ids' => ['required', 'array', 'min:1', 'max:50'],
+            'task_ids.*' => ['required', 'uuid', 'distinct', 'exists:tasks,id'],
+            'task_id' => ['nullable', 'uuid', 'exists:tasks,id'],
+            'amount' => ['nullable', 'numeric', 'min:0.01'],
+            'description' => ['nullable', 'string', 'max:500'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
             'is_recurring' => ['sometimes', 'boolean'],
             'recurring_interval' => ['nullable', 'string'],
@@ -54,7 +60,7 @@ class InvoiceController extends Controller
 
         $invoice = $action->execute($data);
 
-        return (new InvoiceResource($invoice->load(['client', 'task', 'customFieldValues.customField'])))
+        return (new InvoiceResource($invoice->load(['client', 'task', 'tasks', 'customFieldValues.customField'])))
             ->response()
             ->setStatusCode(201);
     }
@@ -66,7 +72,7 @@ class InvoiceController extends Controller
 
         $action->execute($invoice);
 
-        return new InvoiceResource($invoice->refresh()->load(['client', 'task', 'customFieldValues.customField']));
+        return new InvoiceResource($invoice->refresh()->load(['client', 'task', 'tasks', 'customFieldValues.customField']));
     }
 
     private function authorizeInvoice(Request $request, Invoice $invoice): void

@@ -37,6 +37,7 @@ class TaskResource extends JsonResource
             'type_label' => $this->type->label(),
             'source' => $this->source->value,
             'estimated_minutes' => $this->estimated_minutes,
+            'budget' => $this->budget !== null ? (float) $this->budget : null,
             'deadline' => $this->deadline?->toDateString(),
             'completed_at' => $this->completed_at?->toIso8601String(),
             'client' => $this->whenLoaded('client', fn () => new ClientResource($this->client)),
