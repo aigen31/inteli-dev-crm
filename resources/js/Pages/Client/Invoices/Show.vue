@@ -51,11 +51,11 @@ async function copy(value) {
                     <div class="mt-4 flex flex-wrap gap-2">
                         <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
                         <Badge :status="invoice.payment_method" type="payment">{{ paymentMethodLabels[invoice.payment_method] }}</Badge>
-                        <span class="rounded-full bg-surface-2 px-2.5 py-1 font-mono text-[9px] text-muted">{{ invoiceTasks.length }} {{ invoiceTasks.length === 1 ? 'задача' : 'задач' }}</span>
+                        <span class="rounded-full bg-surface-2 px-2.5 py-1 font-mono text-[9px] text-muted">{{ $t('задач') }}: {{ invoiceTasks.length }}</span>
                     </div>
                     <p v-if="invoice.paid_at" class="mt-3 text-[11px] text-success">Оплачен {{ formatDateTime(invoice.paid_at) }}</p>
                     <div v-if="invoiceTasks.length" class="mt-4 space-y-1.5 border-t border-line/70 pt-3">
-                        <p class="text-[9px] uppercase tracking-[0.08em] text-muted">Что входит</p>
+                        <p class="text-[9px] uppercase tracking-[0.08em] text-muted">{{ $t('Что входит') }}</p>
                         <div v-for="task in invoiceTasks" :key="task.id" class="flex items-center justify-between gap-3 text-[11px]">
                             <span class="min-w-0 truncate text-ink-soft">{{ task.title }}</span>
                             <span class="shrink-0 font-mono text-[10px] text-muted">{{ formatMoney(task.pivot?.amount ?? task.budget) }}</span>

@@ -53,7 +53,7 @@ class CreateInvoiceAction
         $description = trim((string) ($data['description'] ?? ''));
 
         if ($description === '') {
-            $description = 'Счёт по задачам: '.$tasks->pluck('title')->take(3)->implode(', ');
+            $description = 'Счёт: '.$tasks->pluck('title')->take(3)->implode(', ');
             if ($tasks->count() > 3) {
                 $description .= ' и ещё '.($tasks->count() - 3);
             }
