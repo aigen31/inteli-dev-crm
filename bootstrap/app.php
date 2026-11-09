@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureApiAbility;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RecordNavigationVisit;
 use App\Http\Middleware\VerifyYooKassaWebhook;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             HandleInertiaRequests::class,
+            RecordNavigationVisit::class,
         ]);
 
         $middleware->alias([

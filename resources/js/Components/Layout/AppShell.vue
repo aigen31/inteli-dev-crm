@@ -22,6 +22,7 @@ import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import AssistantPanel from '@/Components/Assistant/AssistantPanel.vue';
 import EarlyAccessBanner from '@/Components/UI/EarlyAccessBanner.vue';
 import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
+import ReturnPill from '@/Components/Navigation/ReturnPill.vue';
 import { useAssistant } from '@/Composables/useAssistant';
 
 const props = defineProps({
@@ -236,6 +237,7 @@ function logout() {
                     <span class="text-faint">/</span>
                     <span class="text-ink-soft">{{ sectionLabel }}</span>
                 </div>
+                <ReturnPill :items="page.props.navigation?.recent || []" class="ml-3 hidden sm:flex" />
                 <div class="ml-auto flex items-center gap-2">
                     <button
                         type="button"
