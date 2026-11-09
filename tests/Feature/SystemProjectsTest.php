@@ -24,15 +24,21 @@ test('all authenticated users can open both service projects', function (): void
     }
 });
 
-test('service projects are shown on the project index for both roles', function (): void {
+test('service projects live in their own feedback section', function (): void {
     $admin = User::factory()->admin()->create();
     $client = User::factory()->client()->create();
 
+    foreach ([$admin, $client] as $user) {
+        $this->actingAs($user)->get(route('feedback.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Feedback/Index')->has('systemProjects', 2));
+    }
+
     $this->actingAs($admin)->get(route('admin.projects.index'))
-        ->assertInertia(fn (Assert $page) => $page->has('systemProjects', 2));
+        ->assertInertia(fn (Assert $page) => $page->where('systemProjects', null));
 
     $this->actingAs($client)->get(route('client.projects.index'))
-        ->assertInertia(fn (Assert $page) => $page->has('systemProjects', 2));
+        ->assertInertia(fn (Assert $page) => $page->where('systemProjects', null));
 });
 
 test('a user can submit a feedback item and a bug report', function (): void {
