@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\Auth;
 use App\Http\Controllers\Client;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\InviteController;
@@ -31,6 +32,7 @@ Route::get('/locale/{locale}', LocaleController::class)->name('locale.update');
 // Authenticated
 Route::middleware('auth')->group(function () {
     Route::get('/help', [HelpController::class, 'index'])->name('help.index');
+    Route::get('/feedback', [FeedbackController::class, 'index'])->middleware('is_active')->name('feedback.index');
 
     Route::delete('/navigation-history', [NavigationHistoryController::class, 'destroy'])
         ->middleware('is_active')

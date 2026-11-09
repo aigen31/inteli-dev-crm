@@ -5,6 +5,7 @@ import {
     ArrowRightOnRectangleIcon,
     BanknotesIcon,
     Bars3Icon,
+    ChatBubbleLeftRightIcon,
     CheckCircleIcon,
     Cog6ToothIcon,
     FolderIcon,
@@ -54,7 +55,7 @@ const navigation = computed(() =>
                   label: 'Проекты',
                   href: route('admin.projects.index'),
                   icon: FolderIcon,
-                  active: path.value.startsWith('/admin/projects') || path.value.startsWith('/projects/system'),
+                  active: path.value.startsWith('/admin/projects'),
               },
               {
                   label: 'Библиотека',
@@ -69,7 +70,7 @@ const navigation = computed(() =>
           ]
         : [
               { label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' },
-              { label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') },
+              { label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') && !path.value.startsWith('/projects/system') },
               { label: 'Задачи', href: route('client.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/tasks') },
               { label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
               { label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') },
@@ -83,6 +84,7 @@ const secondary = computed(() => [
     ...(isAdmin.value
         ? [{ label: 'Настройки', href: route('admin.settings.edit'), icon: Cog6ToothIcon, active: path.value.startsWith('/admin/settings') }]
         : [{ label: 'Профиль', href: route('client.profile.edit'), icon: UserIcon, active: path.value.startsWith('/profile') }]),
+    { label: 'Обратная связь', href: route('feedback.index'), icon: ChatBubbleLeftRightIcon, active: path.value.startsWith('/feedback') || path.value.startsWith('/projects/system') },
     { label: 'Помощь', href: route('help.index'), icon: QuestionMarkCircleIcon, active: path.value.startsWith('/help') },
 ]);
 
@@ -90,7 +92,7 @@ const sectionLabel = computed(() => {
     if (path.value.startsWith('/admin/settings')) return 'Настройки';
     if (path.value.startsWith('/profile')) return 'Профиль';
     if (path.value.startsWith('/help')) return 'Помощь';
-    if (path.value.startsWith('/projects/system')) return 'Проекты';
+    if (path.value.startsWith('/feedback') || path.value.startsWith('/projects/system')) return 'Обратная связь';
     return navigation.value.find((item) => item.active)?.label ?? (isAdmin.value ? 'Обзор' : 'Кабинет');
 });
 

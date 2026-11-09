@@ -4,6 +4,7 @@ import { ArrowUpRightIcon, BugAntIcon, LightBulbIcon } from '@heroicons/vue/24/o
 
 defineProps({
     projects: { type: Array, default: () => [] },
+    showHeading: { type: Boolean, default: true },
 });
 
 const tones = {
@@ -26,7 +27,7 @@ function tone(project) {
 
 <template>
     <section v-if="projects.length" class="mb-6">
-        <div class="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <div v-if="showHeading" class="mb-3 flex flex-wrap items-end justify-between gap-2">
             <div>
                 <p class="eyebrow">Сервисные проекты</p>
                 <h2 class="mt-1 text-[15px] font-bold text-ink">CRM развивается вместе с вами</h2>
