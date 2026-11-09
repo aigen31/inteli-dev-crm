@@ -160,7 +160,7 @@ function setStatus(value) {
                         <input type="checkbox" :checked="allSelected" class="h-3.5 w-3.5 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="toggleAll" />
                         Выбрать страницу
                     </label>
-                    <span v-if="selectedIds.length" class="font-mono text-[9px] uppercase tracking-[0.1em] text-primary-700">выбрано {{ selectedIds.length }}</span>
+                    <span v-if="selectedIds.length" class="font-mono text-[9px] uppercase tracking-[0.1em] text-primary-700">{{ $t('выбрано') }} {{ selectedIds.length }}</span>
                 </div>
                 <div class="divide-y divide-line/70">
                 <div
