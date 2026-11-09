@@ -34,11 +34,13 @@ test('service projects live in their own feedback section', function (): void {
             ->assertInertia(fn (Assert $page) => $page->component('Feedback/Index')->has('systemProjects', 2));
     }
 
-    $this->actingAs($admin)->get(route('admin.projects.index'))
-        ->assertInertia(fn (Assert $page) => $page->where('systemProjects', null));
+    $adminResponse = $this->actingAs($admin)->get(route('admin.projects.index'));
+    $adminResponse->assertOk();
+    expect($adminResponse->viewData('page')['props'])->not->toHaveKey('systemProjects');
 
-    $this->actingAs($client)->get(route('client.projects.index'))
-        ->assertInertia(fn (Assert $page) => $page->where('systemProjects', null));
+    $clientResponse = $this->actingAs($client)->get(route('client.projects.index'));
+    $clientResponse->assertOk();
+    expect($clientResponse->viewData('page')['props'])->not->toHaveKey('systemProjects');
 });
 
 test('a user can submit a feedback item and a bug report', function (): void {
