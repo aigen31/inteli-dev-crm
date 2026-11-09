@@ -181,7 +181,7 @@ function submit() {
                     <div class="border-b border-line/70 bg-surface-2/50 px-5 py-4">
                         <p class="eyebrow">Итог</p>
                         <p class="mt-1 font-display text-[28px] font-medium tracking-[-0.04em] text-ink">{{ formatMoney(totalBudget) }}</p>
-                        <p class="mt-1 text-[10px] text-muted">{{ selectedTasks.length }} задач · сумма бюджетов</p>
+                        <p class="mt-1 text-[10px] text-muted">{{ selectedTasks.length }} <span>{{ $t('задач') }}</span> · <span>{{ $t('сумма бюджетов') }}</span></p>
                     </div>
                     <div class="p-5">
                         <div v-if="!selectedTasks.length" class="rounded-[12px] border border-dashed border-line px-3 py-4 text-center text-[10px] text-muted">

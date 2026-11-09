@@ -59,7 +59,7 @@ function refundInvoice() {
                     <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div><dt class="text-[10px] uppercase tracking-[0.08em] text-muted">Клиент</dt><dd class="mt-1 text-[12px] text-ink"><Link :href="route('admin.clients.show', invoice.client_id)" class="text-primary-700 hover:underline">{{ invoice.client?.name }}</Link></dd></div>
                         <div class="sm:col-span-2">
-                            <dt class="text-[10px] uppercase tracking-[0.08em] text-muted">Задачи в счёте · {{ invoiceTasks.length }}</dt>
+                            <dt class="text-[10px] uppercase tracking-[0.08em] text-muted">{{ $t('Задачи в счёте') }} · {{ invoiceTasks.length }}</dt>
                             <dd class="mt-2 space-y-1.5">
                                 <Link v-for="task in invoiceTasks" :key="task.id" :href="route('admin.tasks.show', task.id)" class="flex items-center justify-between gap-3 rounded-[12px] border border-line/60 px-3 py-2 text-[12px] text-ink transition hover:border-primary-200 hover:bg-primary-50/30">
                                     <span class="min-w-0 truncate">{{ task.title }}</span>

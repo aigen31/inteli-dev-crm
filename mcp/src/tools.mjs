@@ -121,6 +121,7 @@ export function buildTools(api) {
                 template_id: str('UUID шаблона, чтобы применить структуру'),
                 priority: { type: 'string', enum: ['low', 'medium', 'high'] },
                 deadline: str('YYYY-MM-DD'),
+                budget: { type: 'number', description: 'Бюджет задачи в рублях', minimum: 0 },
                 assignee_id: str('UUID исполнителя'),
                 checklist: {
                     type: 'array',
@@ -206,7 +207,7 @@ export function buildTools(api) {
         ),
         tool(
             'get_invoice',
-            'Детали счёта: сумма, статус, способ оплаты, задача, клиент, поля.',
+            'Детали счёта: сумма, статус, способ оплаты, задачи, клиент, поля.',
             { invoice_id: str('UUID счёта') },
             ['invoice_id'],
             READ,
@@ -214,16 +215,25 @@ export function buildTools(api) {
         ),
         tool(
             'create_invoice',
-            'Создать счёт по задаче. Денежное действие — подтверждайте осознанно.',
+            'Создать счёт по одной или нескольким задачам одного клиента. Сумма по умолчанию складывается из бюджетов. Денежное действие — подтверждайте осознанно.',
             {
-                task_id: str('UUID задачи'),
-                amount: { type: 'number', description: 'Сумма в рублях', minimum: 0.01 },
-                description: str('Назначение счёта'),
+                task_id: str('UUID задачи (для счёта по одной задаче)'),
+                task_ids: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'UUID задач для общего счёта; все задачи должны быть одного клиента',
+                },
+                amount: { type: 'number', description: 'Сумма в рублях; если не указана — сумма бюджетов', minimum: 0.01 },
+                description: str('Назначение счёта; если пусто — соберётся из названий задач'),
                 payment_method: { type: 'string', enum: ['yookassa', 'transfer'], description: 'Способ оплаты' },
             },
-            ['task_id', 'amount', 'description', 'payment_method'],
+            ['payment_method'],
             DESTRUCTIVE,
-            (args) => api.post('/invoices', args),
+            (args) => {
+                const ids = args.task_ids?.length ? args.task_ids : (args.task_id ? [args.task_id] : []);
+                if (!ids.length) throw new Error('Укажите task_id или task_ids');
+                return api.post('/invoices', { ...args, task_ids: ids });
+            },
         ),
         tool(
             'mark_invoice_paid',

@@ -67,7 +67,7 @@ function setStatus(value) {
                 <Link v-for="invoice in invoices.data" :key="invoice.id" :href="route('admin.invoices.show', invoice.id)" class="grid grid-cols-1 gap-3 px-5 py-4 transition hover:bg-ink/[0.025] sm:grid-cols-[1.5fr_.9fr_.6fr_auto] sm:items-center sm:px-6">
                     <div class="min-w-0">
                         <p class="truncate text-[13px] font-semibold text-ink">{{ invoice.description }}</p>
-                        <p class="mt-0.5 truncate text-[10px] text-muted">{{ invoice.client?.name }} · {{ invoice.tasks?.length ? `${invoice.tasks.length} задач(и)` : invoice.task?.title }}</p>
+                        <p class="mt-0.5 truncate text-[10px] text-muted">{{ invoice.client?.name }} · {{ invoice.tasks?.length ? `${$t('задач')}: ${invoice.tasks.length}` : invoice.task?.title }}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <Badge :status="invoice.status" type="invoice">{{ invoiceStatusLabels[invoice.status] }}</Badge>
