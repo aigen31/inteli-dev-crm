@@ -35,7 +35,7 @@ const props = defineProps({
 const page = usePage();
 const isAdmin = computed(() => page.props.auth?.user?.is_admin === true);
 const layout = computed(() => (isAdmin.value ? AdminLayout : ClientLayout));
-const backUrl = computed(() => route(isAdmin.value ? 'admin.projects.index' : 'client.projects.index'));
+const backUrl = computed(() => route('feedback.index'));
 const isBug = computed(() => props.project.type === 'bugs');
 const showForm = ref(false);
 const voting = ref(null);
@@ -123,7 +123,7 @@ function updateStatus(item, event) {
             <Link :href="backUrl">
                 <Button variant="ghost" size="sm">
                     <ArrowLeftIcon class="h-4 w-4" />
-                    Проекты
+                    Обратная связь
                 </Button>
             </Link>
             <Button size="sm" @click="showForm = !showForm">
