@@ -22,7 +22,7 @@ class InvoiceController extends Controller
     {
         $invoices = $request->user()
             ->invoices()
-            ->with('task:id,title')
+            ->with(['task:id,title', 'tasks:id,title'])
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->latest()
             ->paginate(15)
@@ -39,7 +39,7 @@ class InvoiceController extends Controller
     {
         $this->authorize('view', $invoice);
 
-        $invoice->load(['task', 'customFieldValues.customField']);
+        $invoice->load(['task', 'tasks', 'customFieldValues.customField']);
 
         return Inertia::render('Client/Invoices/Show', [
             'invoice' => $invoice,

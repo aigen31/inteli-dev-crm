@@ -181,6 +181,16 @@ const statusOptions = computed(() =>
                     :error="error('estimated_minutes')"
                     @update:model-value="update('estimated_minutes', $event)"
                 />
+                <TextInput
+                    :model-value="modelValue.budget || ''"
+                    label="Бюджет задачи, ₽"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Можно оставить пустым"
+                    :error="error('budget')"
+                    @update:model-value="update('budget', $event)"
+                />
             </div>
         </section>
 

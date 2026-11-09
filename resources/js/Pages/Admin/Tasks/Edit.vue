@@ -31,6 +31,7 @@ const form = useForm({
     type: props.task?.type || 'one_time',
     priority: props.task?.priority || 'medium',
     estimated_minutes: props.task?.estimated_minutes || '',
+    budget: props.task?.budget || '',
     assignee_id: props.task?.assignee_id || '',
     deadline: props.task?.deadline || '',
     custom_fields: values.value,

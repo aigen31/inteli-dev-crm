@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
@@ -39,6 +40,7 @@ class Task extends Model
         'status',
         'priority',
         'estimated_minutes',
+        'budget',
         'deadline',
         'completed_at',
     ];
@@ -53,6 +55,7 @@ class Task extends Model
             'checklist' => 'array',
             'form_data' => 'array',
             'estimated_minutes' => 'integer',
+            'budget' => 'decimal:2',
             'number' => 'integer',
             'deadline' => 'date',
             'completed_at' => 'datetime',
@@ -121,9 +124,11 @@ class Task extends Model
         return $this->hasMany(TaskReport::class);
     }
 
-    public function invoices(): HasMany
+    public function invoices(): BelongsToMany
     {
-        return $this->hasMany(Invoice::class);
+        return $this->belongsToMany(Invoice::class)
+            ->withPivot('amount')
+            ->withTimestamps();
     }
 
     public function statusHistory(): HasMany
