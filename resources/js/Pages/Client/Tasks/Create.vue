@@ -9,7 +9,7 @@ import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
-import { ArrowLeftIcon, ArrowRightIcon, RectangleStackIcon, SparklesIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, ArrowRightIcon, CalendarDaysIcon, CheckCircleIcon, ClipboardDocumentListIcon, FolderIcon, RectangleStackIcon, SparklesIcon } from '@heroicons/vue/24/outline';
 import { useAssistant } from '@/Composables/useAssistant';
 import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 
@@ -25,6 +25,8 @@ const { open } = useAssistant();
 const selectedKey = ref(props.forms[0]?.key || null);
 const freeform = ref(props.forms.length === 0);
 const selected = computed(() => props.forms.find((form) => form.key === selectedKey.value) || null);
+const selectedProject = computed(() => (props.projects || []).find((project) => project.id === form.project_id));
+const priorityLabel = computed(() => (props.priorities || []).find((priority) => priority.value === form.priority)?.label || form.priority);
 
 function emptyFormData(template) {
     if (!template) return { fields: {}, groups: {} };
@@ -101,18 +103,23 @@ function submit() {
             </Link>
         </template>
 
-        <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <div>
-                <p class="eyebrow">Личный кабинет</p>
-                <p class="mt-2 max-w-[680px] text-[12px] leading-relaxed text-muted">
-                    Выберите форму — заявка соберётся из понятных полей. Никаких пустых листов и догадок.
-                </p>
+        <section class="relative mb-5 overflow-hidden rounded-[28px] border border-line bg-gradient-to-br from-[#fbf7ef] via-[#f5f0fb] to-[#ece5fa] px-5 py-5 sm:px-7 sm:py-6">
+            <div class="pointer-events-none absolute -right-12 -top-20 h-56 w-56 rounded-full bg-primary-500/10 blur-3xl"></div>
+            <div class="relative flex flex-wrap items-center gap-4">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-primary-soft text-primary-700">
+                    <ClipboardDocumentListIcon class="h-5 w-5" />
+                </span>
+                <div class="min-w-0 flex-1">
+                    <p class="eyebrow">Личный кабинет</p>
+                    <h1 class="mt-1 font-display text-[22px] font-medium tracking-[-0.035em] text-ink">Соберите заявку без лишних полей</h1>
+                    <p class="mt-1 max-w-[620px] text-[11px] leading-relaxed text-muted">Сначала выберите формат, затем заполните только то, что относится к вашей ситуации. Справа всегда видно, что получится.</p>
+                </div>
+                <div class="flex items-center gap-1.5 rounded-full border border-line bg-white/50 px-3 py-1.5">
+                    <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
+                    <span class="font-mono text-[9px] uppercase tracking-[0.1em] text-muted">3 шага</span>
+                </div>
             </div>
-            <button type="button" class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-primary-700 hover:underline" @click="startFree">
-                Свободная заявка
-                <ArrowRightIcon class="h-3 w-3" />
-            </button>
-        </div>
+        </section>
 
         <div class="mb-5 flex flex-wrap items-center gap-2">
             <div class="flex rounded-full border border-line bg-white/50 p-1">
@@ -122,60 +129,60 @@ function submit() {
                     <span class="ml-1 font-mono text-[9px] text-faint">{{ scenariosCount }}</span>
                 </Link>
             </div>
-            <span class="ml-auto hidden text-[10px] text-faint sm:block">Поля с <span class="text-primary-600">*</span> обязательны</span>
+            <button type="button" class="ml-auto inline-flex items-center gap-1.5 text-[10px] font-semibold text-primary-700 hover:underline" @click="startFree">
+                Свободная заявка
+                <ArrowRightIcon class="h-3 w-3" />
+            </button>
         </div>
 
-        <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.15fr_.85fr]">
-            <div class="min-w-0">
-                <div class="mb-3 flex items-end justify-between gap-3">
-                    <div>
-                        <p class="eyebrow">Выберите форму</p>
-                        <p class="mt-1 text-[11px] text-muted">Шаблон — это набор полей под конкретную ситуацию.</p>
-                    </div>
-                    <span class="font-mono text-[9px] text-faint">{{ forms.length }} форм</span>
+        <section class="surface-card mb-5 p-4 sm:p-5">
+            <div class="flex flex-wrap items-end justify-between gap-2">
+                <div>
+                    <p class="eyebrow">01 / Формат</p>
+                    <h2 class="mt-1 text-[14px] font-bold text-ink">С чего начнём?</h2>
                 </div>
+                <span class="font-mono text-[9px] text-faint">{{ forms.length }} форм · можно выбрать одну</span>
+            </div>
 
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <FormTemplateCard
-                        v-for="template in forms"
-                        :key="template.key"
-                        :template="template"
-                        :selected="!freeform && selectedKey === template.key"
-                        @select="choose"
-                    />
-                </div>
+            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <FormTemplateCard
+                    v-for="template in forms"
+                    :key="template.key"
+                    :template="template"
+                    :selected="!freeform && selectedKey === template.key"
+                    @select="choose"
+                />
 
                 <button
                     type="button"
                     :class="[
-                        'mt-3 flex w-full items-center gap-3 rounded-[20px] border px-4 py-3 text-left transition',
+                        'flex min-h-[92px] items-center gap-3 rounded-[20px] border px-4 py-3 text-left transition',
                         freeform ? 'border-primary-300 bg-primary-50/50' : 'border-line bg-white/35 hover:border-line-strong',
                     ]"
                     @click="startFree"
                 >
-                    <span class="flex h-9 w-9 items-center justify-center rounded-[12px] bg-surface-2 text-muted"><SparklesIcon class="h-4 w-4" /></span>
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-surface-2 text-muted"><SparklesIcon class="h-4 w-4" /></span>
                     <span class="min-w-0">
                         <span class="block text-[12px] font-semibold text-ink">Свободная заявка</span>
-                        <span class="block text-[10px] text-muted">Если формы пока нет — опишите словами.</span>
+                        <span class="mt-0.5 block text-[10px] leading-relaxed text-muted">Опишите словами, если готовой формы нет.</span>
                     </span>
                 </button>
-
-                <Link :href="route('client.tasks.scenarios')" class="mt-3 flex items-center gap-3 rounded-[20px] border border-line bg-white/35 px-4 py-3 text-left transition hover:border-line-strong">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-[12px] bg-surface-2 text-muted"><RectangleStackIcon class="h-4 w-4" /></span>
-                    <span class="min-w-0">
-                        <span class="block text-[12px] font-semibold text-ink">Классические сценарии</span>
-                        <span class="block text-[10px] text-muted">Готовое описание и чек-лист — в отдельном разделе.</span>
-                    </span>
-                    <ArrowRightIcon class="ml-auto h-4 w-4 text-faint" />
-                </Link>
             </div>
+        </section>
 
-            <aside class="lg:sticky lg:top-6 lg:self-start">
+        <div class="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div class="min-w-0">
+                <div class="mb-3 flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/50 px-2.5 py-1 text-[10px] font-semibold text-ink-soft"><span class="font-mono text-[9px] text-primary-600">02</span> Детали</span>
+                    <span class="text-faint">→</span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/50 px-2.5 py-1 text-[10px] font-semibold text-ink-soft"><span class="font-mono text-[9px] text-primary-600">03</span> Проверка</span>
+                </div>
+
                 <section class="surface-card overflow-hidden">
                     <div class="border-b border-line/80 bg-surface-2/40 px-5 py-4">
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <p class="eyebrow">{{ freeform ? 'Свободная заявка' : 'Форма' }}</p>
+                                <p class="eyebrow">{{ freeform ? 'Свободная заявка' : 'Выбранная форма' }}</p>
                                 <h2 class="mt-1 text-[17px] font-bold tracking-[-0.02em] text-ink">{{ freeform ? 'Опишите словами' : selected?.name }}</h2>
                                 <p class="mt-1 text-[10px] leading-relaxed text-muted">{{ freeform ? 'Мы уточним детали, если чего-то не хватит.' : selected?.description }}</p>
                             </div>
@@ -215,27 +222,70 @@ function submit() {
                                 <TextInput v-model="form.deadline" label="Желаемый срок" type="date" :error="form.errors.deadline" />
                             </div>
                         </div>
+                    </div>
+                </section>
+            </div>
 
-                        <div class="mt-4">
+            <aside class="space-y-4 xl:sticky xl:top-24">
+                <section class="surface-card overflow-hidden">
+                    <div class="relative overflow-hidden border-b border-line/70 bg-ink px-5 py-4 text-canvas">
+                        <div class="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary-400/30 blur-2xl"></div>
+                        <div class="relative flex items-center gap-3">
+                            <KikiAvatar variant="face" fit="contain" :size="34" />
+                            <div class="min-w-0">
+                                <p class="font-mono text-[8px] uppercase tracking-[0.14em] text-canvas/60">Заявка</p>
+                                <p class="mt-0.5 truncate text-[12px] font-semibold text-canvas">Проверьте перед отправкой</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5">
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-2.5">
+                                <ClipboardDocumentListIcon class="mt-0.5 h-3.5 w-3.5 shrink-0 text-faint" />
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-[9px] uppercase tracking-[0.1em] text-faint">Формат</p>
+                                    <p class="mt-0.5 truncate text-[11px] font-semibold text-ink">{{ freeform ? 'Свободная заявка' : selected?.name }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2.5">
+                                <FolderIcon class="mt-0.5 h-3.5 w-3.5 shrink-0 text-faint" />
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-[9px] uppercase tracking-[0.1em] text-faint">Проект</p>
+                                    <p class="mt-0.5 truncate text-[11px] font-semibold text-ink">{{ selectedProject?.key ? selectedProject.key + ' · ' + selectedProject.name : 'Без проекта' }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2.5">
+                                <CalendarDaysIcon class="mt-0.5 h-3.5 w-3.5 shrink-0 text-faint" />
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-[9px] uppercase tracking-[0.1em] text-faint">Приоритет и срок</p>
+                                    <p class="mt-0.5 text-[11px] font-semibold text-ink">{{ priorityLabel }} · {{ form.deadline || 'без срока' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 border-t border-line/70 pt-4">
                             <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="task-consent" />
                         </div>
 
-                        <div class="mt-5 flex items-center justify-between gap-3 border-t border-line/70 pt-4">
+                        <Button class="mt-4 w-full" :disabled="form.processing || !form.consent" @click="submit">
+                            <CheckCircleIcon class="h-4 w-4" />
+                            {{ form.processing ? 'Отправляю…' : 'Отправить заявку' }}
+                        </Button>
+                        <div class="mt-3 flex justify-center">
                             <button type="button" class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-primary-700 hover:underline" @click="open">
                                 <SparklesIcon class="h-3.5 w-3.5" />
                                 Помочь сформулировать
                             </button>
-                            <Button size="sm" :disabled="form.processing || !form.consent" @click="submit">
-                                Отправить заявку
-                                <ArrowRightIcon class="h-3.5 w-3.5" />
-                            </Button>
                         </div>
+                        <p class="mt-2 text-center text-[9px] leading-relaxed text-faint">Заявка попадёт владельцу со всеми выбранными полями.</p>
                     </div>
                 </section>
 
-                <p class="mt-3 px-2 text-center text-[9px] leading-relaxed text-faint">
-                    Заявка попадёт владельцу. Он увидит все поля, а не сплошной текст.
-                </p>
+                <section class="rounded-[20px] border border-line/70 bg-white/35 p-4">
+                    <p class="eyebrow">Что дальше</p>
+                    <p class="mt-1 text-[10px] leading-relaxed text-muted">Владелец увидит заявку, уточнит детали и возьмёт в работу. Все изменения появятся в «Моих задачах».</p>
+                </section>
             </aside>
         </div>
     </ClientLayout>
