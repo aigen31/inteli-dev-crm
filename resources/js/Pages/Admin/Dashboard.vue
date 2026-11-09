@@ -9,6 +9,7 @@ import Card from '@/Components/UI/Card.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import StatCard from '@/Components/UI/StatCard.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
+import NavigationTrail from '@/Components/Navigation/NavigationTrail.vue';
 import { taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate, formatDateTime, formatMoney } from '@/Utils/formatters.js';
 import {
@@ -32,6 +33,7 @@ const props = defineProps({
     todayTasks: Array,
     recentHistory: Array,
     counters: Object,
+    navigation: { type: Object, default: () => ({ recent: [] }) },
 });
 
 const page = usePage();
@@ -82,6 +84,8 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
                 <img src="/images/kiki/kiki-dashboard-mug.webp" alt="Кики с большой кружкой" class="h-full w-full object-contain object-right-bottom" />
             </div>
         </section>
+
+        <NavigationTrail :items="navigation?.recent || []" />
 
         <div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard label="Клиенты" :value="counters?.clients ?? 0" hint="активные аккаунты" :icon="UserGroupIcon" tone="violet" />

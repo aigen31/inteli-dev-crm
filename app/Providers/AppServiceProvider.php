@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Invoice;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -30,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'client' => User::class,
             'task' => Task::class,
+            'project' => Project::class,
             'invoice' => Invoice::class,
         ]);
 

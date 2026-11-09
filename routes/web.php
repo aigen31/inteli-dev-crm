@@ -11,6 +11,7 @@ use App\Http\Controllers\HelpController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\NavigationHistoryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SecretFeatureController;
 use App\Http\Controllers\SystemProjectController;
@@ -30,6 +31,10 @@ Route::get('/locale/{locale}', LocaleController::class)->name('locale.update');
 // Authenticated
 Route::middleware('auth')->group(function () {
     Route::get('/help', [HelpController::class, 'index'])->name('help.index');
+
+    Route::delete('/navigation-history', [NavigationHistoryController::class, 'destroy'])
+        ->middleware('is_active')
+        ->name('navigation.clear');
 
     Route::post('/logout', [Auth\LogoutController::class, 'destroy'])->name('logout');
     Route::put('/password', [Auth\PasswordController::class, 'update'])->name('password.update');

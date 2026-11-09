@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\UserRole;
+use App\Services\NavigationHistoryService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
@@ -12,6 +13,8 @@ use Tighten\Ziggy\Ziggy;
 class HandleInertiaRequests extends Middleware
 {
     protected $rootView = 'app';
+
+    public function __construct(private readonly NavigationHistoryService $navigation) {}
 
     public function version(Request $request): ?string
     {
@@ -43,6 +46,9 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'api_token' => fn () => $request->session()->get('api_token'),
+            ],
+            'navigation' => [
+                'recent' => fn (): array => $user ? $this->navigation->recent($user) : [],
             ],
             'locale' => $locale,
             'theme' => (function () use ($user): string {
