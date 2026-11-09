@@ -145,7 +145,7 @@ function submit() {
                     <h2 class="mt-1 text-[14px] font-bold text-ink">С чего начнём?</h2>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="font-mono text-[9px] text-faint">{{ forms.length }} <span>{{ $t('форм') }}</span> · {{ $t('можно выбрать одну') }}</span>
+                    <span class="font-mono text-[9px] text-faint">{{ forms.length }} <span>{{ $t('форм') }}</span>&nbsp;·&nbsp;{{ $t('можно выбрать одну') }}</span>
                     <button type="button" class="rounded-full border border-line bg-white/45 px-2.5 py-1 text-[9px] font-semibold text-primary-700 transition hover:border-primary-300" @click="pickerOpen = !pickerOpen">
                         {{ pickerOpen ? $t('Скрыть выбор') : $t('Выбрать другую') }}
                     </button>
