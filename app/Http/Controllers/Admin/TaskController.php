@@ -10,6 +10,7 @@ use App\Enums\CustomFieldEntity;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BulkChangeTaskStatusRequest;
 use App\Http\Requests\Admin\ChangeTaskStatusRequest;
 use App\Http\Requests\Admin\StoreTaskRequest;
 use App\Http\Requests\Admin\UpdateTaskRequest;
@@ -47,6 +48,18 @@ class TaskController extends Controller
             ->latest()
             ->paginate(20)
             ->withQueryString();
+
+        $tasks->through(fn (Task $task): array => [
+            ...$task->toArray(),
+            'allowed_transitions' => collect($task->status->allowedTransitions())
+                ->filter(fn (TaskStatus $status): bool => $task->status->canBeChangedBy(UserRole::Admin, $status))
+                ->map(fn (TaskStatus $status): array => [
+                    'value' => $status->value,
+                    'label' => $status->label(),
+                ])
+                ->values()
+                ->all(),
+        ]);
 
         return Inertia::render('Admin/Tasks/Index', [
             'tasks' => $tasks,
@@ -173,6 +186,43 @@ class TaskController extends Controller
         $action->execute($task, $newStatus, $request->user(), $request->validated('comment'));
 
         return back()->with('success', "Статус изменён на «{$newStatus->label()}».");
+    }
+
+    public function bulkStatus(BulkChangeTaskStatusRequest $request, ChangeTaskStatusAction $action): RedirectResponse
+    {
+        $newStatus = TaskStatus::from($request->validated('status'));
+        $comment = $request->validated('comment');
+        $ids = $request->validated('task_ids');
+
+        $tasks = Task::query()
+            ->whereIn('id', $ids)
+            ->get();
+
+        $changed = 0;
+        $skipped = 0;
+
+        foreach ($tasks as $task) {
+            if (! $task->status->canTransitionTo($newStatus) || ! $task->status->canBeChangedBy(UserRole::Admin, $newStatus)) {
+                $skipped++;
+
+                continue;
+            }
+
+            $action->execute($task, $newStatus, $request->user(), $comment);
+            $changed++;
+        }
+
+        if ($changed === 0) {
+            return back()->with('error', 'Ни одну из выбранных задач нельзя перевести в этот статус.');
+        }
+
+        $message = "Статус изменён у {$changed} ".($changed === 1 ? 'задачи' : 'задач').'.';
+
+        if ($skipped > 0) {
+            $message .= " Пропущено: {$skipped} — переход недоступен.";
+        }
+
+        return back()->with('success', $message);
     }
 
     public function updateChecklist(Request $request, Task $task): RedirectResponse
