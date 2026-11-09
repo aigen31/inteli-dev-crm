@@ -24,6 +24,7 @@ const { open } = useAssistant();
 
 const selectedKey = ref(props.forms[0]?.key || null);
 const freeform = ref(props.forms.length === 0);
+const pickerOpen = ref(false);
 const selected = computed(() => props.forms.find((form) => form.key === selectedKey.value) || null);
 const selectedProject = computed(() => (props.projects || []).find((project) => project.id === form.project_id));
 const priorityLabel = computed(() => (props.priorities || []).find((priority) => priority.value === form.priority)?.label || form.priority);
@@ -61,6 +62,7 @@ const form = useForm({
 
 function choose(template) {
     freeform.value = false;
+    pickerOpen.value = false;
     selectedKey.value = template.key;
     form.title = template.name;
     form.form_data = emptyFormData(template);
@@ -69,6 +71,7 @@ function choose(template) {
 
 function startFree() {
     freeform.value = true;
+    pickerOpen.value = false;
     selectedKey.value = null;
     form.title = '';
     form.description = '';
@@ -136,15 +139,20 @@ function submit() {
         </div>
 
         <section class="surface-card mb-5 p-4 sm:p-5">
-            <div class="flex flex-wrap items-end justify-between gap-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
                     <p class="eyebrow">01 / Формат</p>
                     <h2 class="mt-1 text-[14px] font-bold text-ink">С чего начнём?</h2>
                 </div>
-                <span class="font-mono text-[9px] text-faint">{{ forms.length }} <span>{{ $t('форм') }}</span> · {{ $t('можно выбрать одну') }}</span>
+                <div class="flex items-center gap-2">
+                    <span class="font-mono text-[9px] text-faint">{{ forms.length }} <span>{{ $t('форм') }}</span> · {{ $t('можно выбрать одну') }}</span>
+                    <button type="button" class="rounded-full border border-line bg-white/45 px-2.5 py-1 text-[9px] font-semibold text-primary-700 transition hover:border-primary-300" @click="pickerOpen = !pickerOpen">
+                        {{ pickerOpen ? $t('Скрыть выбор') : $t('Выбрать другую') }}
+                    </button>
+                </div>
             </div>
 
-            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div v-if="pickerOpen" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <FormTemplateCard
                     v-for="template in forms"
                     :key="template.key"
