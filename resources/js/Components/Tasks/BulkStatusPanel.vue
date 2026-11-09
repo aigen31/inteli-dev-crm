@@ -78,7 +78,7 @@ defineExpose({
                 <div v-if="targets.length" class="p-4 sm:p-5">
                     <div class="flex items-center justify-between gap-2">
                         <p class="font-mono text-[8px] uppercase tracking-[0.14em] text-canvas/45">Новый статус</p>
-                        <p class="font-mono text-[8px] text-canvas/45">доступно {{ eligible }} из {{ selectedTasks.length }}</p>
+                        <p class="font-mono text-[8px] text-canvas/45">{{ $t('доступно') }} {{ eligible }} / {{ selectedTasks.length }}</p>
                     </div>
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <button
@@ -114,7 +114,7 @@ defineExpose({
                     <p v-if="errors.task_ids" class="mt-2 text-[10px] text-danger-ink">{{ errors.task_ids }}</p>
                     <p v-if="errors.status" class="mt-2 text-[10px] text-danger-ink">{{ errors.status }}</p>
                     <p v-if="eligible < selectedTasks.length" class="mt-2 text-[9px] leading-relaxed text-canvas/45">
-                        У {{ selectedTasks.length - eligible }} задач нет такого перехода — они останутся без изменений.
+                        {{ selectedTasks.length - eligible }} · {{ $t('У задач нет такого перехода — они останутся без изменений.') }}
                     </p>
                 </div>
 
