@@ -93,7 +93,7 @@ function submit() {
                 </div>
                 <div class="flex items-center gap-1.5 rounded-full border border-line bg-white/50 px-3 py-1.5">
                     <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
-                    <span class="font-mono text-[9px] uppercase tracking-[0.1em] text-muted">заполнено {{ completion }}%</span>
+                    <span class="font-mono text-[9px] uppercase tracking-[0.1em] text-muted"><span>Заполнено</span> {{ completion }}%</span>
                 </div>
             </div>
         </section>
