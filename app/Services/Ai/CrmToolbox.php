@@ -15,6 +15,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\TaskPriority;
 use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
+use App\Enums\TaskType;
 use App\Enums\UserRole;
 use App\Models\AiDocument;
 use App\Models\CustomField;
@@ -26,7 +27,9 @@ use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\CustomFieldService;
 use App\Services\FormTemplateService;
+use App\Services\HtmlSanitizer;
 use App\Services\TaskTemplateService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -37,6 +40,7 @@ class CrmToolbox
 {
     public function __construct(
         private readonly CrmSerializer $serializer,
+        private readonly HtmlSanitizer $sanitizer,
         private readonly CustomFieldService $customFields,
         private readonly TaskTemplateService $templates,
         private readonly FormTemplateService $formTemplates,
@@ -169,6 +173,9 @@ class CrmToolbox
             'propose_task_plan' => $this->createPlanTasks($user, $arguments),
             'study_project_site' => $this->studyProjectSite($user, $arguments),
             'update_task_status' => $this->updateTaskStatus($user, $arguments),
+            'update_task' => $this->updateTask($user, $arguments),
+            'distribute_project_budget' => $this->distributeProjectBudget($user, $arguments),
+            'update_tasks' => $this->updateTasks($user, $arguments),
             'list_task_templates' => $this->listTemplates($user),
             'apply_task_template' => $this->applyTemplate($user, $arguments),
             'create_task_template' => $this->createTemplate($user, $arguments),
@@ -352,6 +359,80 @@ class CrmToolbox
                 'required' => [],
                 'roles' => ['admin', 'client'],
                 'confirm' => false,
+            ],
+            'update_task' => [
+                'description' => 'Изменить поля задачи: бюджет, дедлайн, приоритет, исполнителя, название, описание, оценку. Бюджет — денежное поле, действие требует подтверждения. Только администратор.',
+                'properties' => [
+                    'task_id' => ['type' => 'string', 'description' => 'UUID задачи.'],
+                    'title' => ['type' => 'string', 'description' => 'Новое название (необязательно).'],
+                    'description' => ['type' => 'string', 'description' => 'Новое описание (необязательно).'],
+                    'priority' => ['type' => 'string', 'enum' => array_column(TaskPriority::cases(), 'value'), 'description' => 'Новый приоритет (необязательно).'],
+                    'deadline' => ['type' => 'string', 'description' => 'Новый дедлайн YYYY-MM-DD; null очищает (необязательно).'],
+                    'budget' => ['type' => 'number', 'description' => 'Новый бюджет в рублях; null очищает (необязательно).'],
+                    'assignee_id' => ['type' => 'string', 'description' => 'UUID исполнителя; null снимает (необязательно).'],
+                    'estimated_minutes' => ['type' => 'integer', 'description' => 'Оценка в минутах (необязательно).'],
+                ],
+                'required' => ['task_id'],
+                'roles' => ['admin'],
+                'confirm' => true,
+            ],
+            'update_tasks' => [
+                'description' => 'Массово изменить любое поле задач: выбрать задачи по task_ids, project_id/ключу, client_id, status или query и передать values; для разных значений по задачам — updates [{task_id, values}]. Меняет title, description/append_description, client_id, project_id, assignee_id, type, priority, status, deadline, budget, estimated_minutes, checklist. Только администратор; требует подтверждения.',
+                'properties' => [
+                    'task_ids' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'UUID или KEY-12; необязательно, если задан фильтр.'],
+                    'project_id' => ['type' => 'string', 'description' => 'UUID или ключ проекта (KOR).'],
+                    'client_id' => ['type' => 'string', 'description' => 'UUID клиента.'],
+                    'status' => ['type' => 'string', 'enum' => array_column(TaskStatus::cases(), 'value'), 'description' => 'Фильтр по текущему статусу.'],
+                    'query' => ['type' => 'string', 'description' => 'Поиск по названию.'],
+                    'values' => [
+                        'type' => 'object',
+                        'description' => 'Поля, которые нужно выставить всем выбранным задачам.',
+                        'properties' => [
+                            'title' => ['type' => 'string'],
+                            'description' => ['type' => 'string'],
+                            'append_description' => ['type' => 'string', 'description' => 'Добавить текст в конец описания, сохранив старое.'],
+                            'client_id' => ['type' => 'string'],
+                            'project_id' => ['type' => 'string'],
+                            'assignee_id' => ['type' => 'string'],
+                            'type' => ['type' => 'string', 'enum' => array_column(TaskType::cases(), 'value')],
+                            'priority' => ['type' => 'string', 'enum' => array_column(TaskPriority::cases(), 'value')],
+                            'status' => ['type' => 'string', 'enum' => array_column(TaskStatus::cases(), 'value')],
+                            'deadline' => ['type' => 'string'],
+                            'budget' => ['type' => 'number'],
+                            'estimated_minutes' => ['type' => 'integer'],
+                            'checklist' => ['type' => 'array', 'items' => ['type' => 'object']],
+                        ],
+                    ],
+                    'comment' => ['type' => 'string', 'description' => 'Комментарий к массовой смене статуса (необязательно).'],
+                    'updates' => [
+                        'type' => 'array',
+                        'description' => 'Разные значения по задачам: [{task_id, values}]. Используй для разных ссылок/описаний.',
+                        'items' => [
+                            'type' => 'object',
+                            'required' => ['task_id', 'values'],
+                            'properties' => [
+                                'task_id' => ['type' => 'string'],
+                                'values' => ['type' => 'object'],
+                            ],
+                        ],
+                    ],
+                ],
+                'required' => [],
+                'roles' => ['admin'],
+                'confirm' => true,
+            ],
+            'distribute_project_budget' => [
+                'description' => 'Распределить общую сумму бюджета по задачам одного проекта: equal — поровну (по умолчанию), manual — по allocations. Сумма распределяется точно до копейки. Только администратор; требует подтверждения.',
+                'properties' => [
+                    'project_id' => ['type' => 'string', 'description' => 'UUID или ключ проекта, например KOR.'],
+                    'amount' => ['type' => 'number', 'description' => 'Общая сумма в рублях, например 45500.'],
+                    'strategy' => ['type' => 'string', 'enum' => ['equal', 'manual'], 'description' => 'Способ распределения; по умолчанию equal.'],
+                    'task_ids' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Необязательно: только эти задачи проекта.'],
+                    'allocations' => ['type' => 'array', 'items' => ['type' => 'object'], 'description' => 'Для strategy=manual: [{task_id, amount}].'],
+                ],
+                'required' => ['project_id', 'amount'],
+                'roles' => ['admin'],
+                'confirm' => true,
             ],
             'update_task_status' => [
                 'description' => 'Перевести задачу в другой статус. Только администратор.',
@@ -983,7 +1064,12 @@ class CrmToolbox
 
         $project = Project::query()
             ->visibleTo($user)
-            ->find($projectId);
+            ->when(
+                Str::isUuid($projectId),
+                fn ($query) => $query->whereKey($projectId),
+                fn ($query) => $query->where('key', mb_strtoupper($projectId)),
+            )
+            ->first();
 
         if (! $project instanceof Project) {
             throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
@@ -1373,6 +1459,361 @@ class CrmToolbox
      * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateTask(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $task = $this->resolveTask($user, (string) ($arguments['task_id'] ?? ''));
+
+        $data = Validator::make($arguments, [
+            'task_id' => ['required', 'uuid', 'exists:tasks,id'],
+            'title' => ['sometimes', 'string', 'min:3', 'max:255'],
+            'description' => ['sometimes', 'string', 'min:3'],
+            'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
+            'deadline' => ['nullable', 'date'],
+            'budget' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
+            'assignee_id' => ['nullable', 'uuid', 'exists:users,id'],
+            'estimated_minutes' => ['nullable', 'integer', 'min:5', 'max:10000'],
+        ])->validate();
+
+        unset($data['task_id']);
+
+        if ($data === []) {
+            throw ValidationException::withMessages(['task' => 'Укажите хотя бы одно поле для изменения.']);
+        }
+
+        if (array_key_exists('description', $data)) {
+            $data['description'] = $this->sanitizer->sanitize($data['description']);
+        }
+
+        $task->update($data);
+
+        return $this->serializer->task($task->refresh());
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateTasks(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        if (! empty($arguments['updates'])) {
+            return $this->updateTasksIndividually($user, $arguments);
+        }
+
+        $selectors = Validator::make($arguments, [
+            'task_ids' => ['sometimes', 'array', 'max:500'],
+            'task_ids.*' => ['string'],
+            'project_id' => ['nullable', 'string'],
+            'client_id' => ['nullable', 'string'],
+            'status' => ['nullable', Rule::enum(TaskStatus::class)],
+            'query' => ['nullable', 'string', 'max:200'],
+            'comment' => ['nullable', 'string', 'max:2000'],
+        ])->validate();
+
+        $hasSelector = ! empty($selectors['task_ids'])
+            || filled($selectors['project_id'] ?? null)
+            || filled($selectors['client_id'] ?? null)
+            || filled($selectors['status'] ?? null)
+            || filled($selectors['query'] ?? null);
+
+        if (! $hasSelector) {
+            throw ValidationException::withMessages(['task_ids' => 'Укажите task_ids или хотя бы один фильтр задач.']);
+        }
+
+        $values = $arguments['values'] ?? null;
+        $data = $this->validateBulkValues(is_array($values) ? $values : [], $user);
+
+        $query = Task::query()->orderBy('number')->orderBy('created_at');
+
+        if (! empty($selectors['task_ids'])) {
+            $ids = [];
+            foreach ($selectors['task_ids'] as $identifier) {
+                $ids[] = $this->resolveTask($user, (string) $identifier)->id;
+            }
+            $query->whereIn('id', array_values(array_unique($ids)));
+        }
+        if (filled($selectors['project_id'] ?? null)) {
+            $project = $this->resolveProject($user, (string) $selectors['project_id']);
+            $query->where('project_id', $project?->id);
+        }
+        if (filled($selectors['client_id'] ?? null)) {
+            $query->where('client_id', $this->resolveClient($user, (string) $selectors['client_id'])->id);
+        }
+        if (filled($selectors['status'] ?? null)) {
+            $query->where('status', $selectors['status']);
+        }
+        if (filled($selectors['query'] ?? null)) {
+            $query->where('title', 'like', '%'.(string) $selectors['query'].'%');
+        }
+
+        $tasks = $query->limit(500)->get();
+        if ($tasks->isEmpty()) {
+            throw ValidationException::withMessages(['task_ids' => 'Не найдено задач для изменения.']);
+        }
+
+        $warnings = [];
+
+        DB::transaction(function () use ($tasks, $data, $user, $selectors, &$warnings): void {
+            foreach ($tasks as $task) {
+                $warning = $this->applyBulkValues($task, $data, $user, $selectors['comment'] ?? null);
+
+                if ($warning !== null) {
+                    $warnings[] = $warning;
+                }
+            }
+        });
+
+        $updated = $tasks->map(fn (Task $task): array => $this->serializer->task($task->refresh()))->all();
+
+        return [
+            'count' => count($updated),
+            'values' => $values,
+            'tasks' => $updated,
+            'warnings' => $warnings,
+            'url' => $tasks->count() === 1 ? route('admin.tasks.show', $tasks->first()) : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    private function validateBulkValues(array $values, User $user): array
+    {
+        if ($values === []) {
+            throw ValidationException::withMessages(['values' => 'Передайте хотя бы одно поле в values.']);
+        }
+
+        if (filled($values['project_id'] ?? null) && is_string($values['project_id']) && ! Str::isUuid($values['project_id'])) {
+            $values['project_id'] = $this->resolveProject($user, $values['project_id'])?->id;
+        }
+
+        if (filled($values['client_id'] ?? null) && is_string($values['client_id'])) {
+            $values['client_id'] = $this->resolveClient($user, $values['client_id'])->id;
+        }
+
+        $allowed = ['title', 'description', 'append_description', 'client_id', 'project_id', 'assignee_id', 'type', 'priority', 'status', 'deadline', 'budget', 'estimated_minutes', 'checklist'];
+        $unknown = array_diff(array_keys($values), $allowed);
+        if ($unknown !== []) {
+            throw ValidationException::withMessages(['values' => 'Неизвестные поля: '.implode(', ', $unknown)]);
+        }
+
+        return Validator::make($values, [
+            'title' => ['sometimes', 'string', 'min:3', 'max:255'],
+            'description' => ['sometimes', 'string', 'min:3'],
+            'append_description' => ['sometimes', 'string', 'min:1', 'max:5000'],
+            'client_id' => ['nullable', 'uuid', 'exists:users,id'],
+            'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
+            'assignee_id' => ['nullable', 'uuid', 'exists:users,id'],
+            'type' => ['sometimes', Rule::enum(TaskType::class)],
+            'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
+            'status' => ['sometimes', Rule::enum(TaskStatus::class)],
+            'deadline' => ['nullable', 'date'],
+            'budget' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
+            'estimated_minutes' => ['nullable', 'integer', 'min:5', 'max:10000'],
+            'checklist' => ['nullable', 'array', 'max:100'],
+            'checklist.*.text' => ['nullable', 'string', 'max:500'],
+            'checklist.*.done' => ['sometimes', 'boolean'],
+        ])->validate();
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateTasksIndividually(User $user, array $arguments): array
+    {
+        $updates = Validator::make($arguments, [
+            'updates' => ['required', 'array', 'min:1', 'max:500'],
+            'updates.*.task_id' => ['required', 'string'],
+            'updates.*.values' => ['required', 'array'],
+        ])->validate()['updates'];
+
+        $tasks = [];
+        $applied = [];
+
+        foreach ($updates as $update) {
+            $task = $this->resolveTask($user, (string) $update['task_id']);
+            $values = $this->validateBulkValues((array) $update['values'], $user);
+            $tasks[] = $task;
+            $applied[] = ['task' => $task, 'data' => $values];
+        }
+
+        $warnings = [];
+
+        DB::transaction(function () use ($applied, $user, $arguments, &$warnings): void {
+            foreach ($applied as $item) {
+                $warning = $this->applyBulkValues($item['task'], $item['data'], $user, $arguments['comment'] ?? null);
+
+                if ($warning !== null) {
+                    $warnings[] = $warning;
+                }
+            }
+        });
+
+        $result = collect($tasks)->map(fn (Task $task): array => $this->serializer->task($task->refresh()))->all();
+        $keys = [];
+        foreach ($updates as $update) {
+            $keys = array_merge($keys, array_keys((array) $update['values']));
+        }
+
+        return [
+            'count' => count($result),
+            'values' => array_fill_keys(array_values(array_unique($keys)), true),
+            'tasks' => $result,
+            'warnings' => $warnings,
+            'url' => count($result) === 1 ? route('admin.tasks.show', $tasks[0]) : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function applyBulkValues(Task $task, array $data, User $user, ?string $comment): ?string
+    {
+        $status = isset($data['status']) ? TaskStatus::from((string) $data['status']) : null;
+        unset($data['status']);
+
+        $append = $data['append_description'] ?? null;
+        unset($data['append_description']);
+
+        if ($append !== null) {
+            $existing = trim((string) $task->description);
+            $data['description'] = trim($existing."\n\n".$append);
+        }
+
+        if (array_key_exists('description', $data)) {
+            $data['description'] = $this->sanitizer->sanitize($data['description']);
+        }
+
+        $warning = null;
+
+        if ($status !== null) {
+            if (! $task->status->canTransitionTo($status) || ! $task->status->canBeChangedBy($user->role, $status)) {
+                $warning = ($task->reference() ?? $task->title).': статус не изменён — переход в «'.$status->label().'» недоступен.';
+            } else {
+                try {
+                    $this->changeTaskStatus->execute($task, $status, $user, $comment);
+                } catch (ValidationException $exception) {
+                    $warning = ($task->reference() ?? $task->title).': '.($exception->errors()['status'][0] ?? 'статус не изменён.');
+                }
+            }
+        }
+
+        if ($data !== []) {
+            $task->update($data);
+        }
+
+        return $warning;
+    }
+
+    private function distributeProjectBudget(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $data = Validator::make($arguments, [
+            'project_id' => ['required', 'string'],
+            'amount' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
+            'strategy' => ['sometimes', Rule::in(['equal', 'manual'])],
+            'task_ids' => ['sometimes', 'array', 'max:500'],
+            'task_ids.*' => ['uuid', 'distinct', 'exists:tasks,id'],
+            'allocations' => ['sometimes', 'array', 'max:500'],
+            'allocations.*.task_id' => ['required_with:allocations', 'uuid', 'distinct', 'exists:tasks,id'],
+            'allocations.*.amount' => ['required_with:allocations', 'numeric', 'min:0'],
+        ])->validate();
+
+        $project = $this->resolveProject($user, (string) $data['project_id']);
+        if ($project === null) {
+            throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+        }
+
+        $query = $project->tasks()->orderBy('number')->orderBy('created_at');
+        if (! empty($data['task_ids'])) {
+            $query->whereIn('id', $data['task_ids']);
+        }
+        $tasks = $query->get();
+
+        if ($tasks->isEmpty()) {
+            throw ValidationException::withMessages(['project_id' => 'В проекте нет задач для распределения.']);
+        }
+
+        $strategy = $data['strategy'] ?? 'equal';
+        $totalCents = (int) round((float) $data['amount'] * 100);
+        $allocations = $this->allocateBudget($tasks, $totalCents, $strategy, $data['allocations'] ?? []);
+
+        DB::transaction(function () use ($tasks, $allocations): void {
+            foreach ($tasks as $task) {
+                $task->update(['budget' => number_format($allocations[$task->id] / 100, 2, '.', '')]);
+            }
+        });
+
+        $result = $tasks->map(fn (Task $task): array => [
+            'task_id' => $task->id,
+            'reference' => $task->reference(),
+            'title' => $task->title,
+            'budget' => number_format($allocations[$task->id] / 100, 2, '.', ''),
+        ])->all();
+
+        return [
+            'project' => ['id' => $project->id, 'key' => $project->key, 'name' => $project->name],
+            'amount' => number_format($totalCents / 100, 2, '.', ''),
+            'strategy' => $strategy,
+            'count' => count($result),
+            'allocations' => $result,
+            'url' => route('admin.projects.show', $project),
+        ];
+    }
+
+    /**
+     * @param  Collection<int, Task>  $tasks
+     * @param  array<int, array<string, mixed>>  $manual
+     * @return array<string, int> task id => cents
+     */
+    private function allocateBudget($tasks, int $totalCents, string $strategy, array $manual): array
+    {
+        if ($tasks->isEmpty()) {
+            return [];
+        }
+
+        if ($strategy === 'manual') {
+            if ($manual === []) {
+                throw ValidationException::withMessages(['allocations' => 'Для strategy=manual передайте allocations.']);
+            }
+
+            $allocations = [];
+            foreach ($manual as $item) {
+                $allocations[(string) $item['task_id']] = (int) round((float) $item['amount'] * 100);
+            }
+
+            $taskIds = $tasks->pluck('id')->all();
+            if (array_diff(array_keys($allocations), $taskIds) !== [] || array_diff($taskIds, array_keys($allocations)) !== []) {
+                throw ValidationException::withMessages(['allocations' => 'Распределение должно покрывать ровно выбранные задачи проекта.']);
+            }
+
+            if (array_sum($allocations) !== $totalCents) {
+                throw ValidationException::withMessages(['amount' => 'Сумма allocations должна равняться общей сумме.']);
+            }
+
+            return $allocations;
+        }
+
+        $count = $tasks->count();
+        $base = intdiv($totalCents, $count);
+        $remainder = $totalCents % $count;
+
+        return $tasks->mapWithKeys(fn (Task $task, int $index): array => [$task->id => $base + ($index < $remainder ? 1 : 0)])->all();
+    }
+
     private function updateTaskStatus(User $user, array $arguments): array
     {
         $this->assertAdmin($user);
@@ -1663,9 +2104,18 @@ class CrmToolbox
 
     private function resolveTask(User $user, string $id): Task
     {
-        $task = Task::query()
-            ->when($user->isClient(), fn ($query) => $query->visibleTo($user))
-            ->find($id);
+        $query = Task::query()->when($user->isClient(), fn ($query) => $query->visibleTo($user));
+
+        if (Str::isUuid($id)) {
+            $task = $query->find($id);
+        } elseif (preg_match('/^([a-z0-9]+)-(\d+)$/i', $id, $matches) === 1) {
+            $task = $query
+                ->whereHas('project', fn ($q) => $q->where('key', mb_strtoupper($matches[1])))
+                ->where('number', (int) $matches[2])
+                ->first();
+        } else {
+            $task = null;
+        }
 
         if (! $task instanceof Task) {
             throw ValidationException::withMessages(['task_id' => 'Задача не найдена или недоступна.']);

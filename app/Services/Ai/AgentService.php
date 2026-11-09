@@ -780,6 +780,9 @@ class AgentService
             'mark_invoice_paid' => 'Оплата подтверждена',
             'create_client' => 'Клиент создан',
             'create_task', 'apply_task_template' => 'Задача создана',
+            'update_task' => 'Задача обновлена',
+            'distribute_project_budget' => 'Бюджет распределён',
+            'update_tasks' => 'Задачи обновлены',
             'create_task_from_form' => 'Заявка собрана из формы',
             'propose_task_plan' => 'План задач создан',
             'create_task_template' => 'Шаблон создан',
@@ -789,7 +792,7 @@ class AgentService
 
         $lines = ["**{$title}.**"];
 
-        foreach (['title', 'name', 'amount', 'status_label', 'display', 'email'] as $key) {
+        foreach (['title', 'name', 'amount', 'budget', 'status_label', 'display', 'email'] as $key) {
             if (isset($result[$key]) && $result[$key] !== '') {
                 $lines[] = '- '.$key.': '.$result[$key];
             }
@@ -806,6 +809,32 @@ class AgentService
 
             if (isset($result['project_url'])) {
                 $lines[] = '- [Перейти в проект]('.$result['project_url'].')';
+            }
+        }
+
+        if ($tool === 'update_tasks') {
+            $lines[] = '- обновлено задач: '.($result['count'] ?? 0);
+            $lines[] = '- поля: '.implode(', ', array_keys($result['values'] ?? []));
+
+            foreach (array_slice($result['tasks'] ?? [], 0, 6) as $task) {
+                $lines[] = '  - '.($task['reference'] ?? $task['id']).' — '.($task['title'] ?? '');
+            }
+
+            foreach (array_slice($result['warnings'] ?? [], 0, 5) as $warning) {
+                $lines[] = '  - ⚠ '.$warning;
+            }
+        }
+
+        if ($tool === 'distribute_project_budget') {
+            $lines[] = '- проект: '.($result['project']['name'] ?? '—').' ('.($result['project']['key'] ?? '—').')';
+            $lines[] = '- сумма: '.($result['amount'] ?? '—').' ₽ на '.($result['count'] ?? 0).' задач';
+
+            foreach (array_slice($result['allocations'] ?? [], 0, 6) as $allocation) {
+                $lines[] = '  - '.($allocation['reference'] ?? $allocation['task_id']).' — '.$allocation['budget'].' ₽';
+            }
+
+            if (isset($result['url'])) {
+                $lines[] = '- [Открыть проект]('.$result['url'].')';
             }
         }
 
