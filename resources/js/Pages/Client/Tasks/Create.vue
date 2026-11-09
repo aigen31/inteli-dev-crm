@@ -141,7 +141,7 @@ function submit() {
                     <p class="eyebrow">01 / Формат</p>
                     <h2 class="mt-1 text-[14px] font-bold text-ink">С чего начнём?</h2>
                 </div>
-                <span class="font-mono text-[9px] text-faint">{{ forms.length }} форм · можно выбрать одну</span>
+                <span class="font-mono text-[9px] text-faint">{{ forms.length }} <span>{{ $t('форм') }}</span> · {{ $t('можно выбрать одну') }}</span>
             </div>
 
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
