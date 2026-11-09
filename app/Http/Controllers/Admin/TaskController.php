@@ -216,10 +216,10 @@ class TaskController extends Controller
             return back()->with('error', 'Ни одну из выбранных задач нельзя перевести в этот статус.');
         }
 
-        $message = "Статус изменён у {$changed} ".($changed === 1 ? 'задачи' : 'задач').'.';
+        $message = "Статус изменён: {$changed}.";
 
         if ($skipped > 0) {
-            $message .= " Пропущено: {$skipped} — переход недоступен.";
+            $message .= " Пропущено: {$skipped}.";
         }
 
         return back()->with('success', $message);
