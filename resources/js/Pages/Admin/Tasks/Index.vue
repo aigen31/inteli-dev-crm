@@ -1,6 +1,6 @@
 <script setup>
-import { reactive } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { computed, reactive, ref, watch } from 'vue';
+import { Link, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -8,6 +8,7 @@ import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
 import Segmented from '@/Components/UI/Segmented.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
+import BulkStatusPanel from '@/Components/Tasks/BulkStatusPanel.vue';
 import { taskPriorityLabels, taskStatusLabels, taskTypeLabels } from '@/Utils/constants.js';
 import { formatDate } from '@/Utils/formatters.js';
 import { MagnifyingGlassIcon, PlusIcon, Squares2X2Icon } from '@heroicons/vue/24/outline';
@@ -29,6 +30,51 @@ const local = reactive({
     client_id: props.filters?.client_id || '',
     project_id: props.filters?.project_id || '',
 });
+
+const selectedIds = ref([]);
+const bulkForm = useForm({ task_ids: [], status: '', comment: '' });
+
+const selectedTasks = computed(() => (props.tasks?.data || []).filter((task) => selectedIds.value.includes(task.id)));
+const allSelected = computed(() => (props.tasks?.data || []).length > 0 && props.tasks.data.every((task) => selectedIds.value.includes(task.id)));
+
+watch(selectedIds, (ids) => {
+    bulkForm.task_ids = [...ids];
+});
+
+watch(
+    () => props.tasks?.data,
+    () => {
+        selectedIds.value = [];
+    },
+);
+
+function toggleTask(id) {
+    selectedIds.value = selectedIds.value.includes(id)
+        ? selectedIds.value.filter((taskId) => taskId !== id)
+        : [...selectedIds.value, id];
+}
+
+function toggleAll(event) {
+    selectedIds.value = event.target.checked ? (props.tasks?.data || []).map((task) => task.id) : [];
+}
+
+function clearSelection() {
+    selectedIds.value = [];
+    bulkForm.reset();
+}
+
+function applyBulk({ status, comment }) {
+    bulkForm.status = status;
+    bulkForm.comment = comment;
+    bulkForm.task_ids = [...selectedIds.value];
+    bulkForm.patch(route('admin.tasks.bulk-status'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            selectedIds.value = [];
+            bulkForm.reset();
+        },
+    });
+}
 
 const quickStatuses = [
     { value: '', label: 'Все', count: props.counts?.all },
@@ -108,13 +154,27 @@ function setStatus(value) {
                 </EmptyState>
             </div>
 
-            <div v-else class="divide-y divide-line/70">
-                <Link
+            <div v-else>
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line/70 bg-surface-2/30 px-4 py-2.5 sm:px-6">
+                    <label class="inline-flex cursor-pointer items-center gap-2 text-[10px] font-semibold text-muted">
+                        <input type="checkbox" :checked="allSelected" class="h-3.5 w-3.5 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="toggleAll" />
+                        Выбрать страницу
+                    </label>
+                    <span v-if="selectedIds.length" class="font-mono text-[9px] uppercase tracking-[0.1em] text-primary-700">выбрано {{ selectedIds.length }}</span>
+                </div>
+                <div class="divide-y divide-line/70">
+                <div
                     v-for="task in tasks.data"
                     :key="task.id"
-                    :href="route('admin.tasks.show', task.id)"
-                    class="group grid grid-cols-1 gap-3 px-5 py-4 transition hover:bg-ink/[0.025] sm:grid-cols-[1.6fr_.8fr_.7fr_auto] sm:items-center sm:px-6"
+                    :class="['group flex items-stretch transition', selectedIds.includes(task.id) ? 'bg-primary-500/[0.045]' : 'hover:bg-ink/[0.025]']"
                 >
+                    <label class="flex shrink-0 cursor-pointer items-center pl-4 pr-1 sm:pl-6" :aria-label="`Выбрать задачу ${task.title}`">
+                        <input type="checkbox" :checked="selectedIds.includes(task.id)" class="h-4 w-4 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="toggleTask(task.id)" />
+                    </label>
+                    <Link
+                        :href="route('admin.tasks.show', task.id)"
+                        class="grid min-w-0 flex-1 grid-cols-1 gap-3 py-4 pr-5 sm:grid-cols-[1.6fr_.8fr_.7fr_auto] sm:items-center sm:pr-6"
+                    >
                     <div class="min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
                             <p class="truncate text-[13px] font-semibold text-ink group-hover:text-primary-800">{{ task.title }}</p>
@@ -138,10 +198,21 @@ function setStatus(value) {
                         <span v-if="task.priority === 'high'" class="rounded-full bg-danger/10 px-2 py-0.5 text-[9px] font-semibold text-danger-ink">{{ taskPriorityLabels[task.priority] }}</span>
                     </div>
                     <div class="hidden font-mono text-[9px] uppercase tracking-[0.08em] text-faint sm:block">{{ taskTypeLabels[task.type] }}</div>
-                </Link>
+                    </Link>
+                </div>
+                </div>
             </div>
 
             <Pagination :links="tasks" />
         </div>
+
+        <BulkStatusPanel
+            v-if="selectedTasks.length"
+            :selected-tasks="selectedTasks"
+            :errors="bulkForm.errors"
+            :processing="bulkForm.processing"
+            @apply="applyBulk"
+            @clear="clearSelection"
+        />
     </AdminLayout>
 </template>

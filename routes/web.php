@@ -115,6 +115,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/tasks', [Admin\TaskController::class, 'index'])->name('tasks.index');
         Route::get('/tasks/create', [Admin\TaskController::class, 'create'])->name('tasks.create');
         Route::post('/tasks', [Admin\TaskController::class, 'store'])->name('tasks.store');
+        Route::patch('/tasks/bulk-status', [Admin\TaskController::class, 'bulkStatus'])->name('tasks.bulk-status');
         Route::get('/tasks/{task}', [Admin\TaskController::class, 'show'])->name('tasks.show');
         Route::get('/tasks/{task}/edit', [Admin\TaskController::class, 'edit'])->name('tasks.edit');
         Route::put('/tasks/{task}', [Admin\TaskController::class, 'update'])->name('tasks.update');
