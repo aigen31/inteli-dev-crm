@@ -123,6 +123,47 @@
         }
       },
       "updatedAt": "2026-11-02T15:00:06.952078+00:00"
+    },
+    "navigation-history": {
+      "targetKind": "new-ui",
+      "projectId": "cdadc30d-3c7d-4afc-b622-5afcdc1de499",
+      "activeDraftId": "1116a479-d6fd-42dc-afcc-d1052aa6355d",
+      "designSystemPath": ".superdesign/design-system.md",
+      "referenceIds": [
+        "ef63d2e3-ab4a-4f82-b75e-ec13faa30ccb"
+      ],
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "resources/css/app.css",
+        "resources/js/Components/Layout/AppShell.vue",
+        "resources/js/Pages/Admin/Dashboard.vue",
+        "resources/js/Pages/Admin/Projects/Show.vue",
+        "resources/js/Pages/Admin/Projects/Index.vue",
+        "resources/js/Components/UI/Card.vue",
+        "resources/js/Components/UI/Badge.vue",
+        "resources/js/Components/UI/Button.vue",
+        "resources/js/Components/UI/StatCard.vue"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "b1d9011e61cea3ee201b74ff60d806f6226f0100cb9b193e8f07e468e6fe51d5",
+        "resources/css/app.css": "7e59dd27bbc01f5cd8907923556c66e6905e97d3f3840916b6884ac04dc0450e",
+        "resources/js/Components/Layout/AppShell.vue": "c9b0fcd9e3321dabf06ef94dd41102f772691627e90c3602130a7f3e0685d833",
+        "resources/js/Pages/Admin/Dashboard.vue": "1b770517731f46fcb20fdc49fdd3d588b5f82109a50b855f9c3829357b273c66",
+        "resources/js/Pages/Admin/Projects/Show.vue": "cbd88d407ebfc6db6a71dd5a03e90b0abc53564ea10767d9b31248e241cdc235",
+        "resources/js/Pages/Admin/Projects/Index.vue": "ea8144191064af16c2960c69113f46cff4c6aae551c17d987de3e9951deb0c68",
+        "resources/js/Components/UI/Card.vue": "5dce8ee76943718fa69ea525ca85fb3f2f9a2d66c60d8ec787de13ba391ff711",
+        "resources/js/Components/UI/Badge.vue": "b3d917fcecff72e5475dff55e79ab160fefeca8313dbf077c4be56749c41a246",
+        "resources/js/Components/UI/Button.vue": "7c8347fd054352ae1e6dbb7960b86dbe2d8520c337153b6b40a5d81aae48882c",
+        "resources/js/Components/UI/StatCard.vue": "608bff7bec3352e51fdfc6280c13eaadaebb212e864e57ddb37598269725b50c"
+      },
+      "drafts": {
+        "1116a479-d6fd-42dc-afcc-d1052aa6355d": {
+          "title": "Возвращение к работе — история навигации",
+          "visualDirection": "«Тропа»: paper bookmark resume card + dashed trail timeline + glass return pill",
+          "currentVersion": 2
+        }
+      },
+      "updatedAt": "2026-11-09T12:56:59.426312+00:00"
     }
   }
 }

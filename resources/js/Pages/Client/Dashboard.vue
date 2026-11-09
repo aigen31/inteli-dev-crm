@@ -8,6 +8,7 @@ import Card from '@/Components/UI/Card.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import StatCard from '@/Components/UI/StatCard.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
+import NavigationTrail from '@/Components/Navigation/NavigationTrail.vue';
 import { taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate, formatMoney } from '@/Utils/formatters.js';
 import { ArrowUpRightIcon, BanknotesIcon, CheckCircleIcon, ClockIcon, PlusIcon, SparklesIcon } from '@heroicons/vue/24/outline';
@@ -21,6 +22,7 @@ const props = defineProps({
     forms: Array,
     scenariosCount: Number,
     customFields: Array,
+    navigation: { type: Object, default: () => ({ recent: [] }) },
 });
 
 const page = usePage();
@@ -59,6 +61,8 @@ const activeCount = computed(() =>
                 <img src="/images/kiki/kiki-client-welcome.webp" alt="Кики приветствует в личном кабинете" class="h-full w-full object-contain object-right-bottom" />
             </div>
         </section>
+
+        <NavigationTrail :items="navigation?.recent || []" />
 
         <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <StatCard label="Активные задачи" :value="activeCount" hint="в работе и на проверке" :icon="ClockIcon" tone="violet" />
