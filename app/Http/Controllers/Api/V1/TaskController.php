@@ -82,7 +82,7 @@ class TaskController extends Controller
         $customValues = $data['custom_fields'] ?? [];
         unset($data['custom_fields']);
 
-        $client = $user->hasClientDelegation() && $user->isClient()
+        $client = $user->hasClientDelegation()
             ? $user
             : User::query()->whereKey($data['client_id'])->firstOrFail();
 
