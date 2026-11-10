@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import Button from '@/Components/UI/Button.vue';
+import { validationMessage } from '@/Utils/validation';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -111,8 +112,8 @@ defineExpose({
                             {{ processing ? 'Применяю…' : 'Применить статус' }}
                         </Button>
                     </div>
-                    <p v-if="errors.task_ids" class="mt-2 text-[10px] text-danger-ink">{{ errors.task_ids }}</p>
-                    <p v-if="errors.status" class="mt-2 text-[10px] text-danger-ink">{{ errors.status }}</p>
+                    <p v-if="errors.task_ids" class="mt-2 text-[10px] text-danger-ink">{{ validationMessage(errors.task_ids) }}</p>
+                    <p v-if="errors.status" class="mt-2 text-[10px] text-danger-ink">{{ validationMessage(errors.status) }}</p>
                     <p v-if="eligible < selectedTasks.length" class="mt-2 text-[9px] leading-relaxed text-canvas/45">
                         {{ selectedTasks.length - eligible }} · {{ $t('У задач нет такого перехода — они останутся без изменений.') }}
                     </p>

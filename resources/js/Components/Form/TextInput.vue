@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 
 const props = defineProps({
     modelValue: { type: [String, Number], default: '' },
@@ -11,6 +12,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue']);
+const errorText = computed(() => validationMessage(props.error));
 const inputId = computed(() => props.id || `input-${Math.random().toString(36).slice(2, 9)}`);
 </script>
 
@@ -26,7 +28,7 @@ const inputId = computed(() => props.id || `input-${Math.random().toString(36).s
             :class="[
                 'h-10 w-full rounded-[13px] border bg-white/70 px-3.5 text-[13px] text-ink placeholder-faint transition',
                 'focus:outline-none focus:ring-2',
-                error
+                errorText
                     ? 'border-danger focus:border-danger focus:ring-danger/15'
                     : 'border-line focus:border-primary-400 focus:ring-primary-500/10',
                 'disabled:bg-surface-2 disabled:text-muted',
@@ -34,7 +36,7 @@ const inputId = computed(() => props.id || `input-${Math.random().toString(36).s
             @input="emit('update:modelValue', $event.target.value)"
             v-bind="$attrs"
         />
-        <p v-if="hint && !error" class="mt-1 text-[10px] text-muted">{{ hint }}</p>
-        <p v-if="error" class="mt-1 text-[10px] text-danger-ink">{{ error }}</p>
+        <p v-if="hint && !errorText" class="mt-1 text-[10px] text-muted">{{ hint }}</p>
+        <p v-if="errorText" class="mt-1 text-[10px] text-danger-ink">{{ errorText }}</p>
     </div>
 </template>
