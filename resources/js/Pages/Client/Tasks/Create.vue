@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import FormTemplateCard from '@/Components/FormTemplates/FormTemplateCard.vue';
@@ -9,6 +9,8 @@ import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
+import TaskDraftNotice from '@/Components/Task/TaskDraftNotice.vue';
+import { useTaskDraft } from '@/Composables/useTaskDraft';
 import { ArrowLeftIcon, ArrowRightIcon, CalendarDaysIcon, CheckCircleIcon, ClipboardDocumentListIcon, FolderIcon, RectangleStackIcon, SparklesIcon } from '@heroicons/vue/24/outline';
 import { useAssistant } from '@/Composables/useAssistant';
 import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
@@ -21,6 +23,7 @@ const props = defineProps({
 });
 
 const { open } = useAssistant();
+const page = usePage();
 
 const selectedKey = ref(props.forms[0]?.key || null);
 const freeform = ref(props.forms.length === 0);
@@ -85,14 +88,40 @@ onMounted(() => {
     if (template) choose(template);
 });
 
+const draft = useTaskDraft({
+    key: `client:create:${page.props.auth?.user?.id || 'anonymous'}`,
+    snapshot: () => ({
+        selectedKey: selectedKey.value,
+        freeform: freeform.value,
+        title: form.title,
+        description: form.description,
+        project_id: form.project_id,
+        priority: form.priority,
+        deadline: form.deadline,
+        form_data: form.form_data,
+    }),
+    restore: (data) => {
+        selectedKey.value = data.selectedKey || null;
+        freeform.value = Boolean(data.freeform || !data.selectedKey);
+        form.title = data.title || '';
+        form.description = data.description || '';
+        form.project_id = data.project_id || '';
+        form.priority = data.priority || 'medium';
+        form.deadline = data.deadline || '';
+        form.form_data = data.form_data || { fields: {}, groups: {} };
+        form.consent = false;
+    },
+    isEmpty: (data) => !data.description && !data.project_id && !data.title && !Object.values(data.form_data?.fields || {}).some((value) => value !== '' && value !== false && value !== null) && !Object.values(data.form_data?.groups || {}).some((rows) => Array.isArray(rows) && rows.some((row) => Object.values(row).some((value) => value !== '' && value !== false && value !== null))),
+});
+
 function submit() {
     if (freeform.value) {
-        form.post(route('client.tasks.store'));
+        form.post(route('client.tasks.store'), { onSuccess: () => draft.clear() });
         return;
     }
 
     if (selected.value) {
-        form.post(route('client.tasks.forms.store', selected.value.key));
+        form.post(route('client.tasks.forms.store', selected.value.key), { onSuccess: () => draft.clear() });
     }
 }
 </script>
@@ -123,6 +152,8 @@ function submit() {
                 </div>
             </div>
         </section>
+
+        <TaskDraftNotice v-if="draft.savedAt || draft.restored" :saved-at="draft.savedAt" :restored="draft.restored" @discard="draft.discard" />
 
         <div class="mb-5 flex flex-wrap items-center gap-2">
             <div class="flex rounded-full border border-line bg-white/50 p-1">

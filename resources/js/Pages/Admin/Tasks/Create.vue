@@ -1,11 +1,13 @@
 <script setup>
 import { computed } from 'vue';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import TaskFormFields from '@/Components/Task/TaskFormFields.vue';
 import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
+import TaskDraftNotice from '@/Components/Task/TaskDraftNotice.vue';
+import { useTaskDraft } from '@/Composables/useTaskDraft';
 import {
     ArrowLeftIcon,
     CalendarDaysIcon,
@@ -30,6 +32,7 @@ const props = defineProps({
 });
 
 const params = new URLSearchParams(window.location.search);
+const page = usePage();
 
 const form = useForm({
     client_id: params.get('client_id') || '',
@@ -65,8 +68,35 @@ function update(next) {
     });
 }
 
+const draft = useTaskDraft({
+    key: `admin:create:${page.props.auth?.user?.id || 'anonymous'}`,
+    snapshot: () => ({
+        client_id: form.client_id,
+        project_id: form.project_id,
+        task_template_id: form.task_template_id,
+        title: form.title,
+        description: form.description,
+        checklist: form.checklist,
+        type: form.type,
+        status: form.status,
+        priority: form.priority,
+        estimated_minutes: form.estimated_minutes,
+        budget: form.budget,
+        assignee_id: form.assignee_id,
+        deadline: form.deadline,
+        custom_fields: form.custom_fields,
+    }),
+    restore: (data) => {
+        Object.entries(data).forEach(([key, value]) => {
+            if (Object.prototype.hasOwnProperty.call(form, key)) form[key] = value;
+        });
+        form.consent = false;
+    },
+    isEmpty: (data) => !data.title && !data.description && !data.client_id && !data.project_id && !data.task_template_id && !data.checklist?.length && !Object.keys(data.custom_fields || {}).length,
+});
+
 function submit() {
-    form.post(route('admin.tasks.store'));
+    form.post(route('admin.tasks.store'), { onSuccess: () => draft.clear() });
 }
 </script>
 
@@ -98,6 +128,8 @@ function submit() {
                 </div>
             </div>
         </section>
+
+        <TaskDraftNotice v-if="draft.savedAt || draft.restored" :saved-at="draft.savedAt" :restored="draft.restored" @discard="draft.discard" />
 
         <div class="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
             <div class="min-w-0">
