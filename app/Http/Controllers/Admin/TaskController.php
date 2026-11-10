@@ -245,12 +245,12 @@ class TaskController extends Controller
     {
         return [
             'clients' => User::query()
-                ->whereIn('role', [UserRole::Client, UserRole::Admin])
                 ->where('is_active', true)
+                ->whereIn('role', [UserRole::Client, UserRole::Executor, UserRole::Admin])
                 ->orderBy('name')
                 ->get(['id', 'name', 'email', 'role']),
             'assignees' => User::query()
-                ->whereIn('role', [UserRole::Admin, UserRole::Executor])
+                ->whereIn('role', [UserRole::Admin, UserRole::Executor, UserRole::Client])
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'role']),
@@ -262,7 +262,7 @@ class TaskController extends Controller
             'priorities' => Options::priorities(),
             'statuses' => Options::taskStatuses(),
             'fields' => $this->customFields->serializedDefinitions(CustomFieldEntity::Task),
-            'projects' => Project::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'key', 'name', 'color', 'client_id']),
+            'projects' => Project::query()->whereNull('archived_at')->with(['members:id,project_id,user_id,delegation'])->orderBy('name')->get(['id', 'key', 'name', 'color', 'client_id']),
         ];
     }
 }

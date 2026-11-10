@@ -12,7 +12,7 @@ class ReviewTaskRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->isClient();
+        return $this->route('task')?->client_id === $this->user()->id;
     }
 
     public function rules(): array

@@ -47,8 +47,8 @@ class CreateTaskAction
             'description' => $this->sanitizer->sanitize($data['description'] ?? ''),
             'checklist' => $checklist,
             'type' => $data['type'] ?? TaskType::OneTime,
-            'source' => $data['source'] ?? ($creator->isClient() ? TaskSource::Client : TaskSource::Manual),
-            'status' => $creator->isClient()
+            'source' => $data['source'] ?? ($creator->hasClientDelegation() ? TaskSource::Client : TaskSource::Manual),
+            'status' => $creator->hasClientDelegation()
                 ? TaskStatus::PendingReview
                 : ($data['status'] ?? TaskStatus::PendingReview),
             'priority' => $data['priority'] ?? TaskPriority::Medium,

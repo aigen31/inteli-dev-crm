@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ProjectDelegation;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
 use App\Enums\TaskPriority;
@@ -138,6 +139,18 @@ class Project extends Model
             ?->role;
     }
 
+    public function memberDelegation(User $user): ?ProjectDelegation
+    {
+        if ($this->client_id === $user->id) {
+            return ProjectDelegation::Client;
+        }
+
+        return $this->members()
+            ->where('user_id', $user->id)
+            ->first()
+            ?->delegation;
+    }
+
     public function accessLabel(User $user): ?string
     {
         if ($user->isAdmin()) {
@@ -148,7 +161,7 @@ class Project extends Model
             return 'владелец';
         }
 
-        return $this->memberRole($user)?->label();
+        return $this->memberDelegation($user)?->label() ?? $this->memberRole($user)?->label();
     }
 
     public function canCreateTasks(User $user): bool

@@ -22,7 +22,7 @@ class ChangeTaskStatusAction
             ]);
         }
 
-        if (! $oldStatus->canBeChangedBy($changedBy->role, $newStatus)) {
+        if (! $oldStatus->canBeChangedBy($changedBy->roleForTask($task), $newStatus)) {
             throw ValidationException::withMessages([
                 'status' => 'У вас нет прав для изменения статуса задачи.',
             ]);

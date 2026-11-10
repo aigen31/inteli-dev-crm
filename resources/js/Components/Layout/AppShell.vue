@@ -42,6 +42,8 @@ const path = computed(() => page.url.split('?')[0]);
 const user = computed(() => page.props.auth?.user);
 const isAdmin = computed(() => props.role === 'admin');
 const isExecutor = computed(() => props.role === 'executor');
+const hasClientDelegation = computed(() => page.props.auth?.user?.has_client_delegation === true);
+const hasExecutorDelegation = computed(() => page.props.auth?.user?.has_executor_delegation === true);
 
 const navigation = computed(() => {
     if (isAdmin.value) {
@@ -62,6 +64,7 @@ const navigation = computed(() => {
         return [
             { label: 'Обзор', href: route('executor.dashboard'), icon: HomeIcon, active: path.value === '/executor/dashboard' },
             { label: 'Мои задачи', href: route('executor.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/executor/tasks') },
+            ...(hasClientDelegation.value ? [{ label: 'Мои заявки', href: route('client.tasks.index'), icon: RectangleStackIcon, active: path.value.startsWith('/tasks') }] : []),
             { label: 'Отчёты', href: route('executor.reports.index'), icon: InboxIcon, active: path.value.startsWith('/executor/reports') },
             { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
         ];
@@ -71,6 +74,7 @@ const navigation = computed(() => {
         { label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' },
         { label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') && !path.value.startsWith('/projects/system') },
         { label: 'Задачи', href: route('client.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/tasks') },
+        ...(hasExecutorDelegation.value ? [{ label: 'Назначено мне', href: route('executor.tasks.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/executor/tasks') }] : []),
         { label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
         { label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') },
         { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },

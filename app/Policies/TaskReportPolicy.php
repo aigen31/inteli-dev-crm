@@ -16,7 +16,7 @@ class TaskReportPolicy
             return true;
         }
 
-        if ($user->isExecutor() && $report->task?->assignee_id === $user->id) {
+        if ($report->task?->assignee_id === $user->id) {
             return true;
         }
 
@@ -31,8 +31,6 @@ class TaskReportPolicy
             return true;
         }
 
-        return $user->isExecutor()
-            && $task instanceof Task
-            && $task->assignee_id === $user->id;
+        return $task instanceof Task && $task->assignee_id === $user->id;
     }
 }

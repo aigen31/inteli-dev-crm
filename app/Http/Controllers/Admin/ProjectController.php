@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ProjectDelegation;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
 use App\Enums\TaskPriority;
@@ -150,6 +151,7 @@ class ProjectController extends Controller
         $data = $request->validate([
             'user_id' => ['required', 'uuid', 'exists:users,id'],
             'role' => ['required', Rule::enum(ProjectMemberRole::class)],
+            'delegation' => ['nullable', Rule::enum(ProjectDelegation::class)],
         ]);
 
         $user = User::query()->whereKey($data['user_id'])->firstOrFail();
@@ -160,7 +162,7 @@ class ProjectController extends Controller
 
         $project->members()->updateOrCreate(
             ['user_id' => $user->id],
-            ['role' => $data['role'], 'added_by' => $request->user()->id],
+            ['role' => $data['role'], 'delegation' => $data['delegation'] ?? ProjectDelegation::Executor->value, 'added_by' => $request->user()->id],
         );
 
         return back()->with('success', 'Доступ выдан: '.$user->name.'.');
@@ -173,11 +175,15 @@ class ProjectController extends Controller
 
         $data = $request->validate([
             'role' => ['required', Rule::enum(ProjectMemberRole::class)],
+            'delegation' => ['sometimes', Rule::enum(ProjectDelegation::class)],
         ]);
 
-        $member->update(['role' => $data['role']]);
+        $member->update([
+            'role' => $data['role'],
+            'delegation' => $data['delegation'] ?? $member->delegation?->value ?? ProjectDelegation::Executor->value,
+        ]);
 
-        return back()->with('success', 'Роль обновлена.');
+        return back()->with('success', 'Доступ обновлён.');
     }
 
     public function destroyMember(Project $project, ProjectMember $member): RedirectResponse
@@ -349,6 +355,8 @@ class ProjectController extends Controller
                 'id' => $member->id,
                 'role' => $member->role->value,
                 'role_label' => $member->role->label(),
+                'delegation' => $member->delegation->value,
+                'delegation_label' => $member->delegation->label(),
                 'user' => $member->user ? [
                     'id' => $member->user->id,
                     'name' => $member->user->name,
@@ -365,12 +373,12 @@ class ProjectController extends Controller
     private function availableMembers(Project $project): array
     {
         return User::query()
-            ->where('role', 'client')
             ->where('is_active', true)
+            ->whereIn('role', ['client', 'executor'])
             ->whereKeyNot($project->client_id ?? '00000000-0000-0000-0000-000000000000')
             ->whereNotIn('id', $project->members()->pluck('user_id'))
             ->orderBy('name')
-            ->get(['id', 'name', 'email'])
+            ->get(['id', 'name', 'email', 'role'])
             ->all();
     }
 

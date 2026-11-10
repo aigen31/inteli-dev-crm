@@ -25,6 +25,18 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const checklist = computed(() => props.modelValue.checklist || []);
+const selectedProject = computed(() => props.projects.find((project) => project.id === props.modelValue.project_id) || null);
+
+function allowedForProject(user, delegation) {
+    if (!selectedProject.value || !selectedProject.value.members?.length) return true;
+    if (user.role === 'admin') return true;
+    if (delegation === 'client' && selectedProject.value.client_id === user.id) return true;
+
+    return (selectedProject.value.members || []).some((member) => member.user_id === user.id && member.delegation === delegation);
+}
+
+const clientOptions = computed(() => props.clients.filter((client) => allowedForProject(client, 'client')).map((client) => ({ value: client.id, label: client.name })));
+const assigneeOptions = computed(() => props.assignees.filter((assignee) => allowedForProject(assignee, 'executor')).map((assignee) => ({ value: assignee.id, label: assignee.name })));
 
 function update(key, value) {
     emit('update:modelValue', { ...props.modelValue, [key]: value });
@@ -36,6 +48,14 @@ function selectProject(projectId) {
 
     if (project?.client_id && !props.modelValue.client_id) {
         next.client_id = project.client_id;
+    }
+
+    if (next.client_id && !props.clients.some((client) => client.id === next.client_id && allowedForProject(client, 'client'))) {
+        next.client_id = project?.client_id || '';
+    }
+
+    if (next.assignee_id && !props.assignees.some((assignee) => assignee.id === next.assignee_id && allowedForProject(assignee, 'executor'))) {
+        next.assignee_id = '';
     }
 
     emit('update:modelValue', next);
@@ -121,7 +141,7 @@ const statusOptions = computed(() =>
                 <SelectInput
                     :model-value="modelValue.client_id"
                     label="Клиент"
-                    :options="clients.map((c) => ({ value: c.id, label: c.name }))"
+                    :options="clientOptions"
                     placeholder="Выберите клиента"
                     :error="error('client_id')"
                     @update:model-value="update('client_id', $event)"
@@ -137,7 +157,7 @@ const statusOptions = computed(() =>
                 <SelectInput
                     :model-value="modelValue.assignee_id || ''"
                     label="Исполнитель (необязательно)"
-                    :options="assignees.map((a) => ({ value: a.id, label: a.name }))"
+                    :options="assigneeOptions"
                     placeholder="Не назначен"
                     :error="error('assignee_id')"
                     @update:model-value="update('assignee_id', $event)"

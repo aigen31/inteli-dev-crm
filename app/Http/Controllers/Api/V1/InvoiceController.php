@@ -23,7 +23,7 @@ class InvoiceController extends Controller
 
         $invoices = Invoice::query()
             ->with(['client', 'task', 'tasks', 'customFieldValues.customField'])
-            ->when($user->isClient(), fn ($query) => $query->where('client_id', $user->id))
+            ->when(! $user->isAdmin(), fn ($query) => $query->where('client_id', $user->id))
             ->when($request->input('status'), fn ($query, $status) => $query->where('status', $status))
             ->when($request->input('client_id') && $user->isAdmin(), fn ($query, $clientId) => $query->where('client_id', $clientId))
             ->latest()

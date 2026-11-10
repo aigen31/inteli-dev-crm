@@ -12,7 +12,7 @@ class ChangeExecutorTaskStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->isExecutor();
+        return $this->user()->isExecutor() || $this->user()->hasExecutorDelegation();
     }
 
     public function rules(): array
