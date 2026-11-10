@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ArrowRightIcon, CheckCircleIcon, EyeIcon, EyeSlashIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
@@ -65,7 +66,7 @@ function submit() {
                                 class="h-11 w-full rounded-[14px] border border-line bg-white/75 px-4 text-[13px] text-ink placeholder-faint transition focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/10"
                                 placeholder="you@example.com"
                             />
-                            <p v-if="form.errors.email" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.email }}</p>
+                            <p v-if="form.errors.email" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors.email) }}</p>
                         </div>
 
                         <div>
@@ -91,7 +92,7 @@ function submit() {
                                     <EyeIcon v-else class="h-[17px] w-[17px]" />
                                 </button>
                             </div>
-                            <p v-if="form.errors.password" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.password }}</p>
+                            <p v-if="form.errors.password" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors.password) }}</p>
                         </div>
 
                         <label class="flex items-center gap-2 text-[12px] text-ink-soft">

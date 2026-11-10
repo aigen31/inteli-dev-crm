@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import { Link } from '@inertiajs/vue3';
 import { ArrowTopRightOnSquareIcon, CheckIcon, FolderIcon, PlusIcon, SparklesIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import SelectInput from '@/Components/Form/SelectInput.vue';
@@ -168,7 +169,7 @@ function submit() {
                 </a>
             </div>
             <p v-if="errors.client_id" class="relative mt-3 rounded-[12px] border border-danger/20 bg-danger/[0.06] px-3 py-2 text-[11px] text-danger-ink">
-                {{ errors.client_id }}
+                {{ validationMessage(errors.client_id) }}
             </p>
 
             <div v-if="questions.length" class="relative mt-3 rounded-[14px] border border-warning/25 bg-warning/[0.07] px-3 py-2.5">
@@ -245,7 +246,7 @@ function submit() {
                             <TrashIcon class="h-3.5 w-3.5" />
                         </button>
                     </div>
-                    <p v-if="errors[`tasks.${index}.title`]" class="mt-1 text-[10px] text-danger-ink">{{ errors[`tasks.${index}.title`] }}</p>
+                    <p v-if="errors[`tasks.${index}.title`]" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(errors[`tasks.${index}.title`]) }}</p>
 
                     <div class="mt-2 flex flex-wrap items-center gap-2">
                         <button

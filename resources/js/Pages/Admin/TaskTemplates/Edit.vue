@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
@@ -150,7 +151,7 @@ function destroy() {
                         <div>
                             <p class="mb-1.5 text-[11px] font-semibold text-ink-soft">Подробное описание</p>
                             <RichTextEditor v-model="form.description" placeholder="Что входит, что нужно от клиента, критерии готовности…" />
-                            <p v-if="form.errors.description" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.description }}</p>
+                            <p v-if="form.errors.description" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors.description) }}</p>
                         </div>
                     </div>
                 </section>
@@ -190,7 +191,7 @@ function destroy() {
                             </button>
                         </div>
                     </div>
-                    <p v-if="form.errors.checklist" class="mt-2 text-[10px] text-danger-ink">{{ form.errors.checklist }}</p>
+                    <p v-if="form.errors.checklist" class="mt-2 text-[10px] text-danger-ink">{{ validationMessage(form.errors.checklist) }}</p>
                 </section>
 
                 <section class="surface-card p-5 sm:p-6">

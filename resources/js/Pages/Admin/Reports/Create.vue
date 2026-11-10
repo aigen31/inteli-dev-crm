@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -116,7 +117,7 @@ function submit() {
                             {{ item.screenshot ? item.screenshot.name : 'Прикрепить скриншот (необязательно)' }}
                             <input type="file" accept="image/*" class="hidden" @change="setScreenshot(index, $event)" />
                         </label>
-                        <p v-if="form.errors[`items.${index}.screenshot`]" class="mt-1 text-[10px] text-danger-ink">{{ form.errors[`items.${index}.screenshot`] }}</p>
+                        <p v-if="form.errors[`items.${index}.screenshot`]" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors[`items.${index}.screenshot`]) }}</p>
                     </div>
                 </div>
 

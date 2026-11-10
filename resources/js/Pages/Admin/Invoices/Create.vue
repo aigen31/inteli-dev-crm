@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -171,7 +172,7 @@ function submit() {
                             </label>
                             <SelectInput v-if="form.is_recurring" v-model="form.recurring_interval" label="Интервал" :options="intervalOptions" :error="form.errors.recurring_interval" />
                         </template>
-                        <p v-if="form.errors.is_recurring" class="text-[10px] text-danger-ink">{{ form.errors.is_recurring }}</p>
+                        <p v-if="form.errors.is_recurring" class="text-[10px] text-danger-ink">{{ validationMessage(form.errors.is_recurring) }}</p>
                     </div>
                 </section>
             </div>
@@ -197,14 +198,14 @@ function submit() {
                         <div v-if="missingBudget" class="mt-4">
                             <label class="mb-1.5 block text-[10px] font-semibold text-ink-soft">Сумма счёта, ₽</label>
                             <input v-model="form.amount" type="number" step="0.01" min="0.01" class="h-10 w-full rounded-[13px] border border-line bg-white/70 px-3.5 text-[13px] text-ink focus:border-primary-400 focus:outline-none" placeholder="Введите сумму" @input="amountTouched = true" />
-                            <p v-if="form.errors.amount" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.amount }}</p>
+                            <p v-if="form.errors.amount" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors.amount) }}</p>
                         </div>
                         <p v-else class="mt-4 text-[10px] leading-relaxed text-muted">Сумма считается автоматически из бюджетов выбранных задач.</p>
 
                         <div class="mt-4 border-t border-line/70 pt-4">
                             <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="admin-invoice-consent" variant="contract" />
                         </div>
-                        <p v-if="form.errors.task_ids" class="mt-2 text-[10px] text-danger-ink">{{ form.errors.task_ids }}</p>
+                        <p v-if="form.errors.task_ids" class="mt-2 text-[10px] text-danger-ink">{{ validationMessage(form.errors.task_ids) }}</p>
                         <Button class="mt-4 w-full" :disabled="form.processing || !form.consent || !selectedTasks.length" @click="submit">
                             <CheckCircleIcon class="h-4 w-4" />
                             {{ form.processing ? 'Создаю…' : 'Создать счёт' }}

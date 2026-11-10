@@ -1,5 +1,6 @@
 <script setup>
 import { reactive, ref } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';

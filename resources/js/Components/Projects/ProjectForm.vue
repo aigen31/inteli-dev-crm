@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
@@ -100,7 +101,7 @@ function update(key, value) {
                             @click="update('color', color.value)"
                         ></button>
                     </div>
-                    <p v-if="errors.color" class="mt-1 text-[10px] text-danger-ink">{{ errors.color }}</p>
+                    <p v-if="errors.color" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(errors.color) }}</p>
                 </div>
             </div>
 
