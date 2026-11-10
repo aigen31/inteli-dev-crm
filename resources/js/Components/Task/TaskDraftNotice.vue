@@ -21,7 +21,7 @@ const time = computed(() => {
         <span class="flex h-5 w-5 items-center justify-center rounded-full bg-success/10 text-success"><ClockIcon class="h-3 w-3" /></span>
         <p class="min-w-0 flex-1">
             <template v-if="restored"><strong class="font-semibold text-ink">Черновик восстановлен.</strong> Продолжайте с места, где остановились.</template>
-            <template v-else><strong class="font-semibold text-ink">Черновик сохранён.</strong> Последнее изменение в {{ time }}.</template>
+            <template v-else><strong class="font-semibold text-ink">Черновик сохранён.</strong> {{ $t('Последнее изменение в') }} {{ time }}.</template>
         </p>
         <button type="button" class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-semibold text-faint transition hover:bg-danger/10 hover:text-danger-ink" @click="emit('discard')">
             <TrashIcon class="h-3 w-3" />
