@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import { router, useForm } from '@inertiajs/vue3';
 import Button from '@/Components/UI/Button.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
@@ -154,8 +155,8 @@ function remove(member) {
                 <SelectInput v-model="form.role" :options="roles" placeholder="Доступ" />
                 <SelectInput v-model="form.delegation" :options="delegations" placeholder="Делегация" />
             </div>
-            <p v-if="form.errors.user_id" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.user_id }}</p>
-            <p v-if="form.errors.role" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.role }}</p>
+            <p v-if="form.errors.user_id" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors.user_id) }}</p>
+            <p v-if="form.errors.role" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors.role) }}</p>
             <Button class="mt-2" size="sm" :disabled="form.processing || !form.user_id" @click="add">Добавить</Button>
         </div>
     </section>

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { CheckIcon, KeyIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
 import Button from '@/Components/UI/Button.vue';
@@ -54,7 +55,7 @@ function unlock() {
                         :placeholder="unlocked ? 'Новый секретный код' : 'Введите секретный код'"
                         class="h-10 w-full rounded-[12px] border border-line bg-white/70 px-3 font-mono text-[12px] text-ink placeholder-faint focus:border-primary-300 focus:outline-none"
                     />
-                    <p v-if="form.errors.code" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.code }}</p>
+                    <p v-if="form.errors.code" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors.code) }}</p>
                 </div>
                 <Button type="submit" size="sm" :disabled="form.processing || !form.code">
                     {{ form.processing ? 'Проверяю…' : 'Проверить код' }}

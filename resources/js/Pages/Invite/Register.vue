@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 import { Head, useForm } from '@inertiajs/vue3';
 import GuestLayout from '@/Components/Layout/GuestLayout.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
@@ -63,7 +64,7 @@ function submit() {
                 <ConsentCheckbox v-model="form.privacy_ack" :error="form.errors.privacy_ack" id="invite-privacy" variant="privacy" />
             </div>
 
-            <p v-if="form.errors.invite" class="text-[10px] text-danger-ink">{{ form.errors.invite }}</p>
+            <p v-if="form.errors.invite" class="text-[10px] text-danger-ink">{{ validationMessage(form.errors.invite) }}</p>
 
             <Button type="submit" class="w-full" :disabled="!canSubmit || form.processing">
                 Создать аккаунт и войти
