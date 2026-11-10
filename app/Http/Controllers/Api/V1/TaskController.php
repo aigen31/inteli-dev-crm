@@ -39,6 +39,7 @@ class TaskController extends Controller
             ->with(['client', 'assignee', 'template'])
             ->with('customFieldValues.customField')
             ->when($user->isClient(), fn ($query) => $query->where('client_id', $user->id))
+            ->when($user->isExecutor(), fn ($query) => $query->where('assignee_id', $user->id))
             ->when($request->input('status'), fn ($query, $status) => $query->where('status', $status))
             ->when($request->input('client_id') && $user->isAdmin(), fn ($query, $clientId) => $query->where('client_id', $clientId))
             ->when($request->input('q'), fn ($query, $search) => $query->where('title', 'like', "%{$search}%"))
@@ -61,6 +62,7 @@ class TaskController extends Controller
     public function store(Request $request, CreateTaskAction $action): JsonResponse
     {
         $user = $request->user();
+        abort_if($user->isExecutor(), 403);
 
         $data = $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:255'],
@@ -136,7 +138,7 @@ class TaskController extends Controller
 
     public function status(Request $request, Task $task): TaskResource
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($request->user()->isAdmin() || ($request->user()->isExecutor() && $task->assignee_id === $request->user()->id), 403);
 
         $data = $request->validate([
             'status' => ['required', Rule::enum(TaskStatus::class)],
@@ -156,6 +158,10 @@ class TaskController extends Controller
     private function authorizeTask(Request $request, Task $task): void
     {
         if ($request->user()->isClient() && $task->client_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        if ($request->user()->isExecutor() && $task->assignee_id !== $request->user()->id) {
             abort(403);
         }
     }
