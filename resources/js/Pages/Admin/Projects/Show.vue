@@ -7,6 +7,7 @@ import EmptyState from '@/Components/UI/EmptyState.vue';
 import ProjectContextPanel from '@/Components/Projects/ProjectContextPanel.vue';
 import ProjectAccessPanel from '@/Components/Projects/ProjectAccessPanel.vue';
 import ProjectInvitesPanel from '@/Components/Projects/ProjectInvitesPanel.vue';
+import ShareButton from '@/Components/Share/ShareButton.vue';
 import { useAssistant } from '@/Composables/useAssistant';
 import { formatDate } from '@/Utils/formatters.js';
 import { taskStatusLabels } from '@/Utils/constants.js';
@@ -55,6 +56,12 @@ function archive() {
     <AdminLayout title="Проект">
         <template #actions>
             <Link :href="route('admin.projects.index')"><Button variant="ghost" size="sm"><ArrowLeftIcon class="h-4 w-4" />Проекты</Button></Link>
+            <ShareButton
+                kind="project"
+                :href="route('client.projects.show', project.id)"
+                :title="project.name"
+                :recipient="project.client?.name || null"
+            />
             <Button variant="secondary" size="sm" @click="askKiki"><SparklesIcon class="h-4 w-4" />Спросить Кики</Button>
             <Link :href="route('admin.projects.edit', project.id)"><Button variant="secondary" size="sm"><PencilSquareIcon class="h-4 w-4" />Изменить</Button></Link>
             <Link :href="route('admin.tasks.create', { project_id: project.id })"><Button size="sm"><PlusIcon class="h-4 w-4" />Задача</Button></Link>
