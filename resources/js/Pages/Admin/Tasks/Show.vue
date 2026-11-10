@@ -9,6 +9,7 @@ import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import CustomFieldsView from '@/Components/CustomFields/CustomFieldsView.vue';
 import StructuredFormSummary from '@/Components/FormTemplates/StructuredFormSummary.vue';
+import ShareButton from '@/Components/Share/ShareButton.vue';
 import { invoiceStatusLabels, taskPriorityLabels, taskSourceLabels, taskStatusLabels, taskTypeLabels } from '@/Utils/constants.js';
 import { formatDate, formatDateTime, formatMoney } from '@/Utils/formatters.js';
 import { ArrowTopRightOnSquareIcon, CheckIcon, PencilSquareIcon, PlusIcon } from '@heroicons/vue/24/outline';
@@ -43,6 +44,12 @@ function addComment() {
 <template>
     <AdminLayout :title="task.title" eyebrow="Задача">
         <template #actions>
+            <ShareButton
+                kind="task"
+                :href="route('client.tasks.show', task.id)"
+                :title="task.title"
+                :recipient="task.client?.name || null"
+            />
             <Link :href="route('admin.tasks.edit', task.id)">
                 <Button variant="secondary" size="sm">
                     <PencilSquareIcon class="h-4 w-4" />
