@@ -20,6 +20,10 @@ class TaskPolicy
             return true;
         }
 
+        if ($user->isExecutor() && $task->assignee_id === $user->id) {
+            return true;
+        }
+
         if ($task->client_id !== $user->id) {
             return false;
         }
@@ -29,12 +33,17 @@ class TaskPolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->isAdmin() || $user->isClient();
     }
 
     public function update(User $user, Task $task): bool
     {
         return $user->isAdmin();
+    }
+
+    public function updateChecklist(User $user, Task $task): bool
+    {
+        return $user->isAdmin() || ($user->isExecutor() && $task->assignee_id === $user->id);
     }
 
     public function changeStatus(User $user, Task $task): bool
@@ -43,8 +52,12 @@ class TaskPolicy
             return true;
         }
 
+        if ($user->isExecutor() && $task->assignee_id === $user->id) {
+            return true;
+        }
+
         if ($user->isClient() && $task->client_id === $user->id) {
-            return in_array($task->status->value, ['awaiting_review'], true)
+            return $task->status->value === 'awaiting_review'
                 && ($task->project === null || $task->project->isVisibleTo($user));
         }
 

@@ -11,7 +11,7 @@ class TaskCommentPolicy
 {
     public function viewAny(User $user, Task $task): bool
     {
-        return $user->isAdmin() || $task->client_id === $user->id;
+        return $this->canAccess($user, $task);
     }
 
     public function create(User $user, Task $task): bool
@@ -20,6 +20,13 @@ class TaskCommentPolicy
             return false;
         }
 
-        return $user->isAdmin() || $task->client_id === $user->id;
+        return $this->canAccess($user, $task);
+    }
+
+    private function canAccess(User $user, Task $task): bool
+    {
+        return $user->isAdmin()
+            || $task->client_id === $user->id
+            || ($user->isExecutor() && $task->assignee_id === $user->id);
     }
 }

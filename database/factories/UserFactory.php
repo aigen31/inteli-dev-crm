@@ -45,6 +45,13 @@ class UserFactory extends Factory
         ]);
     }
 
+    public function executor(): static
+    {
+        return $this->state(fn () => [
+            'role' => UserRole::Executor,
+        ]);
+    }
+
     public function inactive(): static
     {
         return $this->state(fn () => [
