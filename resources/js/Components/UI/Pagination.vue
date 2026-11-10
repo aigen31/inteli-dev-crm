@@ -8,8 +8,8 @@ defineProps({
 
 function pageLabel(link) {
     const label = String(link.label ?? '');
-    if (label.includes('Previous')) return t('Назад');
-    if (label.includes('Next')) return t('Вперёд');
+    if (label.includes('pagination.previous') || label.toLowerCase().includes('previous')) return t('Назад');
+    if (label.includes('pagination.next') || label.toLowerCase().includes('next')) return t('Вперёд');
     return label;
 }
 </script>
