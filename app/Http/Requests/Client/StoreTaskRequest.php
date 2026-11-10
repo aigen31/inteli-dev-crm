@@ -12,7 +12,7 @@ class StoreTaskRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->isClient();
+        return $this->user()->hasClientDelegation();
     }
 
     public function rules(): array

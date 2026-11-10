@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ProjectDelegation;
 use App\Enums\UserRole;
 use App\Models\Concerns\HasCustomFields;
 use Database\Factories\UserFactory;
@@ -68,6 +69,38 @@ class User extends Authenticatable
         return $this->role === UserRole::Executor;
     }
 
+    public function hasClientDelegation(): bool
+    {
+        return $this->isClient()
+            || $this->clientTasks()->exists()
+            || $this->clientProjects()->exists()
+            || $this->projectMemberships()->where('delegation', ProjectDelegation::Client->value)->exists();
+    }
+
+    public function hasExecutorDelegation(): bool
+    {
+        return $this->isExecutor()
+            || $this->assignedTasks()->exists()
+            || $this->projectMemberships()->where('delegation', ProjectDelegation::Executor->value)->exists();
+    }
+
+    public function roleForTask(Task $task): UserRole
+    {
+        if ($this->isAdmin()) {
+            return UserRole::Admin;
+        }
+
+        if ($task->assignee_id === $this->id) {
+            return UserRole::Executor;
+        }
+
+        if ($task->client_id === $this->id) {
+            return UserRole::Client;
+        }
+
+        return $this->role;
+    }
+
     public function clientTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'client_id');
@@ -76,6 +109,11 @@ class User extends Authenticatable
     public function projectMemberships(): HasMany
     {
         return $this->hasMany(ProjectMember::class);
+    }
+
+    public function clientProjects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'client_id');
     }
 
     public function memberProjects(): BelongsToMany

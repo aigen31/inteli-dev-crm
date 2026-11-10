@@ -20,7 +20,7 @@ class TaskPolicy
             return true;
         }
 
-        if ($user->isExecutor() && $task->assignee_id === $user->id) {
+        if ($task->assignee_id === $user->id) {
             return true;
         }
 
@@ -33,7 +33,7 @@ class TaskPolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin() || $user->isClient();
+        return $user->isAdmin() || $user->hasClientDelegation();
     }
 
     public function update(User $user, Task $task): bool
@@ -43,7 +43,7 @@ class TaskPolicy
 
     public function updateChecklist(User $user, Task $task): bool
     {
-        return $user->isAdmin() || ($user->isExecutor() && $task->assignee_id === $user->id);
+        return $user->isAdmin() || $task->assignee_id === $user->id;
     }
 
     public function changeStatus(User $user, Task $task): bool
@@ -52,11 +52,11 @@ class TaskPolicy
             return true;
         }
 
-        if ($user->isExecutor() && $task->assignee_id === $user->id) {
+        if ($task->assignee_id === $user->id) {
             return true;
         }
 
-        if ($user->isClient() && $task->client_id === $user->id) {
+        if ($task->client_id === $user->id) {
             return $task->status->value === 'awaiting_review'
                 && ($task->project === null || $task->project->isVisibleTo($user));
         }

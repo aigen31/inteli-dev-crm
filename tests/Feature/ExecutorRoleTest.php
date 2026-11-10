@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Enums\ProjectDelegation;
+use App\Enums\ProjectMemberRole;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskReport;
 use App\Models\User;
@@ -122,4 +125,75 @@ test('executor-only routes are closed to clients and admins', function (): void 
 
     $this->actingAs($client)->get(route('executor.dashboard'))->assertForbidden();
     $this->actingAs($admin)->get(route('executor.dashboard'))->assertForbidden();
+});
+
+test('one user can be a client in one project and an executor in another', function (): void {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->client()->create();
+    $clientProject = Project::create([
+        'key' => 'CLI',
+        'name' => 'Client side',
+        'client_id' => $user->id,
+        'created_by' => $admin->id,
+    ]);
+    $executorProject = Project::create([
+        'key' => 'EXE',
+        'name' => 'Executor side',
+        'client_id' => $admin->id,
+        'created_by' => $admin->id,
+    ]);
+
+    $executorProject->members()->create([
+        'user_id' => $user->id,
+        'role' => ProjectMemberRole::Member,
+        'delegation' => ProjectDelegation::Executor,
+        'added_by' => $admin->id,
+    ]);
+
+    $task = Task::factory()->create([
+        'client_id' => $admin->id,
+        'project_id' => $executorProject->id,
+        'created_by' => $admin->id,
+        'assignee_id' => $user->id,
+        'status' => TaskStatus::Queued,
+    ]);
+
+    expect($user->hasClientDelegation())->toBeTrue()
+        ->and($user->hasExecutorDelegation())->toBeTrue();
+
+    $this->actingAs($user)->get(route('executor.tasks.index'))->assertOk();
+    $this->actingAs($user)->get(route('client.tasks.index'))->assertOk();
+    $this->actingAs($user)->patch(route('executor.tasks.status', $task), ['status' => 'in_progress'])->assertRedirect();
+
+    expect($task->fresh()->status)->toBe(TaskStatus::InProgress);
+});
+
+test('the project access panel stores a delegation per member', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = User::factory()->client()->create();
+    $project = Project::create([
+        'key' => 'DEL',
+        'name' => 'Delegation project',
+        'client_id' => $admin->id,
+        'created_by' => $admin->id,
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.projects.members.store', $project), [
+            'user_id' => $client->id,
+            'role' => 'member',
+            'delegation' => 'executor',
+        ])
+        ->assertRedirect();
+
+    expect($project->members()->where('user_id', $client->id)->first()?->delegation->value)->toBe('executor');
+
+    $this->actingAs($admin)
+        ->patch(route('admin.projects.members.update', [$project, $project->members()->first()]), [
+            'role' => 'member',
+            'delegation' => 'client',
+        ])
+        ->assertRedirect();
+
+    expect($project->members()->where('user_id', $client->id)->first()?->delegation->value)->toBe('client');
 });

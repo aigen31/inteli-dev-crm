@@ -12,8 +12,8 @@ class EnsureUserIsExecutor
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user()?->isExecutor()) {
-            abort(403, 'Доступ только для исполнителя.');
+        if (! $request->user()?->isExecutor() && ! $request->user()?->hasExecutorDelegation()) {
+            abort(403, 'Доступ только для исполнителя проекта.');
         }
 
         return $next($request);

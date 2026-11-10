@@ -7,14 +7,48 @@ namespace App\Http\Requests\Admin;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
+use App\Models\Project;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreTaskRequest extends FormRequest
 {
     public function authorize(): bool
     {
         return $this->user()->isAdmin();
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $projectId = $this->input('project_id') ?: $this->route('task')?->project_id;
+            if (! $projectId) {
+                return;
+            }
+
+            $project = Project::query()->with('members:id,project_id,user_id,delegation')->find($projectId);
+            if ($project === null) {
+                return;
+            }
+
+            $clientId = $this->input('client_id');
+            if ($clientId && $clientId !== $project->client_id) {
+                $client = User::query()->find($clientId);
+                if ($client && ! $client->isAdmin() && ! $project->members->contains(fn ($member) => $member->user_id === $clientId && $member->delegation->value === 'client')) {
+                    $validator->errors()->add('client_id', 'Этот пользователь не является клиентом выбранного проекта.');
+                }
+            }
+
+            $assigneeId = $this->input('assignee_id');
+            if ($assigneeId) {
+                $assignee = User::query()->find($assigneeId);
+                if ($assignee && ! $assignee->isAdmin() && ! $project->members->contains(fn ($member) => $member->user_id === $assigneeId && $member->delegation->value === 'executor')) {
+                    $validator->errors()->add('assignee_id', 'Этот пользователь не является исполнителем выбранного проекта.');
+                }
+            }
+        });
     }
 
     public function rules(): array

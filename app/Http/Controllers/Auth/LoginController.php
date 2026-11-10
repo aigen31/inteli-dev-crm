@@ -44,7 +44,7 @@ class LoginController extends Controller
 
         $target = match (true) {
             $user->isAdmin() => route('admin.dashboard'),
-            $user->isExecutor() => route('executor.dashboard'),
+            $user->isExecutor() || (! $user->hasClientDelegation() && $user->hasExecutorDelegation()) => route('executor.dashboard'),
             default => route('client.dashboard'),
         };
         $intended = $request->session()->pull('url.intended');

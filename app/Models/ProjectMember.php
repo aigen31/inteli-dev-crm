@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ProjectDelegation;
 use App\Enums\ProjectMemberRole;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ class ProjectMember extends Model
         'project_id',
         'user_id',
         'role',
+        'delegation',
         'added_by',
     ];
 
@@ -24,6 +26,7 @@ class ProjectMember extends Model
     {
         return [
             'role' => ProjectMemberRole::class,
+            'delegation' => ProjectDelegation::class,
         ];
     }
 

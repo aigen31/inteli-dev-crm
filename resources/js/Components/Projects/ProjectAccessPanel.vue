@@ -13,12 +13,17 @@ const props = defineProps({
 const form = useForm({
     user_id: '',
     role: 'member',
+    delegation: 'executor',
 });
 
 const roles = [
     { value: 'manager', label: 'Менеджер' },
     { value: 'member', label: 'Участник' },
     { value: 'viewer', label: 'Наблюдатель' },
+];
+const delegations = [
+    { value: 'client', label: 'Клиент' },
+    { value: 'executor', label: 'Исполнитель' },
 ];
 
 const members = computed(() => props.project.members || []);
@@ -39,7 +44,15 @@ function add() {
 function changeRole(member, role) {
     router.patch(
         route('admin.projects.members.update', [props.project.id, member.id]),
-        { role },
+        { role, delegation: member.delegation || 'executor' },
+        { preserveScroll: true },
+    );
+}
+
+function changeDelegation(member, delegation) {
+    router.patch(
+        route('admin.projects.members.update', [props.project.id, member.id]),
+        { role: member.role, delegation },
         { preserveScroll: true },
     );
 }
@@ -103,12 +116,21 @@ function remove(member) {
                     type="button"
                     class="rounded-full border px-2.5 py-1 text-[9px] font-semibold transition hover:opacity-80"
                     :class="roleTone[member.role] || roleTone.member"
-                    title="Нажмите, чтобы сменить роль"
+                    title="Нажмите, чтобы сменить доступ"
                     @click="cycleRole(member)"
                 >
                     {{ member.role_label }} ↻
                 </button>
                 <span v-else class="rounded-full bg-ink/[0.06] px-2 py-0.5 text-[9px] text-muted">{{ member.role_label }}</span>
+                <button
+                    v-if="canManage"
+                    type="button"
+                    class="rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 text-[9px] font-semibold text-primary-800 transition hover:opacity-80"
+                    title="Сменить делегацию"
+                    @click="changeDelegation(member, member.delegation === 'client' ? 'executor' : 'client')"
+                >
+                    {{ member.delegation_label || 'Исполнитель' }} ⇄
+                </button>
                 <button
                     v-if="canManage"
                     type="button"
@@ -127,9 +149,10 @@ function remove(member) {
 
         <div v-if="canManage && availableOptions.length" class="border-t border-line/80 px-5 py-4">
             <p class="eyebrow">Выдать доступ</p>
-            <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_130px]">
+            <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_120px_140px]">
                 <SelectInput v-model="form.user_id" :options="availableOptions" placeholder="Выберите пользователя" />
-                <SelectInput v-model="form.role" :options="roles" placeholder="Роль" />
+                <SelectInput v-model="form.role" :options="roles" placeholder="Доступ" />
+                <SelectInput v-model="form.delegation" :options="delegations" placeholder="Делегация" />
             </div>
             <p v-if="form.errors.user_id" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.user_id }}</p>
             <p v-if="form.errors.role" class="mt-1 text-[10px] text-danger-ink">{{ form.errors.role }}</p>

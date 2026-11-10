@@ -40,6 +40,8 @@ class HandleInertiaRequests extends Middleware
                     'role' => $user->role instanceof UserRole ? $user->role->value : $user->role,
                     'is_admin' => $user->isAdmin(),
                     'is_executor' => $user->isExecutor(),
+                    'has_client_delegation' => $user->hasClientDelegation(),
+                    'has_executor_delegation' => $user->hasExecutorDelegation(),
                     'initials' => $this->initials($user->name),
                 ] : null,
             ],
