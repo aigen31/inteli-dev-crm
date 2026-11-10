@@ -245,15 +245,15 @@ class TaskController extends Controller
     {
         return [
             'clients' => User::query()
-                ->where('role', UserRole::Client)
+                ->whereIn('role', [UserRole::Client, UserRole::Admin])
                 ->where('is_active', true)
                 ->orderBy('name')
-                ->get(['id', 'name', 'email']),
+                ->get(['id', 'name', 'email', 'role']),
             'assignees' => User::query()
-                ->where('role', UserRole::Admin)
+                ->whereIn('role', [UserRole::Admin, UserRole::Executor])
                 ->where('is_active', true)
                 ->orderBy('name')
-                ->get(['id', 'name']),
+                ->get(['id', 'name', 'role']),
             'templates' => TaskTemplate::query()
                 ->where('is_active', true)
                 ->orderBy('name')

@@ -63,6 +63,11 @@ class User extends Authenticatable
         return $this->role === UserRole::Client;
     }
 
+    public function isExecutor(): bool
+    {
+        return $this->role === UserRole::Executor;
+    }
+
     public function clientTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'client_id');

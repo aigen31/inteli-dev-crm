@@ -5,6 +5,7 @@ use App\Http\Middleware\AuthenticateKernel;
 use App\Http\Middleware\EnsureApiAbility;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsExecutor;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RecordNavigationVisit;
 use App\Http\Middleware\VerifyYooKassaWebhook;
@@ -23,9 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
 
-        $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->isAdmin()
-            ? '/admin/dashboard'
-            : '/dashboard');
+        $middleware->redirectUsersTo(fn (Request $request) => match (true) {
+            $request->user()?->isAdmin() => '/admin/dashboard',
+            $request->user()?->isExecutor() => '/executor/dashboard',
+            default => '/dashboard',
+        });
 
         $middleware->web(append: [
             HandleInertiaRequests::class,
@@ -35,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'is_active' => EnsureUserIsActive::class,
             'is_admin' => EnsureUserIsAdmin::class,
+            'is_executor' => EnsureUserIsExecutor::class,
             'yookassa_webhook' => VerifyYooKassaWebhook::class,
             'api.token' => AuthenticateApiToken::class,
             'kernel.token' => AuthenticateKernel::class,

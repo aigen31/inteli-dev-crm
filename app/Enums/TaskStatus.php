@@ -56,13 +56,13 @@ enum TaskStatus: string
         return match (true) {
             $this === self::PendingReview && $newStatus === self::Queued => [UserRole::Admin],
             $this === self::PendingReview && $newStatus === self::RejectedByAdmin => [UserRole::Admin],
-            $this === self::Queued && $newStatus === self::InProgress => [UserRole::Admin],
-            $this === self::InProgress && $newStatus === self::AwaitingReview => [UserRole::Admin],
-            $this === self::InProgress && $newStatus === self::Queued => [UserRole::Admin],
+            $this === self::Queued && $newStatus === self::InProgress => [UserRole::Admin, UserRole::Executor],
+            $this === self::InProgress && $newStatus === self::AwaitingReview => [UserRole::Admin, UserRole::Executor],
+            $this === self::InProgress && $newStatus === self::Queued => [UserRole::Admin, UserRole::Executor],
             $this === self::AwaitingReview && $newStatus === self::Completed => [UserRole::Client],
             $this === self::AwaitingReview && $newStatus === self::RejectedByClient => [UserRole::Client],
-            $this === self::RejectedByClient && $newStatus === self::InProgress => [UserRole::Admin],
-            $this === self::RejectedByClient && $newStatus === self::Queued => [UserRole::Admin],
+            $this === self::RejectedByClient && $newStatus === self::InProgress => [UserRole::Admin, UserRole::Executor],
+            $this === self::RejectedByClient && $newStatus === self::Queued => [UserRole::Admin, UserRole::Executor],
             default => [],
         };
     }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\Auth;
 use App\Http\Controllers\Client;
+use App\Http\Controllers\Executor;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\HelpController;
@@ -82,9 +83,27 @@ Route::middleware('auth')->group(function () {
         Route::patch('/settings/theme', [SecretFeatureController::class, 'theme'])->name('settings.theme');
     });
 
+    // Executor routes
+    Route::middleware(['is_active', 'is_executor'])->prefix('executor')->name('executor.')->group(function () {
+        Route::get('/dashboard', [Executor\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/tasks', [Executor\TaskController::class, 'index'])->name('tasks.index');
+        Route::get('/tasks/{task}', [Executor\TaskController::class, 'show'])->name('tasks.show');
+        Route::patch('/tasks/{task}/status', [Executor\TaskController::class, 'updateStatus'])->name('tasks.status');
+        Route::patch('/tasks/{task}/checklist', [Executor\TaskController::class, 'updateChecklist'])->name('tasks.checklist');
+        Route::post('/tasks/{task}/comments', [Executor\TaskCommentController::class, 'store'])->name('tasks.comments.store');
+        Route::post('/tasks/{task}/reports', [Executor\TaskReportController::class, 'store'])->name('tasks.reports.store');
+        Route::get('/reports', [Executor\ReportController::class, 'index'])->name('reports.index');
+    });
+
     // Admin routes
     Route::middleware(['is_active', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
+
+        // Team
+        Route::get('/team', [Admin\TeamController::class, 'index'])->name('team.index');
+        Route::get('/team/create', [Admin\TeamController::class, 'create'])->name('team.create');
+        Route::post('/team', [Admin\TeamController::class, 'store'])->name('team.store');
+        Route::patch('/team/{executor}/toggle', [Admin\TeamController::class, 'toggle'])->name('team.toggle');
 
         // Clients
         Route::get('/clients', [Admin\ClientController::class, 'index'])->name('clients.index');

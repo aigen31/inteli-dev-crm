@@ -17,6 +17,7 @@ import {
     SparklesIcon,
     UserIcon,
     UsersIcon,
+    WrenchScrewdriverIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
@@ -40,50 +41,50 @@ const mobileMenu = ref(false);
 const path = computed(() => page.url.split('?')[0]);
 const user = computed(() => page.props.auth?.user);
 const isAdmin = computed(() => props.role === 'admin');
+const isExecutor = computed(() => props.role === 'executor');
 
-const navigation = computed(() =>
-    isAdmin.value
-        ? [
-              { label: 'Обзор', href: route('admin.dashboard'), icon: HomeIcon, active: path.value === '/admin/dashboard' },
-              {
-                  label: 'Задачи',
-                  href: route('admin.tasks.index'),
-                  icon: CheckCircleIcon,
-                  active: path.value.startsWith('/admin/tasks'),
-              },
-              {
-                  label: 'Проекты',
-                  href: route('admin.projects.index'),
-                  icon: FolderIcon,
-                  active: path.value.startsWith('/admin/projects'),
-              },
-              {
-                  label: 'Библиотека',
-                  href: route('admin.forms.index'),
-                  icon: RectangleStackIcon,
-                  active: path.value.startsWith('/admin/forms') || path.value.startsWith('/admin/task-templates'),
-              },
-              { label: 'Клиенты', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') },
-              { label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },
-              { label: 'Отчёты', href: route('admin.reports.index'), icon: InboxIcon, active: path.value.startsWith('/admin/reports') },
-              { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
-          ]
-        : [
-              { label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' },
-              { label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') && !path.value.startsWith('/projects/system') },
-              { label: 'Задачи', href: route('client.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/tasks') },
-              { label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
-              { label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') },
-              { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
-          ],
-);
+const navigation = computed(() => {
+    if (isAdmin.value) {
+        return [
+            { label: 'Обзор', href: route('admin.dashboard'), icon: HomeIcon, active: path.value === '/admin/dashboard' },
+            { label: 'Задачи', href: route('admin.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/admin/tasks') },
+            { label: 'Проекты', href: route('admin.projects.index'), icon: FolderIcon, active: path.value.startsWith('/admin/projects') },
+            { label: 'Библиотека', href: route('admin.forms.index'), icon: RectangleStackIcon, active: path.value.startsWith('/admin/forms') || path.value.startsWith('/admin/task-templates') },
+            { label: 'Клиенты', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') },
+            { label: 'Команда', href: route('admin.team.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/admin/team') },
+            { label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },
+            { label: 'Отчёты', href: route('admin.reports.index'), icon: InboxIcon, active: path.value.startsWith('/admin/reports') },
+            { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
+        ];
+    }
+
+    if (isExecutor.value) {
+        return [
+            { label: 'Обзор', href: route('executor.dashboard'), icon: HomeIcon, active: path.value === '/executor/dashboard' },
+            { label: 'Мои задачи', href: route('executor.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/executor/tasks') },
+            { label: 'Отчёты', href: route('executor.reports.index'), icon: InboxIcon, active: path.value.startsWith('/executor/reports') },
+            { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
+        ];
+    }
+
+    return [
+        { label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' },
+        { label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') && !path.value.startsWith('/projects/system') },
+        { label: 'Задачи', href: route('client.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/tasks') },
+        { label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
+        { label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') },
+        { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
+    ];
+});
 
 const mobileNavigation = computed(() => navigation.value.filter((item) => !item.href.endsWith('/assistant')));
 
 const secondary = computed(() => [
     ...(isAdmin.value
         ? [{ label: 'Настройки', href: route('admin.settings.edit'), icon: Cog6ToothIcon, active: path.value.startsWith('/admin/settings') }]
-        : [{ label: 'Профиль', href: route('client.profile.edit'), icon: UserIcon, active: path.value.startsWith('/profile') }]),
+        : isExecutor.value
+          ? []
+          : [{ label: 'Профиль', href: route('client.profile.edit'), icon: UserIcon, active: path.value.startsWith('/profile') }]),
     { label: 'Обратная связь', href: route('feedback.index'), icon: ChatBubbleLeftRightIcon, active: path.value.startsWith('/feedback') || path.value.startsWith('/projects/system') },
     { label: 'Помощь', href: route('help.index'), icon: QuestionMarkCircleIcon, active: path.value.startsWith('/help') },
 ]);
@@ -92,6 +93,7 @@ const sectionLabel = computed(() => {
     if (path.value.startsWith('/admin/settings')) return 'Настройки';
     if (path.value.startsWith('/profile')) return 'Профиль';
     if (path.value.startsWith('/help')) return 'Помощь';
+    if (path.value.startsWith('/executor')) return 'Работа';
     if (path.value.startsWith('/feedback') || path.value.startsWith('/projects/system')) return 'Обратная связь';
     return navigation.value.find((item) => item.active)?.label ?? (isAdmin.value ? 'Обзор' : 'Кабинет');
 });
@@ -174,7 +176,7 @@ function logout() {
                     </span>
                     <span class="min-w-0 flex-1">
                         <span class="block truncate text-[12px] font-semibold text-ink">{{ user?.name }}</span>
-                        <span class="block text-[10px] text-muted">{{ isAdmin ? 'Владелец' : 'Клиент' }}</span>
+                        <span class="block text-[10px] text-muted">{{ isAdmin ? 'Владелец' : (isExecutor ? 'Исполнитель' : 'Клиент') }}</span>
                     </span>
                     <button type="button" class="text-muted transition hover:text-danger" title="Выйти" @click="logout">
                         <ArrowRightOnRectangleIcon class="h-[18px] w-[18px]" />
@@ -252,6 +254,7 @@ function logout() {
                     </button>
                     <LocaleSwitcher />
                     <Link
+                        v-if="!isExecutor"
                         :href="isAdmin ? route('admin.settings.edit') : route('client.profile.edit')"
                         class="rounded-full border border-line bg-white/50 p-2 text-muted transition hover:border-line-strong hover:text-ink"
                     >
