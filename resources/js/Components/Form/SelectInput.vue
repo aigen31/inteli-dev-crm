@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 
 const props = defineProps({
     modelValue: { type: [String, Number], default: '' },
@@ -11,6 +12,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue']);
+const errorText = computed(() => validationMessage(props.error));
 const inputId = computed(() => props.id || `select-${Math.random().toString(36).slice(2, 9)}`);
 </script>
 
@@ -25,7 +27,7 @@ const inputId = computed(() => props.id || `select-${Math.random().toString(36).
             :class="[
                 'h-10 w-full rounded-[13px] border bg-white/70 px-3.5 text-[13px] text-ink transition',
                 'focus:outline-none focus:ring-2',
-                error
+                errorText
                     ? 'border-danger focus:border-danger focus:ring-danger/15'
                     : 'border-line focus:border-primary-400 focus:ring-primary-500/10',
             ]"
@@ -37,6 +39,6 @@ const inputId = computed(() => props.id || `select-${Math.random().toString(36).
                 {{ opt.label }}
             </option>
         </select>
-        <p v-if="error" class="mt-1 text-[10px] text-danger-ink">{{ error }}</p>
+        <p v-if="errorText" class="mt-1 text-[10px] text-danger-ink">{{ errorText }}</p>
     </div>
 </template>

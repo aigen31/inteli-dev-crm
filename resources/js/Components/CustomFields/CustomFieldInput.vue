@@ -1,4 +1,5 @@
 <script setup>
+import { validationMessage } from '@/Utils/validation';
 import { computed } from 'vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
@@ -91,7 +92,7 @@ function toggleOption(optionValue) {
                 </button>
             </div>
             <p v-if="field.help_text" class="mt-1 text-[10px] text-muted">{{ field.help_text }}</p>
-            <p v-if="error" class="mt-1 text-[10px] text-danger-ink">{{ error }}</p>
+            <p v-if="error" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(error) }}</p>
         </div>
 
         <label v-else-if="field.type === 'checkbox'" class="flex cursor-pointer items-start gap-2.5 rounded-[13px] border border-line bg-white/60 px-3.5 py-3">

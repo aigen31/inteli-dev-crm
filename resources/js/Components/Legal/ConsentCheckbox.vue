@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { validationMessage } from '@/Utils/validation';
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },
@@ -11,6 +12,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const inputId = computed(() => props.id);
+const errorText = computed(() => validationMessage(props.error));
 </script>
 
 <template>
@@ -41,6 +43,6 @@ const inputId = computed(() => props.id);
                 </template>
             </label>
         </div>
-        <p v-if="error" class="mt-1 text-[10px] text-danger-ink">{{ error }}</p>
+        <p v-if="errorText" class="mt-1 text-[10px] text-danger-ink">{{ errorText }}</p>
     </div>
 </template>
