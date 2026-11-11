@@ -6,8 +6,8 @@ import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import ProjectContextPanel from '@/Components/Projects/ProjectContextPanel.vue';
 import ProjectAccessPanel from '@/Components/Projects/ProjectAccessPanel.vue';
-import ProjectTaskSort from '@/Components/Projects/ProjectTaskSort.vue';
-import { useProjectTaskSort } from '@/Composables/useProjectTaskSort';
+import ProjectTaskFilter from '@/Components/Projects/ProjectTaskFilter.vue';
+import { useProjectTaskFilter } from '@/Composables/useProjectTaskFilter';
 import ProjectInvitesPanel from '@/Components/Projects/ProjectInvitesPanel.vue';
 import ShareButton from '@/Components/Share/ShareButton.vue';
 import { useAssistant } from '@/Composables/useAssistant';
@@ -35,7 +35,8 @@ const props = defineProps({
 });
 
 const { open } = useAssistant();
-const { sort, sortedTasks, setSort } = useProjectTaskSort(() => props.tasks);
+const statuses = ['pending_review', 'queued', 'in_progress', 'awaiting_review', 'rejected_by_client', 'completed', 'rejected_by_admin'];
+const { status, filteredTasks, setStatus } = useProjectTaskFilter(() => props.tasks, statuses);
 
 const statusTone = {
     active: 'bg-primary-soft text-primary-800',
@@ -113,14 +114,14 @@ function archive() {
                     <header class="flex flex-wrap items-center gap-2 border-b border-line/80 px-5 py-3.5">
                         <CheckCircleIcon class="h-4 w-4 text-primary-600" />
                         <p class="text-[12px] font-bold text-ink">Задачи</p>
-                        <span class="font-mono text-[9px] text-faint">{{ progress.total }}</span>
-                        <ProjectTaskSort class="sm:ml-auto" :model-value="sort" @update:model-value="setSort" />
+                        <span class="font-mono text-[9px] text-faint">{{ filteredTasks.length }}<template v-if="status"> / {{ progress.total }}</template></span>
+                        <ProjectTaskFilter class="sm:ml-auto" :model-value="status" :statuses="statuses" @update:model-value="setStatus" />
                         <Link :href="route('admin.projects.edit', project.id)" class="text-[10px] text-muted hover:text-ink">настройки</Link>
                     </header>
 
-                    <div v-if="tasks.length" class="divide-y divide-line/70">
+                    <div v-if="filteredTasks.length" class="divide-y divide-line/70">
                         <Link
-                            v-for="task in sortedTasks"
+                            v-for="task in filteredTasks"
                             :key="task.id"
                             :href="route('admin.tasks.show', task.id)"
                             class="flex items-center gap-3 px-5 py-3 transition hover:bg-primary-soft/30"
@@ -133,7 +134,8 @@ function archive() {
                     </div>
 
                     <div v-else class="px-5 py-8 text-center">
-                        <p class="text-[11px] text-muted">В проекте пока нет задач.</p>
+                        <p class="text-[11px] text-muted">{{ status ? 'Нет задач с таким статусом.' : 'В проекте пока нет задач.' }}</p>
+                        <button v-if="status" type="button" class="mt-2 text-[10px] font-semibold text-primary-700 hover:underline" @click="setStatus('')">Сбросить фильтр</button>
                         <Link :href="route('admin.tasks.create', { project_id: project.id })" class="mt-2 inline-block">
                             <Button size="sm" variant="secondary"><PlusIcon class="h-3.5 w-3.5" />Добавить первую</Button>
                         </Link>

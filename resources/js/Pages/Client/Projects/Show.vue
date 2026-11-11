@@ -1,7 +1,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import ProjectTaskSort from '@/Components/Projects/ProjectTaskSort.vue';
-import { useProjectTaskSort } from '@/Composables/useProjectTaskSort';
+import ProjectTaskFilter from '@/Components/Projects/ProjectTaskFilter.vue';
+import { useProjectTaskFilter } from '@/Composables/useProjectTaskFilter';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
@@ -16,7 +16,8 @@ const props = defineProps({
     team: { type: Array, default: () => [] },
 });
 
-const { sort, sortedTasks, setSort } = useProjectTaskSort(() => props.tasks);
+const statuses = ['pending_review', 'queued', 'in_progress', 'awaiting_review', 'rejected_by_client', 'completed', 'rejected_by_admin'];
+const { status, filteredTasks, setStatus } = useProjectTaskFilter(() => props.tasks, statuses);
 </script>
 
 <template>
@@ -66,13 +67,13 @@ const { sort, sortedTasks, setSort } = useProjectTaskSort(() => props.tasks);
             <header class="flex flex-wrap items-center gap-2 border-b border-line/80 px-5 py-3.5">
                 <CheckCircleIcon class="h-4 w-4 text-primary-600" />
                 <p class="text-[12px] font-bold text-ink">Мои задачи в проекте</p>
-                <span class="font-mono text-[9px] text-faint">{{ tasks.length }}</span>
-                <ProjectTaskSort class="ml-auto" :model-value="sort" @update:model-value="setSort" />
+                <span class="font-mono text-[9px] text-faint">{{ filteredTasks.length }}<template v-if="status"> / {{ tasks.length }}</template></span>
+                <ProjectTaskFilter class="ml-auto" :model-value="status" :statuses="statuses" @update:model-value="setStatus" />
             </header>
 
-            <div v-if="tasks.length" class="divide-y divide-line/70">
+            <div v-if="filteredTasks.length" class="divide-y divide-line/70">
                 <Link
-                    v-for="task in sortedTasks"
+                    v-for="task in filteredTasks"
                     :key="task.id"
                     :href="route('client.tasks.show', task.id)"
                     class="flex flex-wrap items-center gap-3 px-5 py-3 transition hover:bg-primary-soft/30"
@@ -85,7 +86,9 @@ const { sort, sortedTasks, setSort } = useProjectTaskSort(() => props.tasks);
             </div>
 
             <div v-else class="p-2">
-                <EmptyState compact variant="projectTasks" title="Задач пока нет" text="В этом проекте у вас ещё нет задач. Как только они появятся, вы увидите их здесь." />
+                <EmptyState compact variant="projectTasks" :title="status ? 'Нет задач с таким статусом' : 'Задач пока нет'" :text="status ? 'Попробуйте выбрать другой статус или сбросьте фильтр.' : 'В этом проекте у вас ещё нет задач. Как только они появятся, вы увидите их здесь.'">
+                    <button v-if="status" type="button" class="mt-2 text-[10px] font-semibold text-primary-700 hover:underline" @click="setStatus('')">Сбросить фильтр</button>
+                </EmptyState>
             </div>
         </section>
 
