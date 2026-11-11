@@ -68,7 +68,6 @@ function setStatus(value) {
                 <span class="min-w-0 flex-1">
                     <span class="block truncate text-[13px] font-bold text-ink">{{ task.title }}</span>
                     <span class="mt-1 block text-[10px] text-muted">
-                        {{ task.template?.name ? `по шаблону «${task.template.name}» · ` : '' }}
                         {{ task.deadline ? `до ${formatDate(task.deadline)}` : 'срок не задан' }}
                     </span>
                 </span>

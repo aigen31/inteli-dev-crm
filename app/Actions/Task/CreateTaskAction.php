@@ -39,7 +39,6 @@ class CreateTaskAction
             'project_id' => $projectId,
             'number' => $number,
             'created_by' => $creator->id,
-            'task_template_id' => $data['task_template_id'] ?? null,
             'form_template_id' => $data['form_template_id'] ?? null,
             'form_data' => $data['form_data'] ?? null,
             'assignee_id' => $data['assignee_id'] ?? null,

@@ -71,7 +71,6 @@ function addComment() {
             </Link>
             <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
             <Badge :status="task.priority" type="priority">{{ taskPriorityLabels[task.priority] }}</Badge>
-            <span v-if="task.template" class="rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800">из шаблона «{{ task.template.name }}»</span>
             <span class="text-[11px] text-muted">{{ task.client?.name }} · создана {{ formatDateTime(task.created_at) }}</span>
         </div>
 
@@ -83,7 +82,7 @@ function addComment() {
                             <p class="eyebrow">Структурированная заявка</p>
                             <h2 class="mt-1 text-[15px] font-bold text-ink">{{ task.form_template.name }}</h2>
                         </div>
-                        <span class="rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800">форма</span>
+                        <span class="rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800">шаблон</span>
                     </div>
                     <StructuredFormSummary class="mt-4" :template="task.form_template" :data="task.form_data || {}" />
                 </section>
@@ -177,7 +176,7 @@ function addComment() {
             </div>
 
             <aside class="space-y-5">
-                <Card title="Информация">
+                <Card title="Иншаблонция">
                     <dl class="space-y-3 text-[12px]">
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Клиент</dt><dd><Link v-if="task.client?.role === 'client'" :href="route('admin.clients.show', task.client_id)" class="font-semibold text-primary-700 hover:underline">{{ task.client?.name }}</Link><span v-else class="font-semibold text-ink">{{ task.client?.name }}</span></dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Исполнитель</dt><dd class="text-ink">{{ task.assignee?.name || 'не назначен' }}</dd></div>

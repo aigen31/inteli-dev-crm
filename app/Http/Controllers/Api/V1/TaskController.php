@@ -13,11 +13,9 @@ use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
-use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\CustomFieldService;
 use App\Services\HtmlSanitizer;
-use App\Services\TaskTemplateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -27,7 +25,6 @@ class TaskController extends Controller
 {
     public function __construct(
         private readonly CustomFieldService $customFields,
-        private readonly TaskTemplateService $templates,
         private readonly HtmlSanitizer $sanitizer,
     ) {}
 
@@ -36,7 +33,7 @@ class TaskController extends Controller
         $user = $request->user();
 
         $tasks = Task::query()
-            ->with(['client', 'assignee', 'template'])
+            ->with(['client', 'assignee'])
             ->with('customFieldValues.customField')
             ->when(! $user->isAdmin(), fn ($query) => $query->where(function ($query) use ($user): void {
                 $query->where('client_id', $user->id)->orWhere('assignee_id', $user->id);
@@ -55,7 +52,7 @@ class TaskController extends Controller
     {
         $this->authorizeTask($request, $task);
 
-        $task->load(['client', 'assignee', 'template', 'customFieldValues.customField']);
+        $task->load(['client', 'assignee', 'customFieldValues.customField']);
 
         return new TaskResource($task);
     }
@@ -69,7 +66,6 @@ class TaskController extends Controller
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'description' => ['nullable', 'string', 'max:60000'],
             'client_id' => [$user->isAdmin() ? 'required' : 'nullable', 'uuid', 'exists:users,id'],
-            'template_id' => ['nullable', 'uuid', 'exists:task_templates,id'],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
             'deadline' => ['nullable', 'date'],
             'budget' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
@@ -86,24 +82,14 @@ class TaskController extends Controller
             ? $user
             : User::query()->whereKey($data['client_id'])->firstOrFail();
 
-        if (! empty($data['template_id'])) {
-            $template = TaskTemplate::query()->visibleTo($user)->findOrFail($data['template_id']);
-            $task = $this->templates->apply($template, $client, $user, [
-                'title' => $data['title'],
-                'description' => $data['description'] ?? null,
-                'deadline' => $data['deadline'] ?? null,
-                'assignee_id' => $data['assignee_id'] ?? null,
-            ], TaskSource::Api);
-        } else {
-            $task = $action->execute([
-                ...$data,
-                'client_id' => $client->id,
-                'source' => TaskSource::Api,
-            ], $user);
-        }
+        $task = $action->execute([
+            ...$data,
+            'client_id' => $client->id,
+            'source' => TaskSource::Api,
+        ], $user);
 
         $this->customFields->sync($task, $customValues, $user);
-        $task->load(['client', 'assignee', 'template', 'customFieldValues.customField']);
+        $task->load(['client', 'assignee', 'customFieldValues.customField']);
 
         return (new TaskResource($task))->response()->setStatusCode(201);
     }
@@ -134,7 +120,7 @@ class TaskController extends Controller
         $task->update($data);
         $this->customFields->sync($task, $customValues);
 
-        return new TaskResource($task->refresh()->load(['client', 'assignee', 'template', 'customFieldValues.customField']));
+        return new TaskResource($task->refresh()->load(['client', 'assignee', 'customFieldValues.customField']));
     }
 
     public function status(Request $request, Task $task): TaskResource
@@ -153,7 +139,7 @@ class TaskController extends Controller
             $data['comment'] ?? null,
         );
 
-        return new TaskResource($task->refresh()->load(['client', 'assignee', 'template', 'customFieldValues.customField']));
+        return new TaskResource($task->refresh()->load(['client', 'assignee', 'customFieldValues.customField']));
     }
 
     private function authorizeTask(Request $request, Task $task): void

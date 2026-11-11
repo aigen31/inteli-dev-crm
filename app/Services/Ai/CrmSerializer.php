@@ -57,7 +57,7 @@ class CrmSerializer
      */
     public function task(Task $task): array
     {
-        $task->loadMissing(['client', 'assignee', 'template']);
+        $task->loadMissing(['client', 'assignee']);
 
         return [
             'id' => $task->id,
@@ -71,7 +71,7 @@ class CrmSerializer
             'source' => $task->source->value,
             'client' => $task->client ? ['id' => $task->client->id, 'name' => $task->client->name] : null,
             'assignee' => $task->assignee ? ['id' => $task->assignee->id, 'name' => $task->assignee->name] : null,
-            'template' => $task->template ? ['id' => $task->template->id, 'name' => $task->template->name] : null,
+            'template' => null,
             'checklist' => $task->normalizedChecklist(),
             'estimated_minutes' => $task->estimated_minutes,
             'budget' => $task->budget,

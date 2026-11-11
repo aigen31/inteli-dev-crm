@@ -12,7 +12,6 @@ const props = defineProps({
     clients: Array,
     projects: Array,
     assignees: Array,
-    templates: Array,
     types: Array,
     priorities: Array,
     statuses: Array,
@@ -24,7 +23,6 @@ const values = computed(() => Object.fromEntries((props.customFields || []).map(
 const form = useForm({
     client_id: props.task?.client_id || '',
     project_id: props.task?.project_id || '',
-    task_template_id: props.task?.task_template_id || '',
     title: props.task?.title || '',
     description: props.task?.description || '',
     checklist: (props.task?.checklist || []).map((item) => ({ ...item })),
@@ -65,7 +63,6 @@ function submit() {
             :clients="clients"
             :projects="projects"
             :assignees="assignees"
-            :templates="templates"
             :types="types"
             :priorities="priorities"
             :statuses="statuses"

@@ -37,8 +37,6 @@ Route::prefix('v1')
             Route::get('/clients/{client}', [V1\ClientController::class, 'show']);
             Route::get('/tasks', [V1\TaskController::class, 'index']);
             Route::get('/tasks/{task}', [V1\TaskController::class, 'show']);
-            Route::get('/task-templates', [V1\TaskTemplateController::class, 'index']);
-            Route::get('/task-templates/{taskTemplate}', [V1\TaskTemplateController::class, 'show']);
             Route::get('/invoices', [V1\InvoiceController::class, 'index']);
             Route::get('/invoices/{invoice}', [V1\InvoiceController::class, 'show']);
         });
@@ -52,9 +50,6 @@ Route::prefix('v1')
             Route::put('/tasks/{task}', [V1\TaskController::class, 'update']);
             Route::patch('/tasks/{task}/status', [V1\TaskController::class, 'status']);
 
-            Route::post('/task-templates', [V1\TaskTemplateController::class, 'store']);
-            Route::put('/task-templates/{taskTemplate}', [V1\TaskTemplateController::class, 'update']);
-            Route::post('/task-templates/{taskTemplate}/apply', [V1\TaskTemplateController::class, 'apply']);
 
             Route::post('/invoices', [V1\InvoiceController::class, 'store']);
             Route::patch('/invoices/{invoice}/mark-paid', [V1\InvoiceController::class, 'markPaid']);

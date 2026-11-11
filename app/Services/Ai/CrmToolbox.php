@@ -679,7 +679,7 @@ class CrmToolbox
     private function listTasks(User $user, array $arguments): array
     {
         $limit = min(max((int) ($arguments['limit'] ?? 20), 1), 50);
-        $query = Task::query()->with(['client', 'assignee', 'template']);
+        $query = Task::query()->with(['client', 'assignee']);
 
         if ($user->isClient()) {
             $query->visibleTo($user);

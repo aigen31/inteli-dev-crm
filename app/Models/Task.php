@@ -28,7 +28,6 @@ class Task extends Model
         'project_id',
         'number',
         'created_by',
-        'task_template_id',
         'form_template_id',
         'form_data',
         'assignee_id',
@@ -102,11 +101,6 @@ class Task extends Model
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assignee_id');
-    }
-
-    public function template(): BelongsTo
-    {
-        return $this->belongsTo(TaskTemplate::class, 'task_template_id');
     }
 
     public function formTemplate(): BelongsTo

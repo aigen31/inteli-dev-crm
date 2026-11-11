@@ -58,7 +58,7 @@ function addComment() {
                             <p class="eyebrow">Структурированная заявка</p>
                             <h2 class="mt-1 text-[15px] font-bold text-ink">{{ task.form_template.name }}</h2>
                         </div>
-                        <span class="rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800">форма</span>
+                        <span class="rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800">шаблон</span>
                     </div>
                     <StructuredFormSummary class="mt-4" :template="task.form_template" :data="task.form_data || {}" />
                 </section>
@@ -131,7 +131,7 @@ function addComment() {
             </div>
 
             <aside class="space-y-5">
-                <Card title="Информация">
+                <Card title="Иншаблонция">
                     <dl class="space-y-3 text-[12px]">
                         <div class="flex items-center justify-between"><dt class="text-muted">Статус</dt><dd><Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge></dd></div>
                         <div class="flex items-center justify-between"><dt class="text-muted">Приоритет</dt><dd>{{ taskPriorityLabels[task.priority] }}</dd></div>

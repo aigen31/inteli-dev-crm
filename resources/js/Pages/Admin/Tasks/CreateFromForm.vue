@@ -72,18 +72,18 @@ function submit() {
 </script>
 
 <template>
-    <AdminLayout title="Задача из формы">
+    <AdminLayout title="Задача из шаблона">
         <template #actions>
             <Link :href="route('admin.tasks.index')"><Button variant="ghost" size="sm"><ArrowLeftIcon class="h-4 w-4" />Задачи</Button></Link>
-            <Link :href="route('admin.tasks.create')"><Button variant="secondary" size="sm">Свободная задача</Button></Link>
+            <Link :href="route('admin.tasks.create')"><Button variant="secondary" size="sm">Без шаблона</Button></Link>
         </template>
 
         <section class="mb-5 flex flex-wrap items-center gap-4 rounded-[26px] border border-line bg-gradient-to-br from-[#fbf7ef] via-[#f5f0fb] to-[#ece5fa] px-5 py-5 sm:px-7">
             <span class="flex h-11 w-11 items-center justify-center rounded-[15px] bg-primary-soft text-primary-700"><ClipboardDocumentListIcon class="h-5 w-5" /></span>
             <div class="min-w-0 flex-1">
                 <p class="eyebrow">Быстрый сценарий</p>
-                <h1 class="mt-1 font-display text-[22px] font-medium tracking-[-0.03em] text-ink">Задача из готовой формы</h1>
-                <p class="mt-1 max-w-[600px] text-[11px] leading-relaxed text-muted">Выберите сценарий, укажите клиента и исполнителя — структура, поля и изображения уже внутри.</p>
+                <h1 class="mt-1 font-display text-[22px] font-medium tracking-[-0.03em] text-ink">Задача из готового шаблона</h1>
+                <p class="mt-1 max-w-[600px] text-[11px] leading-relaxed text-muted">Выберите шаблон, укажите клиента и исполнителя — структура, поля и изображения уже внутри.</p>
             </div>
             <KikiAvatar :size="48" />
         </section>
@@ -92,11 +92,11 @@ function submit() {
             <div class="space-y-5">
                 <section class="surface-card p-5 sm:p-6">
                     <div class="flex flex-wrap items-end justify-between gap-2">
-                        <div><p class="eyebrow">01 / Форма</p><h2 class="mt-1 text-[14px] font-bold text-ink">С чего начнём?</h2></div>
+                        <div><p class="eyebrow">01 / Шаблон</p><h2 class="mt-1 text-[14px] font-bold text-ink">С чего начнём?</h2></div>
                         <span class="font-mono text-[9px] text-faint">по умолчанию «Описание задачи + изображения»</span>
                     </div>
                     <div class="mt-4">
-                        <SelectInput :model-value="selectedKey" :options="forms.map((item) => ({ value: item.key, label: item.name }))" placeholder="Выберите форму" @update:model-value="choose" />
+                        <SelectInput :model-value="selectedKey" :options="forms.map((item) => ({ value: item.key, label: item.name }))" placeholder="Выберите шаблон" @update:model-value="choose" />
                     </div>
                     <div v-if="selected" class="mt-3 rounded-[14px] border border-line/70 bg-white/40 px-3.5 py-3">
                         <p class="text-[12px] font-semibold text-ink">{{ selected.name }}</p>
@@ -135,20 +135,20 @@ function submit() {
                 <section class="surface-card overflow-hidden">
                     <div class="border-b border-line/70 bg-surface-2/50 px-5 py-4">
                         <p class="eyebrow">Итог</p>
-                        <p class="mt-1 text-[13px] font-semibold text-ink">{{ form.title || selected?.name || 'Задача из формы' }}</p>
+                        <p class="mt-1 text-[13px] font-semibold text-ink">{{ form.title || selected?.name || 'Задача из шаблона' }}</p>
                         <p class="mt-1 text-[10px] text-muted">{{ selected?.name }} · {{ form.priority }}</p>
                     </div>
                     <div class="p-5">
                         <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="admin-form-task-consent" variant="contract" />
                         <Button class="mt-4 w-full" :disabled="form.processing || !form.consent || !selected || !form.client_id" @click="submit">
-                            {{ form.processing ? 'Создаю…' : 'Создать задачу из формы' }}
+                            {{ form.processing ? 'Создаю…' : 'Создать задачу из шаблона' }}
                         </Button>
-                        <p class="mt-2 text-center text-[9px] leading-relaxed text-faint">Все поля формы сохранятся в карточке задачи.</p>
+                        <p class="mt-2 text-center text-[9px] leading-relaxed text-faint">Все поля шаблона сохранятся в карточке задачи.</p>
                     </div>
                 </section>
                 <section class="rounded-[20px] border border-line/70 bg-white/35 p-4">
-                    <p class="eyebrow">Почему форма</p>
-                    <p class="mt-1 text-[10px] leading-relaxed text-muted">Форма задаёт правильные поля, обязательные шаги и места для изображений. Так заявка не теряет детали.</p>
+                    <p class="eyebrow">Почему шаблон</p>
+                    <p class="mt-1 text-[10px] leading-relaxed text-muted">Шаблон задаёт правильные поля, обязательные шаги и места для изображений. Так заявка не теряет детали.</p>
                 </section>
             </aside>
         </div>

@@ -21,12 +21,12 @@ function toggle(template) {
 </script>
 
 <template>
-    <AdminLayout title="Формы заявок">
+    <AdminLayout title="Шаблоны заявок">
         <template #actions>
-            <Link :href="route('admin.task-templates.index')">
+            <Link :href="route('admin.tasks.forms.create')">
                 <Button variant="secondary" size="sm">
                     <RectangleStackIcon class="h-4 w-4" />
-                    Сценарии
+                    Создать задачу
                 </Button>
             </Link>
         </template>
@@ -40,8 +40,7 @@ function toggle(template) {
 
         <div class="mb-5 flex flex-wrap items-center gap-2">
             <div class="flex rounded-full border border-line bg-white/50 p-1">
-                <span class="rounded-full bg-ink px-3 py-1.5 text-[11px] font-semibold text-canvas">Формы</span>
-                <Link :href="route('admin.task-templates.index')" class="rounded-full px-3 py-1.5 text-[11px] font-semibold text-muted transition hover:text-ink">Сценарии</Link>
+                <span class="rounded-full bg-ink px-3 py-1.5 text-[11px] font-semibold text-canvas">Шаблоны</span>
             </div>
             <div class="ml-auto flex gap-4 font-mono text-[9px] text-muted">
                 <span>{{ stats.active }} активных</span>
@@ -61,15 +60,6 @@ function toggle(template) {
                         @select="selectedKey = template.key"
                     />
                 </div>
-
-                <Link :href="route('admin.task-templates.index')" class="mt-3 flex items-center gap-3 rounded-[20px] border border-line bg-white/35 px-4 py-3 text-left transition hover:border-line-strong">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-[12px] bg-surface-2 text-muted"><RectangleStackIcon class="h-4 w-4" /></span>
-                    <span class="min-w-0">
-                        <span class="block text-[12px] font-semibold text-ink">Классические сценарии</span>
-                        <span class="block text-[10px] text-muted">Текст + чек-лист. Живут в отдельном разделе.</span>
-                    </span>
-                    <ArrowRightIcon class="ml-auto h-4 w-4 text-faint" />
-                </Link>
             </div>
 
             <aside v-if="selected" class="lg:sticky lg:top-6 lg:self-start">
@@ -77,7 +67,7 @@ function toggle(template) {
                     <div class="border-b border-line/80 bg-surface-2/40 px-5 py-4">
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <p class="eyebrow">Структура формы</p>
+                                <p class="eyebrow">Структура шаблона</p>
                                 <h2 class="mt-1 text-[17px] font-bold text-ink">{{ selected.name }}</h2>
                                 <p class="mt-1 text-[10px] leading-relaxed text-muted">{{ selected.description }}</p>
                             </div>
@@ -111,7 +101,7 @@ function toggle(template) {
 
                         <div class="flex items-center justify-between border-t border-line/70 pt-4">
                             <button type="button" class="text-[10px] font-semibold text-muted transition hover:text-ink" @click="toggle(selected)">
-                                {{ selected.is_active ? 'Выключить форму' : 'Включить форму' }}
+                                {{ selected.is_active ? 'Выключить шаблон' : 'Включить шаблон' }}
                             </button>
                             <span :class="['rounded-full px-2 py-0.5 text-[9px] font-semibold', selected.is_active ? 'bg-sage/20 text-[#397254]' : 'bg-ink/[0.06] text-muted']">
                                 {{ selected.is_active ? 'активна' : 'выключена' }}

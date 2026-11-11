@@ -11,7 +11,6 @@ use App\Models\FormTemplate;
 use App\Models\Invoice;
 use App\Models\Task;
 use App\Models\TaskStatusHistory;
-use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\TaskService;
 use Inertia\Inertia;
@@ -86,7 +85,6 @@ class DashboardController extends Controller
                     ->whereDate('deadline', '<', today())
                     ->whereIn('status', $activeStatuses)
                     ->count(),
-                'templates' => TaskTemplate::query()->where('is_active', true)->count(),
                 'forms' => FormTemplate::query()->where('is_active', true)->count(),
             ],
         ]);

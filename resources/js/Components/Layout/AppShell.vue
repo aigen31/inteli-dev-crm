@@ -51,7 +51,7 @@ const navigation = computed(() => {
             { label: 'Обзор', href: route('admin.dashboard'), icon: HomeIcon, active: path.value === '/admin/dashboard' },
             { label: 'Задачи', href: route('admin.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/admin/tasks') },
             { label: 'Проекты', href: route('admin.projects.index'), icon: FolderIcon, active: path.value.startsWith('/admin/projects') },
-            { label: 'Библиотека', href: route('admin.forms.index'), icon: RectangleStackIcon, active: path.value.startsWith('/admin/forms') || path.value.startsWith('/admin/task-templates') },
+            { label: 'Шаблоны', href: route('admin.forms.index'), icon: RectangleStackIcon, active: path.value.startsWith('/admin/forms') },
             { label: 'Клиенты', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') },
             { label: 'Команда', href: route('admin.team.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/admin/team') },
             { label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },

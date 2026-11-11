@@ -7,7 +7,6 @@ use App\Enums\CustomFieldType;
 use App\Models\CustomField;
 use App\Models\Invoice;
 use App\Models\Task;
-use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\Ai\TemplateGenerator;
 use App\Services\ApiTokenService;
@@ -131,40 +130,6 @@ test('custom field defaults are exposed when no value is stored', function (): v
         ->assertOk()
         ->assertJsonPath('data.0.custom_fields.intake_status.value', 'open')
         ->assertJsonPath('data.0.custom_fields.intake_status.display', 'Принимаю заявки');
-});
-
-test('task template application creates a task with checklist and source', function (): void {
-    $template = TaskTemplate::create([
-        'name' => 'Лендинг под ключ',
-        'summary' => 'Одностраничный сайт',
-        'description' => '<p>Собираем лендинг</p><script>alert(1)</script>',
-        'checklist' => [['text' => 'Бриф', 'done' => false], ['text' => 'Дизайн', 'done' => false]],
-        'default_type' => 'one_time',
-        'default_priority' => 'high',
-        'default_status' => 'pending_review',
-        'default_due_days' => 7,
-        'estimated_minutes' => 600,
-        'is_active' => true,
-        'is_shared' => true,
-        'created_by' => $this->admin->id,
-    ]);
-
-    $token = apiToken($this->admin);
-
-    $this->withHeader('Authorization', 'Bearer '.$token)
-        ->postJson("/api/v1/task-templates/{$template->id}/apply", [
-            'client_id' => $this->client->id,
-        ])
-        ->assertCreated();
-
-    $task = Task::query()->where('client_id', $this->client->id)->firstOrFail();
-
-    expect($task->task_template_id)->toBe($template->id)
-        ->and($task->source->value)->toBe('template')
-        ->and($task->normalizedChecklist())->toHaveCount(2)
-        ->and($task->deadline)->not->toBeNull();
-
-    expect($template->refresh()->usage_count)->toBe(1);
 });
 
 test('client cannot read another clients task through the api', function (): void {
