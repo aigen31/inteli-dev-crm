@@ -171,12 +171,40 @@ function submit() {
                     <p class="eyebrow">01 / Шаблон</p>
                     <h2 class="mt-1 text-[14px] font-bold text-ink">С чего начнём?</h2>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="font-mono text-[9px] text-faint">{{ forms.length }} <span>{{ $t('шаблонов') }}</span>&nbsp;·&nbsp;{{ $t('можно выбрать одну') }}</span>
-                    <button type="button" class="rounded-full border border-line bg-white/45 px-2.5 py-1 text-[9px] font-semibold text-primary-700 transition hover:border-primary-300" @click="pickerOpen = !pickerOpen">
-                        {{ pickerOpen ? $t('Скрыть выбор') : $t('Выбрать другую') }}
+                <span class="font-mono text-[9px] text-faint">{{ forms.length }} {{ $t('шаблонов') }}</span>
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-line/70 pt-3">
+                <span class="shrink-0 text-[10px] font-semibold text-ink-soft">{{ $t('Можно сменить в любой момент:') }}</span>
+                <div class="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5">
+                    <button
+                        v-for="template in forms"
+                        :key="template.key"
+                        type="button"
+                        :class="[
+                            'shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition',
+                            !freeform && selectedKey === template.key
+                                ? 'border-primary-500 bg-primary-600 text-white shadow-sm'
+                                : 'border-line bg-white/55 text-ink-soft hover:border-primary-300 hover:text-primary-700',
+                        ]"
+                        @click="choose(template)"
+                    >
+                        {{ template.name }}
+                    </button>
+                    <button
+                        type="button"
+                        :class="[
+                            'shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition',
+                            freeform ? 'border-primary-500 bg-primary-600 text-white shadow-sm' : 'border-dashed border-line-strong bg-transparent text-muted hover:border-primary-300 hover:text-primary-700',
+                        ]"
+                        @click="startFree"
+                    >
+                        {{ $t('Свободная заявка') }}
                     </button>
                 </div>
+                <button type="button" class="shrink-0 text-[10px] font-semibold text-primary-700 hover:underline" @click="pickerOpen = !pickerOpen">
+                    {{ pickerOpen ? $t('Скрыть') : $t('Все шаблоны') }}
+                </button>
             </div>
 
             <div v-if="pickerOpen" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -217,11 +245,17 @@ function submit() {
                     <div class="border-b border-line/80 bg-surface-2/40 px-5 py-4">
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <p class="eyebrow">{{ freeform ? 'Свободная заявка' : 'Выбранная форма' }}</p>
+                                <p class="eyebrow">{{ freeform ? 'Свободная заявка' : 'Выбранный шаблон' }}</p>
                                 <h2 class="mt-1 text-[17px] font-bold tracking-[-0.02em] text-ink">{{ freeform ? 'Опишите словами' : selected?.name }}</h2>
                                 <p class="mt-1 text-[10px] leading-relaxed text-muted">{{ freeform ? 'Мы уточним детали, если чего-то не хватит.' : selected?.description }}</p>
                             </div>
-                            <KikiAvatar :size="34" />
+                            <div class="flex shrink-0 flex-col items-end gap-1.5">
+                                <Button variant="secondary" size="sm" @click="pickerOpen = !pickerOpen">
+                                    <RectangleStackIcon class="h-3.5 w-3.5" />
+                                    {{ pickerOpen ? $t('Скрыть выбор') : $t('Сменить шаблон') }}
+                                </Button>
+                                <span class="text-[9px] text-faint">{{ $t('не подходит? выберите другой') }}</span>
+                            </div>
                         </div>
                     </div>
 
