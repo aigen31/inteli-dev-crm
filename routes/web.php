@@ -120,15 +120,6 @@ Route::middleware('auth')->group(function () {
         Route::patch('/forms/{formTemplate}/toggle', [Admin\FormTemplateController::class, 'toggle'])->name('forms.toggle');
 
         // Task templates
-        Route::get('/task-templates', [Admin\TaskTemplateController::class, 'index'])->name('task-templates.index');
-        Route::get('/task-templates/create', [Admin\TaskTemplateController::class, 'create'])->name('task-templates.create');
-        Route::post('/task-templates', [Admin\TaskTemplateController::class, 'store'])->name('task-templates.store');
-        Route::post('/task-templates/generate', [Admin\TaskTemplateController::class, 'generate'])->name('task-templates.generate');
-        Route::get('/task-templates/{taskTemplate}/edit', [Admin\TaskTemplateController::class, 'edit'])->name('task-templates.edit');
-        Route::put('/task-templates/{taskTemplate}', [Admin\TaskTemplateController::class, 'update'])->name('task-templates.update');
-        Route::patch('/task-templates/{taskTemplate}/toggle', [Admin\TaskTemplateController::class, 'toggle'])->name('task-templates.toggle');
-        Route::post('/task-templates/{taskTemplate}/apply', [Admin\TaskTemplateController::class, 'apply'])->name('task-templates.apply');
-        Route::delete('/task-templates/{taskTemplate}', [Admin\TaskTemplateController::class, 'destroy'])->name('task-templates.destroy');
 
         // Tasks
         Route::get('/tasks', [Admin\TaskController::class, 'index'])->name('tasks.index');
@@ -203,9 +194,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/tasks', [Client\TaskController::class, 'index'])->name('client.tasks.index');
         Route::get('/tasks/create', [Client\TaskController::class, 'create'])->name('client.tasks.create');
-        Route::get('/tasks/scenarios', [Client\TaskController::class, 'scenarios'])->name('client.tasks.scenarios');
         Route::post('/tasks/forms/{formTemplate}', [Client\TaskController::class, 'storeForm'])->name('client.tasks.forms.store');
-        Route::post('/tasks/from-template/{template}', [Client\TaskController::class, 'applyTemplate'])->name('client.tasks.from-template');
         Route::post('/tasks', [Client\TaskController::class, 'store'])->name('client.tasks.store');
         Route::get('/tasks/{task}', [Client\TaskController::class, 'show'])->name('client.tasks.show');
         Route::patch('/tasks/{task}/review', [Client\TaskController::class, 'review'])->name('client.tasks.review');

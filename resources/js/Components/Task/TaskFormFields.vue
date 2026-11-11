@@ -12,14 +12,12 @@ const props = defineProps({
     clients: { type: Array, default: () => [] },
     projects: { type: Array, default: () => [] },
     assignees: { type: Array, default: () => [] },
-    templates: { type: Array, default: () => [] },
     types: { type: Array, default: () => [] },
     priorities: { type: Array, default: () => [] },
     statuses: { type: Array, default: () => [] },
     fields: { type: Array, default: () => [] },
     errors: { type: Object, default: () => ({}) },
     showStatus: { type: Boolean, default: true },
-    showTemplate: { type: Boolean, default: true },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -61,30 +59,6 @@ function selectProject(projectId) {
     emit('update:modelValue', next);
 }
 
-function applyTemplate(templateId) {
-    const template = props.templates.find((item) => item.id === templateId);
-    const next = { ...props.modelValue, task_template_id: templateId };
-
-    if (template) {
-        next.title = props.modelValue.title || template.name;
-        next.description = template.description || '';
-        next.checklist = (template.checklist || []).map((item) => ({ ...item }));
-        next.type = template.default_type || props.modelValue.type;
-        next.priority = template.default_priority || props.modelValue.priority;
-
-        if (template.default_due_days && !props.modelValue.deadline) {
-            const date = new Date();
-            date.setDate(date.getDate() + Number(template.default_due_days));
-            next.deadline = date.toISOString().slice(0, 10);
-        }
-
-        if (template.default_assignee_id) next.assignee_id = template.default_assignee_id;
-        if (template.estimated_minutes) next.estimated_minutes = template.estimated_minutes;
-    }
-
-    emit('update:modelValue', next);
-}
-
 function addChecklistItem() {
     update('checklist', [...checklist.value, { text: '', done: false }]);
 }
@@ -118,14 +92,6 @@ const statusOptions = computed(() =>
         <section class="surface-card p-5 sm:p-6">
             <p class="eyebrow">Суть</p>
             <div class="mt-4 space-y-4">
-                <SelectInput
-                    v-if="showTemplate"
-                    :model-value="modelValue.task_template_id || ''"
-                    label="Шаблон (необязательно)"
-                    :options="templates.map((t) => ({ value: t.id, label: t.name }))"
-                    placeholder="Без шаблона"
-                    @update:model-value="applyTemplate"
-                />
                 <TextInput :model-value="modelValue.title" label="Название" :error="error('title')" placeholder="Что нужно сделать" @update:model-value="update('title', $event)" />
                 <div>
                     <p class="mb-1.5 text-[11px] font-semibold text-ink-soft">Описание</p>

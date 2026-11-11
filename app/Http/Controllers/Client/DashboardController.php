@@ -9,7 +9,6 @@ use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Models\FormTemplate;
 use App\Models\Task;
-use App\Models\TaskTemplate;
 use App\Services\CustomFieldService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -63,7 +62,6 @@ class DashboardController extends Controller
                 ->get()
                 ->map(fn (FormTemplate $form) => $form->toLibraryArray())
                 ->values(),
-            'scenariosCount' => TaskTemplate::query()->visibleTo($user)->count(),
             'customFields' => $customFields->serializedValues($user),
         ]);
     }

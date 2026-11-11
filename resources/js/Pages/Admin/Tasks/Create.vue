@@ -24,7 +24,6 @@ const props = defineProps({
     clients: Array,
     projects: Array,
     assignees: Array,
-    templates: Array,
     types: Array,
     priorities: Array,
     statuses: Array,
@@ -37,7 +36,6 @@ const page = usePage();
 const form = useForm({
     client_id: params.get('client_id') || '',
     project_id: params.get('project_id') || '',
-    task_template_id: '',
     title: '',
     description: '',
     checklist: [],
@@ -73,7 +71,6 @@ const draft = useTaskDraft({
     snapshot: () => ({
         client_id: form.client_id,
         project_id: form.project_id,
-        task_template_id: form.task_template_id,
         title: form.title,
         description: form.description,
         checklist: form.checklist,
@@ -92,7 +89,7 @@ const draft = useTaskDraft({
         });
         form.consent = false;
     },
-    isEmpty: (data) => !data.title && !data.description && !data.client_id && !data.project_id && !data.task_template_id && !data.checklist?.length && !Object.keys(data.custom_fields || {}).length,
+    isEmpty: (data) => !data.title && !data.description && !data.client_id && !data.project_id && !data.checklist?.length && !Object.keys(data.custom_fields || {}).length,
 });
 
 function submit() {
@@ -110,7 +107,7 @@ function submit() {
                 </Button>
             </Link>
             <Link :href="route('admin.tasks.forms.create')">
-                <Button variant="secondary" size="sm">Из формы</Button>
+                <Button variant="secondary" size="sm">Из шаблона</Button>
             </Link>
         </template>
 
@@ -149,7 +146,6 @@ function submit() {
                     :clients="clients"
                     :projects="projects"
                     :assignees="assignees"
-                    :templates="templates"
                     :types="types"
                     :priorities="priorities"
                     :statuses="statuses"

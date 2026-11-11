@@ -20,7 +20,6 @@ const props = defineProps({
     pendingInvoices: Array,
     upcomingTasks: Array,
     forms: Array,
-    scenariosCount: Number,
     customFields: Array,
     navigation: { type: Object, default: () => ({ recent: [] }) },
 });
@@ -117,11 +116,8 @@ const activeCount = computed(() =>
 
         <div class="mt-4">
             <div class="mb-3 flex items-center justify-between">
-                <div><p class="eyebrow">Быстрый старт</p><h2 class="mt-1 text-[15px] font-bold text-ink">Формы заявок</h2></div>
-                <div class="flex items-center gap-3">
-                    <Link :href="route('client.tasks.scenarios')" class="text-[10px] font-semibold text-muted hover:text-ink">Сценарии</Link>
-                    <Link :href="route('client.tasks.create')" class="text-[11px] font-semibold text-primary-700 hover:underline">Все формы</Link>
-                </div>
+                <div><p class="eyebrow">Быстрый старт</p><h2 class="mt-1 text-[15px] font-bold text-ink">Шаблоны заявок</h2></div>
+                <Link :href="route('client.tasks.create')" class="text-[11px] font-semibold text-primary-700 hover:underline">Все шаблоны</Link>
             </div>
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <Link v-for="form in forms" :key="form.key" :href="route('client.tasks.create', { form: form.key })" class="surface-card surface-card-hover p-4">

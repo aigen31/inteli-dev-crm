@@ -56,7 +56,6 @@ class StoreTaskRequest extends FormRequest
         return [
             'client_id' => ['required', 'uuid', 'exists:users,id'],
             'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
-            'task_template_id' => ['nullable', 'uuid', 'exists:task_templates,id'],
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'description' => ['required', 'string', 'min:3'],
             'checklist' => ['nullable', 'array', 'max:100'],

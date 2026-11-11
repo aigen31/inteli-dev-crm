@@ -70,7 +70,7 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
                     <Link :href="route('admin.forms.index')">
                         <Button variant="secondary" size="md">
                             <Squares2X2Icon class="h-4 w-4" />
-                            Формы
+                            Шаблоны
                         </Button>
                     </Link>
                     <Button variant="ghost" size="md" @click="open">
@@ -91,7 +91,7 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
             <StatCard label="Клиенты" :value="counters?.clients ?? 0" hint="активные аккаунты" :icon="UserGroupIcon" tone="violet" />
             <StatCard label="В работе" :value="counters?.active_tasks ?? 0" :hint="`${counters?.overdue ?? 0} просрочено`" :icon="ClockIcon" tone="peach" />
             <StatCard label="Доход за месяц" :value="formatMoney(monthlyRevenue ?? 0)" hint="оплаченные счета" :icon="BanknotesIcon" tone="sage" mono />
-            <StatCard label="Формы" :value="counters?.forms ?? 0" hint="структурированные заявки" :icon="Squares2X2Icon" tone="sky" />
+            <StatCard label="Шаблоны" :value="counters?.forms ?? 0" hint="структурированные заявки" :icon="Squares2X2Icon" tone="sky" />
         </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-[1.55fr_1fr]">
@@ -112,7 +112,7 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
                 <div v-if="!focusTasks.length" class="p-2">
                     <EmptyState compact variant="flight" title="День свободен" text="Новые заявки и задачи появятся здесь. Можно начать с шаблона.">
                         <Link :href="route('admin.forms.index')">
-                            <Button variant="secondary" size="sm">Открыть формы</Button>
+                            <Button variant="secondary" size="sm">Открыть шаблоны</Button>
                         </Link>
                     </EmptyState>
                 </div>
@@ -190,10 +190,10 @@ const pendingTotal = computed(() => (props.pendingInvoices ?? []).reduce((sum, i
         </div>
 
         <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Link :href="route('admin.task-templates.create', { ai: 1 })" class="surface-card surface-card-hover flex items-center gap-4 p-5">
+            <Link :href="route('admin.forms.index')" class="surface-card surface-card-hover flex items-center gap-4 p-5">
                 <KikiAvatar :size="52" />
                 <span class="min-w-0">
-                    <span class="block text-[13px] font-bold text-ink">Собрать сценарий с Кики</span>
+                    <span class="block text-[13px] font-bold text-ink">Собрать шаблон с Кики</span>
                     <span class="mt-0.5 block text-[11px] text-muted">Опишите идею одной фразой — получите структуру и чек-лист.</span>
                 </span>
                 <ArrowUpRightIcon class="ml-auto h-4 w-4 shrink-0 text-primary-600" />

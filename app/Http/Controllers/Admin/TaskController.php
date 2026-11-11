@@ -19,13 +19,11 @@ use App\Http\Requests\Admin\UpdateTaskRequest;
 use App\Models\FormTemplate;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use App\Services\FormTemplateService;
 use App\Services\HtmlSanitizer;
-use App\Services\TaskTemplateService;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,14 +34,13 @@ class TaskController extends Controller
 {
     public function __construct(
         private readonly CustomFieldService $customFields,
-        private readonly TaskTemplateService $templates,
         private readonly HtmlSanitizer $sanitizer,
     ) {}
 
     public function index(Request $request): Response
     {
         $tasks = Task::query()
-            ->with(['client:id,name', 'assignee:id,name', 'template:id,name', 'project:id,key,name,color'])
+            ->with(['client:id,name', 'assignee:id,name', 'project:id,key,name,color'])
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->input('client_id'), fn ($q, $clientId) => $q->where('client_id', $clientId))
             ->when($request->input('project_id'), fn ($q, $projectId) => $q->where('project_id', $projectId))
@@ -117,6 +114,7 @@ class TaskController extends Controller
 
         $task = $forms->createTask($formTemplate, $client, [
             'title' => $data['title'] ?? null,
+            'project_id' => $data['project_id'] ?? null,
             'priority' => $data['priority'] ?? null,
             'deadline' => $data['deadline'] ?? null,
             'form_data' => $data['form_data'],
@@ -145,20 +143,7 @@ class TaskController extends Controller
             $this->authorize('createTask', Project::query()->findOrFail($data['project_id']));
         }
 
-        if (! empty($data['task_template_id'])) {
-            $template = TaskTemplate::query()->findOrFail($data['task_template_id']);
-            $client = User::query()->findOrFail($data['client_id']);
-            $task = $this->templates->apply($template, $client, $request->user(), [
-                'title' => $data['title'],
-                'description' => $data['description'],
-                'deadline' => $data['deadline'] ?? null,
-                'assignee_id' => $data['assignee_id'] ?? null,
-                'project_id' => $data['project_id'] ?? null,
-                'budget' => $data['budget'] ?? null,
-            ]);
-        } else {
-            $task = $action->execute($data, $request->user());
-        }
+        $task = $action->execute($data, $request->user());
 
         $this->customFields->sync($task, $customValues, $request->user());
 
@@ -172,7 +157,6 @@ class TaskController extends Controller
             'client',
             'creator',
             'assignee',
-            'template',
             'formTemplate',
             'comments.author',
             'reports.author:id,name',
@@ -199,7 +183,7 @@ class TaskController extends Controller
     public function edit(Task $task): Response
     {
         return Inertia::render('Admin/Tasks/Edit', [
-            'task' => $task->load(['assignee', 'template']),
+            'task' => $task->load('assignee'),
             'customFields' => $this->customFields->serializedValues($task),
             ...$this->formOptions(),
         ]);
@@ -297,10 +281,6 @@ class TaskController extends Controller
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'role']),
-            'templates' => TaskTemplate::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(),
             'types' => Options::taskTypes(),
             'priorities' => Options::priorities(),
             'statuses' => Options::taskStatuses(),

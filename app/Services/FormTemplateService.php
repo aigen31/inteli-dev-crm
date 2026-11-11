@@ -49,6 +49,7 @@ class FormTemplateService
 
         $task = $this->createTask->execute([
             'client_id' => $client->id,
+            'project_id' => $data['project_id'] ?? null,
             'title' => trim((string) ($data['title'] ?? '')) ?: $template->name,
             'description' => $template->description ?: $template->summary,
             'type' => TaskType::OneTime,
@@ -102,6 +103,7 @@ class FormTemplateService
     private function rules(array $schema, User $client): array
     {
         $rules = [
+            'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
             'deadline' => ['nullable', 'date', 'after_or_equal:today'],

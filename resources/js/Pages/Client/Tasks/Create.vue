@@ -17,7 +17,6 @@ import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 
 const props = defineProps({
     forms: { type: Array, default: () => [] },
-    scenariosCount: { type: Number, default: 0 },
     priorities: { type: Array, default: () => [] },
     projects: { type: Array, default: () => [] },
 });
@@ -145,7 +144,7 @@ function submit() {
                 <div class="min-w-0 flex-1">
                     <p class="eyebrow">Личный кабинет</p>
                     <h1 class="mt-1 font-display text-[22px] font-medium tracking-[-0.035em] text-ink">Соберите заявку без лишних полей</h1>
-                    <p class="mt-1 max-w-[620px] text-[11px] leading-relaxed text-muted">Сначала выберите формат, затем заполните только то, что относится к вашей ситуации. Справа всегда видно, что получится.</p>
+                    <p class="mt-1 max-w-[620px] text-[11px] leading-relaxed text-muted">Сначала выберите шаблон, затем заполните только то, что относится к вашей ситуации. Справа всегда видно, что получится.</p>
                 </div>
                 <div class="flex items-center gap-1.5 rounded-full border border-line bg-white/50 px-3 py-1.5">
                     <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
@@ -158,11 +157,7 @@ function submit() {
 
         <div class="mb-5 flex flex-wrap items-center gap-2">
             <div class="flex rounded-full border border-line bg-white/50 p-1">
-                <span class="rounded-full bg-ink px-3 py-1.5 text-[11px] font-semibold text-canvas">Формы заявок</span>
-                <Link :href="route('client.tasks.scenarios')" class="rounded-full px-3 py-1.5 text-[11px] font-semibold text-muted transition hover:text-ink">
-                    Сценарии
-                    <span class="ml-1 font-mono text-[9px] text-faint">{{ scenariosCount }}</span>
-                </Link>
+                <span class="rounded-full bg-ink px-3 py-1.5 text-[11px] font-semibold text-canvas">Шаблоны заявок</span>
             </div>
             <button type="button" class="ml-auto inline-flex items-center gap-1.5 text-[10px] font-semibold text-primary-700 hover:underline" @click="startFree">
                 Свободная заявка
@@ -173,11 +168,11 @@ function submit() {
         <section class="surface-card mb-5 p-4 sm:p-5">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                    <p class="eyebrow">01 / Формат</p>
+                    <p class="eyebrow">01 / Шаблон</p>
                     <h2 class="mt-1 text-[14px] font-bold text-ink">С чего начнём?</h2>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="font-mono text-[9px] text-faint">{{ forms.length }} <span>{{ $t('форм') }}</span>&nbsp;·&nbsp;{{ $t('можно выбрать одну') }}</span>
+                    <span class="font-mono text-[9px] text-faint">{{ forms.length }} <span>{{ $t('шаблонов') }}</span>&nbsp;·&nbsp;{{ $t('можно выбрать одну') }}</span>
                     <button type="button" class="rounded-full border border-line bg-white/45 px-2.5 py-1 text-[9px] font-semibold text-primary-700 transition hover:border-primary-300" @click="pickerOpen = !pickerOpen">
                         {{ pickerOpen ? $t('Скрыть выбор') : $t('Выбрать другую') }}
                     </button>
@@ -204,7 +199,7 @@ function submit() {
                     <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-surface-2 text-muted"><SparklesIcon class="h-4 w-4" /></span>
                     <span class="min-w-0">
                         <span class="block text-[12px] font-semibold text-ink">Свободная заявка</span>
-                        <span class="mt-0.5 block text-[10px] leading-relaxed text-muted">Опишите словами, если готовой формы нет.</span>
+                        <span class="mt-0.5 block text-[10px] leading-relaxed text-muted">Опишите словами, если готового шаблона нет.</span>
                     </span>
                 </button>
             </div>
@@ -235,7 +230,7 @@ function submit() {
                             <TextInput v-model="form.title" label="Название заявки" :error="form.errors.title" placeholder="Коротко: что нужно сделать" />
 
                             <SelectInput
-                                v-if="freeform && projects.length"
+                                v-if="projects.length"
                                 v-model="form.project_id"
                                 label="Проект (необязательно)"
                                 :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))"
@@ -284,7 +279,7 @@ function submit() {
                             <div class="flex items-start gap-2.5">
                                 <ClipboardDocumentListIcon class="mt-0.5 h-3.5 w-3.5 shrink-0 text-faint" />
                                 <div class="min-w-0 flex-1">
-                                    <p class="text-[9px] uppercase tracking-[0.1em] text-faint">Формат</p>
+                                    <p class="text-[9px] uppercase tracking-[0.1em] text-faint">Шаблон</p>
                                     <p class="mt-0.5 truncate text-[11px] font-semibold text-ink">{{ freeform ? 'Свободная заявка' : selected?.name }}</p>
                                 </div>
                             </div>

@@ -111,13 +111,13 @@ function setStatus(value) {
             <Link :href="route('admin.tasks.forms.create')">
                 <Button variant="secondary">
                     <Squares2X2Icon class="h-4 w-4" />
-                    Из формы
+                    Из шаблона
                 </Button>
             </Link>
             <Link :href="route('admin.forms.index')">
                 <Button variant="secondary">
                     <Squares2X2Icon class="h-4 w-4" />
-                    Формы
+                    Шаблоны
                 </Button>
             </Link>
             <Link :href="route('admin.tasks.create')">
@@ -184,7 +184,6 @@ function setStatus(value) {
                     <div class="min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
                             <p class="truncate text-[13px] font-semibold text-ink group-hover:text-primary-800">{{ task.title }}</p>
-                            <span v-if="task.template" class="rounded-full bg-primary-soft px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-primary-700">шаблон</span>
                         </div>
                         <p class="mt-1 flex flex-wrap items-center gap-1.5 truncate text-[11px] text-muted">
                             <span v-if="task.project" class="rounded-full border border-line bg-white/70 px-2 py-0.5 font-mono text-[9px] text-ink-soft">

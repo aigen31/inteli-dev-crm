@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Client;
 
 use App\Actions\Task\ChangeTaskStatusAction;
 use App\Actions\Task\CreateTaskAction;
-use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ReviewTaskRequest;
@@ -14,11 +13,9 @@ use App\Http\Requests\Client\StoreTaskRequest;
 use App\Models\FormTemplate;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\TaskTemplate;
 use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use App\Services\FormTemplateService;
-use App\Services\TaskTemplateService;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,7 +27,6 @@ class TaskController extends Controller
 {
     public function __construct(
         private readonly CustomFieldService $customFields,
-        private readonly TaskTemplateService $templates,
     ) {}
 
     public function index(Request $request): Response
@@ -39,7 +35,7 @@ class TaskController extends Controller
 
         $tasks = Task::query()
             ->visibleTo($user)
-            ->with(['assignee:id,name', 'template:id,name', 'project:id,key,name,color'])
+            ->with(['assignee:id,name', 'project:id,key,name,color'])
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->latest()
             ->paginate(15)
@@ -90,20 +86,6 @@ class TaskController extends Controller
                 ->values(),
             'priorities' => Options::priorities(),
             'forms' => $forms,
-            'scenariosCount' => TaskTemplate::query()
-                ->visibleTo(request()->user())
-                ->count(),
-        ]);
-    }
-
-    public function scenarios(): Response
-    {
-        return Inertia::render('Client/Tasks/Scenarios', [
-            'templates' => TaskTemplate::query()
-                ->visibleTo(request()->user())
-                ->with('defaultAssignee:id,name')
-                ->orderByDesc('usage_count')
-                ->get(),
         ]);
     }
 
@@ -113,13 +95,22 @@ class TaskController extends Controller
         FormTemplateService $forms,
         ConsentService $consents,
     ): RedirectResponse {
-        $request->validate(['consent' => ['accepted']]);
+        $data = $request->validate([
+            'consent' => ['accepted'],
+            'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
+        ]);
+
+        if (! empty($data['project_id'])) {
+            $project = Project::query()->visibleTo($request->user())->findOrFail($data['project_id']);
+            $this->authorize('createTask', $project);
+        }
 
         $task = $forms->createTask(
             $formTemplate,
             $request->user(),
             [
                 'title' => $request->input('title'),
+                'project_id' => $data['project_id'] ?? null,
                 'priority' => $request->input('priority'),
                 'deadline' => $request->input('deadline') ?: null,
                 'form_data' => $request->input('form_data', []),
@@ -146,52 +137,19 @@ class TaskController extends Controller
             $this->authorize('createTask', $project);
         }
 
-        if (! empty($data['template_id'])) {
-            $template = TaskTemplate::query()->visibleTo($user)->findOrFail($data['template_id']);
-
-            $task = $this->templates->apply($template, $user, $user, [
-                'title' => $data['title'],
-                'description' => $data['description'] ?? null,
-                'deadline' => $data['deadline'] ?? null,
-                'project_id' => $data['project_id'] ?? null,
-            ], TaskSource::Client);
-        } else {
-            if (mb_strlen(trim(strip_tags($data['description'] ?? ''))) < 10) {
-                throw ValidationException::withMessages([
-                    'description' => 'Опишите задачу подробнее — хотя бы 10 символов.',
-                ]);
-            }
-
-            $task = $action->execute($data, $user);
+        if (mb_strlen(trim(strip_tags($data['description'] ?? ''))) < 10) {
+            throw ValidationException::withMessages([
+                'description' => 'Опишите задачу подробнее — хотя бы 10 символов.',
+            ]);
         }
+
+        $task = $action->execute($data, $user);
 
         $this->customFields->sync($task, $customValues, $user);
         $consents->record($user, 'client-task', $request, ['task_id' => $task->id]);
 
         return redirect()->route('client.tasks.show', $task)
             ->with('success', 'Заявка отправлена.');
-    }
-
-    public function applyTemplate(
-        Request $request,
-        TaskTemplate $template,
-        TaskTemplateService $service,
-    ): RedirectResponse {
-        $user = $request->user();
-        $available = TaskTemplate::query()->visibleTo($user)->findOrFail($template->id);
-
-        $data = $request->validate([
-            'title' => ['nullable', 'string', 'min:3', 'max:255'],
-            'description' => ['nullable', 'string', 'max:20000'],
-            'deadline' => ['nullable', 'date', 'after_or_equal:today'],
-            'consent' => ['accepted'],
-        ]);
-
-        $task = $service->apply($available, $user, $user, $data, TaskSource::Client);
-        app(ConsentService::class)->record($user, 'client-task-template', $request, ['task_id' => $task->id]);
-
-        return redirect()->route('client.tasks.show', $task)
-            ->with('success', 'Заявка создана из шаблона.');
     }
 
     public function show(Request $request, Task $task): Response
@@ -201,7 +159,6 @@ class TaskController extends Controller
         $task->load([
             'assignee',
             'project',
-            'template',
             'formTemplate',
             'comments.author',
             'reports' => fn ($query) => $query
