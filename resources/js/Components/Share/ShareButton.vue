@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import {
     ArrowTopRightOnSquareIcon,
     CheckIcon,
@@ -105,7 +104,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                                 <p class="font-mono text-[8px] uppercase tracking-[0.16em] text-canvas/55">Передать клиенту</p>
                                 <h2 class="mt-1 truncate font-display text-[19px] font-medium tracking-[-0.03em]">Поделиться {{ kindLabel }}</h2>
                             </div>
-                            <KikiAvatar variant="face" fit="contain" :size="34" class="ml-auto" />
                         </div>
                     </div>
 
