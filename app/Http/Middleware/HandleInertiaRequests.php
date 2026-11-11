@@ -43,6 +43,7 @@ class HandleInertiaRequests extends Middleware
                     'has_client_delegation' => $user->hasClientDelegation(),
                     'has_executor_delegation' => $user->hasExecutorDelegation(),
                     'initials' => $this->initials($user->name),
+                    'sidebar_preferences' => $user->sidebar_preferences,
                 ] : null,
             ],
             'flash' => [
