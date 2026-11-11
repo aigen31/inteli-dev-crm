@@ -59,6 +59,7 @@ docker compose exec app php artisan db:seed --force
 | Кики: сессии, изображения, документы, планы задач, память проекта | [ai.md](docs/agents/ai.md) |
 | REST API v1, токены, примеры | [api.md](docs/agents/api.md) · [docs/api](docs/api/README.md) |
 | MCP-сервер и подключение ИИ-клиентов | [mcp.md](docs/agents/mcp.md) · [mcp/README.md](mcp/README.md) |
+| Работа ИИ-агента с CRM через MCP | [.agents/skills/inteli-dev-crm/SKILL.md](.agents/skills/inteli-dev-crm/SKILL.md) |
 | Vue/Inertia, дизайн-система, лейауты, сборка | [frontend.md](docs/agents/frontend.md) |
 | Pest, Pint, MCP-тесты, чем закрывать изменение | [testing.md](docs/agents/testing.md) |
 | Прод-деплой, образы, публикация ассетов | [deployment.md](docs/agents/deployment.md) |
@@ -66,7 +67,7 @@ docker compose exec app php artisan db:seed --force
 | Архитектурные решения | [docs/adr](docs/adr/README.md) |
 | Исследование PMS/CRM/AI-паттернов | [docs/research](docs/research/pms-landscape.md) |
 | Бизнес-требования | [.github/instructions/terms_of_reference.instructions.md](.github/instructions/terms_of_reference.instructions.md) |
-| Дизайн-система | [.superdesign/design-system.md](.superdesign/design-system.md) |
+| Дизайн-система и UI/UX | [design-system.md](docs/agents/design-system.md) · skill `ui-ux-pro-max` |
 | Иллюстрации и канон Кики | [kiki-assets.md](docs/agents/kiki-assets.md) |
 
 ## Что помнить всегда

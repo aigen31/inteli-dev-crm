@@ -1,5 +1,7 @@
 # CRM — Design System (light paper & violet)
 
+> Для поиска стилей, палитр, типографики и UX-правил используйте skill `ui-ux-pro-max`. Этот документ фиксирует текущую дизайн-систему проекта.
+
 ## 1. Product context
 
 Single-tenant CRM + project management for a self-employed specialist. Two roles: **admin** (clients, tasks, templates, invoices, payments, settings, API, Kiki) and **client** (own tasks/invoices, request from template, review, pay). No sign-up. Russian UI, RUB, dd.mm.yyyy.

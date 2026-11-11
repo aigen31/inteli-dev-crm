@@ -24,7 +24,9 @@
 
 Светлая «бумажная» тема inteli-dev: тёплый canvas, белые карточки, фиолетовый акцент, крупные радиусы, много воздуха. Токены — в `resources/css/app.css` (`canvas`, `surface`, `surface-2`, `paper`, `line`, `ink`, `muted`, `primary-*`, `accent`, `sage`, `sky`).
 
-Шрифты: Manrope (текст), Unbounded (заголовки/цифры), JetBrains Mono (метки, ID, суммы). Дизайн-система — [.superdesign/design-system.md](../../.superdesign/design-system.md).
+Шрифты: Manrope (текст), Unbounded (заголовки/цифры), JetBrains Mono (метки, ID, суммы). Дизайн-система — [design-system.md](design-system.md).
+
+Для UI/UX-задач используйте skill `ui-ux-pro-max`: поиск по style, product, color, typography, UX-правилам и stack-гайдам. Это основной инструмент для UI/UX-задач.
 
 ## Заголовки и действия
 

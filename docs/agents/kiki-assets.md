@@ -63,4 +63,4 @@
 - `resources/js/Components/Assistant/ChatThread.vue` — `kiki-chat-float.webp` в пустом чате; `AssistantPanel.vue` — `KikiAvatar variant="face"` в шапке и сообщениях.
 - `resources/js/Components/Layout/AppShell.vue` — `KikiAvatar variant="face"` в кнопке «Спросить Кики», мобильной шапке и нижней навигации.
 
-Дизайн-токены и правила — [.superdesign/design-system.md](../../.superdesign/design-system.md).
+Дизайн-токены и правила — [design-system.md](design-system.md).

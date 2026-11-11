@@ -23,7 +23,6 @@ phpunit.xml
 .gitignore
 docs
 mcp
-.superdesign
 .playwright-mcp
 .npm-cache
 .npm-logs
