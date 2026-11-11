@@ -150,7 +150,7 @@ class ProjectController extends Controller
 
         $data = $request->validate([
             'user_id' => ['required', 'uuid', 'exists:users,id'],
-            'role' => ['required', Rule::enum(ProjectMemberRole::class)],
+            'role' => ['required', Rule::in(['viewer', 'manager', 'member', 'client', 'executor'])],
             'delegation' => ['nullable', Rule::enum(ProjectDelegation::class)],
         ]);
 
@@ -162,7 +162,10 @@ class ProjectController extends Controller
 
         $project->members()->updateOrCreate(
             ['user_id' => $user->id],
-            ['role' => $data['role'], 'delegation' => $data['delegation'] ?? ProjectDelegation::Executor->value, 'added_by' => $request->user()->id],
+            [
+                ...$this->memberStorage($data['role'], $data['delegation'] ?? null),
+                'added_by' => $request->user()->id,
+            ],
         );
 
         return back()->with('success', 'Доступ выдан: '.$user->name.'.');
@@ -174,14 +177,11 @@ class ProjectController extends Controller
         abort_unless($member->project_id === $project->id, 404);
 
         $data = $request->validate([
-            'role' => ['required', Rule::enum(ProjectMemberRole::class)],
+            'role' => ['required', Rule::in(['viewer', 'manager', 'member', 'client', 'executor'])],
             'delegation' => ['sometimes', Rule::enum(ProjectDelegation::class)],
         ]);
 
-        $member->update([
-            'role' => $data['role'],
-            'delegation' => $data['delegation'] ?? $member->delegation?->value ?? ProjectDelegation::Executor->value,
-        ]);
+        $member->update($this->memberStorage($data['role'], $data['delegation'] ?? null));
 
         return back()->with('success', 'Доступ обновлён.');
     }
@@ -345,6 +345,40 @@ class ProjectController extends Controller
             ->all();
     }
 
+    /**
+     * @return array{role: ProjectMemberRole, delegation: ProjectDelegation}
+     */
+    private function memberStorage(string $role, ?string $delegation): array
+    {
+        $delegation = $delegation ? ProjectDelegation::from($delegation) : ProjectDelegation::Executor;
+
+        return match ($role) {
+            'client' => ['role' => ProjectMemberRole::Member, 'delegation' => ProjectDelegation::Client],
+            'executor' => ['role' => ProjectMemberRole::Member, 'delegation' => ProjectDelegation::Executor],
+            'manager' => ['role' => ProjectMemberRole::Manager, 'delegation' => $delegation],
+            'viewer' => ['role' => ProjectMemberRole::Viewer, 'delegation' => $delegation],
+            default => ['role' => ProjectMemberRole::Member, 'delegation' => $delegation],
+        };
+    }
+
+    private function accessRole(ProjectMember $member): string
+    {
+        return match ($member->role) {
+            ProjectMemberRole::Manager => 'manager',
+            ProjectMemberRole::Viewer => 'viewer',
+            default => $member->delegation === ProjectDelegation::Client ? 'client' : 'executor',
+        };
+    }
+
+    private function accessRoleLabel(ProjectMember $member): string
+    {
+        return match ($this->accessRole($member)) {
+            'client' => 'Клиент',
+            'executor' => 'Исполнитель',
+            default => $member->role->label(),
+        };
+    }
+
     private function members(Project $project): array
     {
         return $project->members()
@@ -357,6 +391,8 @@ class ProjectController extends Controller
                 'role_label' => $member->role->label(),
                 'delegation' => $member->delegation->value,
                 'delegation_label' => $member->delegation->label(),
+                'access_role' => $this->accessRole($member),
+                'access_role_label' => $this->accessRoleLabel($member),
                 'user' => $member->user ? [
                     'id' => $member->user->id,
                     'name' => $member->user->name,

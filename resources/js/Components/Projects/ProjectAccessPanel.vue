@@ -13,16 +13,12 @@ const props = defineProps({
 
 const form = useForm({
     user_id: '',
-    role: 'member',
-    delegation: 'executor',
+    role: 'executor',
 });
 
 const roles = [
-    { value: 'manager', label: 'Менеджер' },
-    { value: 'member', label: 'Участник' },
     { value: 'viewer', label: 'Наблюдатель' },
-];
-const delegations = [
+    { value: 'manager', label: 'Менеджер' },
     { value: 'client', label: 'Клиент' },
     { value: 'executor', label: 'Исполнитель' },
 ];
@@ -45,28 +41,21 @@ function add() {
 function changeRole(member, role) {
     router.patch(
         route('admin.projects.members.update', [props.project.id, member.id]),
-        { role, delegation: member.delegation || 'executor' },
+        { role },
         { preserveScroll: true },
     );
 }
 
-function changeDelegation(member, delegation) {
-    router.patch(
-        route('admin.projects.members.update', [props.project.id, member.id]),
-        { role: member.role, delegation },
-        { preserveScroll: true },
-    );
-}
-
-const roleOrder = ['manager', 'member', 'viewer'];
+const roleOrder = ['viewer', 'manager', 'client', 'executor'];
 const roleTone = {
     manager: 'border-primary-300 bg-primary-soft text-primary-800',
-    member: 'border-sky/40 bg-sky/10 text-ink-soft',
+    client: 'border-sky/40 bg-sky/10 text-ink-soft',
+    executor: 'border-sage/40 bg-sage/10 text-ink-soft',
     viewer: 'border-line bg-white/70 text-muted',
 };
 
 function cycleRole(member) {
-    const index = roleOrder.indexOf(member.role);
+    const index = roleOrder.indexOf(member.access_role);
     changeRole(member, roleOrder[(index + 1) % roleOrder.length]);
 }
 
@@ -116,22 +105,13 @@ function remove(member) {
                     v-if="canManage"
                     type="button"
                     class="rounded-full border px-2.5 py-1 text-[9px] font-semibold transition hover:opacity-80"
-                    :class="roleTone[member.role] || roleTone.member"
+                    :class="roleTone[member.access_role] || roleTone.viewer"
                     title="Нажмите, чтобы сменить доступ"
                     @click="cycleRole(member)"
                 >
-                    {{ member.role_label }} ↻
+                    {{ member.access_role_label }} ↻
                 </button>
-                <span v-else class="rounded-full bg-ink/[0.06] px-2 py-0.5 text-[9px] text-muted">{{ member.role_label }}</span>
-                <button
-                    v-if="canManage"
-                    type="button"
-                    class="rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 text-[9px] font-semibold text-primary-800 transition hover:opacity-80"
-                    title="Сменить делегацию"
-                    @click="changeDelegation(member, member.delegation === 'client' ? 'executor' : 'client')"
-                >
-                    {{ member.delegation_label || 'Исполнитель' }} ⇄
-                </button>
+                <span v-else class="rounded-full bg-ink/[0.06] px-2 py-0.5 text-[9px] text-muted">{{ member.access_role_label }}</span>
                 <button
                     v-if="canManage"
                     type="button"
@@ -150,10 +130,9 @@ function remove(member) {
 
         <div v-if="canManage && availableOptions.length" class="border-t border-line/80 px-5 py-4">
             <p class="eyebrow">Выдать доступ</p>
-            <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_120px_140px]">
+            <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_150px]">
                 <SelectInput v-model="form.user_id" :options="availableOptions" placeholder="Выберите пользователя" />
-                <SelectInput v-model="form.role" :options="roles" placeholder="Доступ" />
-                <SelectInput v-model="form.delegation" :options="delegations" placeholder="Делегация" />
+                <SelectInput v-model="form.role" :options="roles" placeholder="Роль" />
             </div>
             <p v-if="form.errors.user_id" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors.user_id) }}</p>
             <p v-if="form.errors.role" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors.role) }}</p>
