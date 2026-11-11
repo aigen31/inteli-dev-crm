@@ -197,3 +197,26 @@ test('the project access panel stores a delegation per member', function (): voi
 
     expect($project->members()->where('user_id', $client->id)->first()?->delegation->value)->toBe('client');
 });
+
+test('an executor and an admin can return a task from awaiting review to work', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = User::factory()->client()->create();
+    $executor = User::factory()->executor()->create();
+    $task = Task::factory()->create([
+        'client_id' => $client->id,
+        'created_by' => $admin->id,
+        'assignee_id' => $executor->id,
+        'status' => TaskStatus::AwaitingReview,
+    ]);
+
+    $this->actingAs($executor)
+        ->patch(route('executor.tasks.status', $task), ['status' => 'in_progress'])
+        ->assertRedirect();
+    expect($task->fresh()->status)->toBe(TaskStatus::InProgress);
+
+    $task->update(['status' => TaskStatus::AwaitingReview]);
+    $this->actingAs($admin)
+        ->patch(route('admin.tasks.status', $task), ['status' => 'in_progress'])
+        ->assertRedirect();
+    expect($task->fresh()->status)->toBe(TaskStatus::InProgress);
+});
