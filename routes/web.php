@@ -196,6 +196,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/tasks/create', [Client\TaskController::class, 'create'])->name('client.tasks.create');
         Route::post('/tasks/forms/{formTemplate}', [Client\TaskController::class, 'storeForm'])->name('client.tasks.forms.store');
         Route::post('/tasks', [Client\TaskController::class, 'store'])->name('client.tasks.store');
+        Route::get('/tasks/{task}/edit', [Client\TaskController::class, 'edit'])->whereUuid('task')->name('client.tasks.edit');
+        Route::put('/tasks/{task}', [Client\TaskController::class, 'update'])->whereUuid('task')->name('client.tasks.update');
         Route::get('/tasks/{task}', [Client\TaskController::class, 'show'])->name('client.tasks.show');
         Route::patch('/tasks/{task}/review', [Client\TaskController::class, 'review'])->name('client.tasks.review');
         Route::post('/tasks/{task}/comments', [Client\TaskCommentController::class, 'store'])->name('client.tasks.comments.store');

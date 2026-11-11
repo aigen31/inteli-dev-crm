@@ -10,11 +10,12 @@ import CustomFieldsView from '@/Components/CustomFields/CustomFieldsView.vue';
 import StructuredFormSummary from '@/Components/FormTemplates/StructuredFormSummary.vue';
 import { invoiceStatusLabels, taskPriorityLabels, taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate, formatDateTime, formatMoney } from '@/Utils/formatters.js';
-import { CheckIcon } from '@heroicons/vue/24/outline';
+import { CheckIcon, PencilSquareIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     task: Object,
     canReview: Boolean,
+    canEdit: Boolean,
     customFields: Array,
 });
 
@@ -48,6 +49,9 @@ function addComment() {
             <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
             <Badge :status="task.priority" type="priority">{{ taskPriorityLabels[task.priority] }}</Badge>
             <span class="text-[11px] text-muted">{{ task.deadline ? `срок ${formatDate(task.deadline)}` : 'срок не задан' }}</span>
+            <Link v-if="canEdit" :href="route('client.tasks.edit', task.id)" class="ml-auto">
+                <Button variant="secondary" size="sm"><PencilSquareIcon class="h-3.5 w-3.5" />Редактировать</Button>
+            </Link>
         </div>
 
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.45fr_.75fr]">

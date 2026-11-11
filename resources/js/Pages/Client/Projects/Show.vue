@@ -4,6 +4,7 @@ import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import { formatDate } from '@/Utils/formatters.js';
+import { taskStatusLabels } from '@/Utils/constants.js';
 import { ArrowLeftIcon, CheckCircleIcon, PlusIcon } from '@heroicons/vue/24/outline';
 
 defineProps({
@@ -73,7 +74,7 @@ defineProps({
                 >
                     <span class="w-[54px] shrink-0 font-mono text-[9px] text-faint">{{ task.number ? project.key + '-' + task.number : '—' }}</span>
                     <span class="min-w-0 flex-1 truncate text-[12px] font-medium text-ink">{{ task.title }}</span>
-                    <Badge :status="task.status" type="task" />
+                    <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
                     <span v-if="task.deadline" class="font-mono text-[9px] text-faint">{{ formatDate(task.deadline) }}</span>
                 </Link>
             </div>

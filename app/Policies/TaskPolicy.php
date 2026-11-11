@@ -38,7 +38,13 @@ class TaskPolicy
 
     public function update(User $user, Task $task): bool
     {
-        return $user->isAdmin();
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $task->client_id === $user->id
+            && $task->created_by === $user->id
+            && ($task->project === null || $task->project->isVisibleTo($user));
     }
 
     public function updateChecklist(User $user, Task $task): bool
