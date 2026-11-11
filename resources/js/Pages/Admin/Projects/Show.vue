@@ -69,14 +69,14 @@ function archive() {
 
         <section class="relative overflow-hidden rounded-[26px] border border-line bg-surface p-5 shadow-[0_18px_45px_rgba(28,24,35,0.06)] sm:p-6">
             <div class="absolute inset-0 bg-[radial-gradient(120%_130%_at_100%_-10%,rgba(143,154,255,0.16),transparent_60%)]"></div>
-            <div class="relative flex flex-wrap items-start gap-4">
+            <div class="relative flex flex-col items-stretch gap-4 sm:flex-row sm:items-start">
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="rounded-full border border-line bg-white/70 px-2.5 py-1 font-mono text-[10px] tracking-[0.08em] text-muted">{{ project.key }}</span>
                         <span :class="['rounded-full px-2.5 py-1 text-[10px] font-semibold', statusTone[project.status] || statusTone.draft]">{{ project.status_label }}</span>
                         <span v-if="project.client" class="text-[11px] text-muted">{{ project.client.name }}</span>
                     </div>
-                    <h1 class="mt-2 font-display text-[32px] font-medium leading-tight tracking-[-0.04em] text-ink">{{ project.name }}</h1>
+                    <h1 class="mt-2 break-words font-display text-[26px] font-medium leading-tight tracking-[-0.04em] text-ink sm:text-[32px]">{{ project.name }}</h1>
                     <p v-if="project.site_url" class="mt-1 text-[11px] text-muted">
                         <a :href="project.site_url" target="_blank" rel="noopener" class="inline-flex items-center gap-1 hover:text-primary-700">
                             {{ project.site_url }}
@@ -86,7 +86,7 @@ function archive() {
                     <p v-if="project.description" class="mt-3 max-w-[640px] text-[12px] leading-relaxed text-ink-soft">{{ project.description }}</p>
                 </div>
 
-                <div class="w-full max-w-[280px] rounded-[18px] border border-line bg-white/70 p-4">
+                <div class="w-full rounded-[18px] border border-line bg-white/70 p-4 sm:max-w-[280px]">
                     <div class="flex items-end justify-between">
                         <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-faint">Прогресс</p>
                         <p class="font-display text-[28px] leading-none text-ink">{{ progress.percent }}<span class="text-[14px] text-muted">%</span></p>
