@@ -95,7 +95,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                 >
                     <div class="relative overflow-hidden bg-ink px-5 pb-5 pt-5 text-canvas">
                         <div class="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary-400/30 blur-2xl"></div>
-                        <button type="button" class="absolute right-4 top-4 rounded-full p-1.5 text-canvas/60 transition hover:bg-white/10 hover:text-canvas" aria-label="Закрыть" @click="close">
+                        <button type="button" class="absolute right-4 top-4 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full text-canvas/60 transition hover:bg-white/10 hover:text-canvas" aria-label="Закрыть" @click="close">
                             <XMarkIcon class="h-4 w-4" />
                         </button>
                         <div class="relative flex items-center gap-3">
