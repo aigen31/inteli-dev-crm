@@ -1,5 +1,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import ProjectTaskSort from '@/Components/Projects/ProjectTaskSort.vue';
+import { useProjectTaskSort } from '@/Composables/useProjectTaskSort';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
@@ -7,12 +9,14 @@ import { formatDate } from '@/Utils/formatters.js';
 import { taskStatusLabels } from '@/Utils/constants.js';
 import { ArrowLeftIcon, CheckCircleIcon, PlusIcon } from '@heroicons/vue/24/outline';
 
-defineProps({
+const props = defineProps({
     project: Object,
     tasks: Array,
     progress: Object,
     team: { type: Array, default: () => [] },
 });
+
+const { sort, sortedTasks, setSort } = useProjectTaskSort(() => props.tasks);
 </script>
 
 <template>
@@ -59,15 +63,16 @@ defineProps({
         </section>
 
         <section class="surface-card mt-5">
-            <header class="flex items-center gap-2 border-b border-line/80 px-5 py-3.5">
+            <header class="flex flex-wrap items-center gap-2 border-b border-line/80 px-5 py-3.5">
                 <CheckCircleIcon class="h-4 w-4 text-primary-600" />
                 <p class="text-[12px] font-bold text-ink">Мои задачи в проекте</p>
                 <span class="font-mono text-[9px] text-faint">{{ tasks.length }}</span>
+                <ProjectTaskSort class="ml-auto" :model-value="sort" @update:model-value="setSort" />
             </header>
 
             <div v-if="tasks.length" class="divide-y divide-line/70">
                 <Link
-                    v-for="task in tasks"
+                    v-for="task in sortedTasks"
                     :key="task.id"
                     :href="route('client.tasks.show', task.id)"
                     class="flex flex-wrap items-center gap-3 px-5 py-3 transition hover:bg-primary-soft/30"

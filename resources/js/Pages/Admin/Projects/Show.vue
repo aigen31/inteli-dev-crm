@@ -6,6 +6,8 @@ import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import ProjectContextPanel from '@/Components/Projects/ProjectContextPanel.vue';
 import ProjectAccessPanel from '@/Components/Projects/ProjectAccessPanel.vue';
+import ProjectTaskSort from '@/Components/Projects/ProjectTaskSort.vue';
+import { useProjectTaskSort } from '@/Composables/useProjectTaskSort';
 import ProjectInvitesPanel from '@/Components/Projects/ProjectInvitesPanel.vue';
 import ShareButton from '@/Components/Share/ShareButton.vue';
 import { useAssistant } from '@/Composables/useAssistant';
@@ -33,6 +35,7 @@ const props = defineProps({
 });
 
 const { open } = useAssistant();
+const { sort, sortedTasks, setSort } = useProjectTaskSort(() => props.tasks);
 
 const statusTone = {
     active: 'bg-primary-soft text-primary-800',
@@ -107,16 +110,17 @@ function archive() {
         <div class="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,.9fr)]">
             <div class="min-w-0 space-y-4">
                 <section class="surface-card">
-                    <header class="flex items-center gap-2 border-b border-line/80 px-5 py-3.5">
+                    <header class="flex flex-wrap items-center gap-2 border-b border-line/80 px-5 py-3.5">
                         <CheckCircleIcon class="h-4 w-4 text-primary-600" />
                         <p class="text-[12px] font-bold text-ink">Задачи</p>
                         <span class="font-mono text-[9px] text-faint">{{ progress.total }}</span>
-                        <Link :href="route('admin.projects.edit', project.id)" class="ml-auto text-[10px] text-muted hover:text-ink">настройки</Link>
+                        <ProjectTaskSort class="sm:ml-auto" :model-value="sort" @update:model-value="setSort" />
+                        <Link :href="route('admin.projects.edit', project.id)" class="text-[10px] text-muted hover:text-ink">настройки</Link>
                     </header>
 
                     <div v-if="tasks.length" class="divide-y divide-line/70">
                         <Link
-                            v-for="task in tasks"
+                            v-for="task in sortedTasks"
                             :key="task.id"
                             :href="route('admin.tasks.show', task.id)"
                             class="flex items-center gap-3 px-5 py-3 transition hover:bg-primary-soft/30"
