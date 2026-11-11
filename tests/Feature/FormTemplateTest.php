@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\FormTemplate;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\FileUploadService;
@@ -17,6 +18,15 @@ beforeEach(function (): void {
     $this->seed(FormTemplateSeeder::class);
     $this->client = User::factory()->client()->create();
     $this->admin = User::factory()->admin()->create();
+    $this->project = Project::query()->create([
+        'key' => 'FRM',
+        'name' => 'Form project',
+        'client_id' => $this->client->id,
+        'created_by' => $this->admin->id,
+        'status' => 'active',
+        'priority' => 'medium',
+        'color' => 'violet',
+    ]);
 });
 
 test('client submits a structured bug report and it becomes a task', function (): void {
@@ -24,6 +34,7 @@ test('client submits a structured bug report and it becomes a task', function ()
 
     $response = $this->actingAs($this->client)->post(route('client.tasks.forms.store', $template->key), [
         'consent' => true,
+        'project_id' => $this->project->id,
         'title' => 'Не работает вход',
         'priority' => 'high',
         'form_data' => [
@@ -61,6 +72,7 @@ test('required structured fields and repeatable steps are enforced', function ()
     $this->actingAs($this->client)
         ->post(route('client.tasks.forms.store', $template->key), [
             'consent' => true,
+            'project_id' => $this->project->id,
             'title' => 'Пустая заявка',
             'form_data' => ['fields' => [], 'groups' => []],
         ])

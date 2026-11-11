@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\FormTemplate;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,6 +13,15 @@ uses(RefreshDatabase::class);
 test('an admin can create a task from a structured form', function (): void {
     $admin = User::factory()->admin()->create();
     $client = User::factory()->client()->create();
+    $project = Project::query()->create([
+        'key' => 'ADF',
+        'name' => 'Admin form project',
+        'client_id' => $client->id,
+        'created_by' => $admin->id,
+        'status' => 'active',
+        'priority' => 'medium',
+        'color' => 'violet',
+    ]);
     $template = FormTemplate::query()->create([
         'key' => 'task-description-images',
         'name' => 'Описание задачи + изображения',
@@ -30,6 +40,7 @@ test('an admin can create a task from a structured form', function (): void {
     $this->actingAs($admin)
         ->post(route('admin.tasks.forms.store', $template), [
             'client_id' => $client->id,
+            'project_id' => $project->id,
             'title' => 'Задача из формы',
             'priority' => 'medium',
             'form_data' => [

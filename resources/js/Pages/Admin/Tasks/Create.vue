@@ -216,7 +216,7 @@ function submit() {
                             <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="admin-task-consent" variant="contract" />
                         </div>
 
-                        <Button class="mt-4 w-full" :disabled="form.processing || !form.consent" @click="submit">
+                        <Button class="mt-4 w-full" :disabled="form.processing || !form.consent || !form.project_id" @click="submit">
                             <CheckCircleIcon class="h-4 w-4" />
                             {{ form.processing ? 'Создаю…' : 'Создать задачу' }}
                         </Button>

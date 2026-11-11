@@ -19,7 +19,7 @@ class StoreAdminFormTaskRequest extends FormRequest
     {
         return [
             'client_id' => ['required', 'uuid', 'exists:users,id'],
-            'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
+            'project_id' => ['required', 'uuid', 'exists:projects,id'],
             'assignee_id' => ['nullable', 'uuid', 'exists:users,id'],
             'title' => ['nullable', 'string', 'min:3', 'max:255'],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],

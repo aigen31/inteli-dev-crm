@@ -9,6 +9,7 @@ const props = defineProps({
     options: { type: Array, default: () => [] },
     placeholder: { type: String, default: 'Выберите…' },
     id: { type: String, default: null },
+    required: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -23,6 +24,7 @@ const inputId = computed(() => props.id || `select-${Math.random().toString(36).
         </label>
         <select
             :id="inputId"
+            :required="required"
             :value="modelValue"
             :class="[
                 'h-10 w-full rounded-[13px] border bg-white/70 px-3.5 text-[13px] text-ink transition',

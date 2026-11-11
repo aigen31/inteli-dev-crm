@@ -266,11 +266,13 @@ function submit() {
                             <SelectInput
                                 v-if="projects.length"
                                 v-model="form.project_id"
-                                label="Проект (необязательно)"
+                                label="Проект"
                                 :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))"
-                                placeholder="Без проекта"
+                                placeholder="Выберите проект" required
                                 :error="form.errors.project_id"
                             />
+                            <p v-if="projects.length" class="mt-1 text-[10px] text-muted">Проект обязателен — задача появится в нём у клиента.</p>
+                            <p v-else class="mt-1 text-[10px] text-danger-ink">У вас нет доступных проектов. Попросите владельца добавить вас в проект.</p>
 
                             <template v-if="freeform">
                                 <div>
@@ -337,7 +339,7 @@ function submit() {
                             <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="task-consent" />
                         </div>
 
-                        <Button class="mt-4 w-full" :disabled="form.processing || !form.consent" @click="submit">
+                        <Button class="mt-4 w-full" :disabled="form.processing || !form.consent || !form.project_id" @click="submit">
                             <CheckCircleIcon class="h-4 w-4" />
                             {{ form.processing ? 'Отправляю…' : 'Отправить заявку' }}
                         </Button>
