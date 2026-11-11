@@ -109,6 +109,9 @@ function submit() {
                     К задачам
                 </Button>
             </Link>
+            <Link :href="route('admin.tasks.forms.create')">
+                <Button variant="secondary" size="sm">Из формы</Button>
+            </Link>
         </template>
 
         <section class="relative mb-5 overflow-hidden rounded-[28px] border border-line bg-gradient-to-br from-[#fbf7ef] via-[#f5f0fb] to-[#ece5fa] px-5 py-5 sm:px-7 sm:py-6">
