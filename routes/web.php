@@ -213,6 +213,7 @@ Route::middleware('auth')->group(function () {
 
 // Reports are shared by both roles; the policy checks the recipient.
 Route::middleware(['auth', 'is_active'])->group(function () {
+    Route::patch('/sidebar-preferences', [\App\Http\Controllers\SidebarPreferenceController::class, 'update'])->name('sidebar.update');
     Route::get('/reports/{report}', [ReportController::class, 'show'])->whereUuid('report')->name('reports.show');
     Route::get('/reports/{report}/screenshot', [ReportController::class, 'screenshot'])->whereUuid('report')->name('reports.screenshot');
 });

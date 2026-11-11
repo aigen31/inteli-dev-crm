@@ -1,13 +1,16 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
+    AdjustmentsHorizontalIcon,
     ArrowRightOnRectangleIcon,
     BanknotesIcon,
     Bars3Icon,
     ChatBubbleLeftRightIcon,
     CheckCircleIcon,
     Cog6ToothIcon,
+    EyeIcon,
+    EyeSlashIcon,
     FolderIcon,
     HomeIcon,
     InboxIcon,
@@ -45,41 +48,135 @@ const isExecutor = computed(() => props.role === 'executor');
 const hasClientDelegation = computed(() => page.props.auth?.user?.has_client_delegation === true);
 const hasExecutorDelegation = computed(() => page.props.auth?.user?.has_executor_delegation === true);
 
-const navigation = computed(() => {
+const baseNavigation = computed(() => {
     if (isAdmin.value) {
         return [
-            { label: 'Обзор', href: route('admin.dashboard'), icon: HomeIcon, active: path.value === '/admin/dashboard' },
-            { label: 'Задачи', href: route('admin.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/admin/tasks') },
-            { label: 'Проекты', href: route('admin.projects.index'), icon: FolderIcon, active: path.value.startsWith('/admin/projects') },
-            { label: 'Шаблоны', href: route('admin.forms.index'), icon: RectangleStackIcon, active: path.value.startsWith('/admin/forms') },
-            { label: 'Клиенты', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') },
-            { label: 'Команда', href: route('admin.team.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/admin/team') },
-            { label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },
-            { label: 'Отчёты', href: route('admin.reports.index'), icon: InboxIcon, active: path.value.startsWith('/admin/reports') },
-            { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
+            { key: 'admin.dashboard', label: 'Обзор', href: route('admin.dashboard'), icon: HomeIcon, active: path.value === '/admin/dashboard' },
+            { key: 'admin.tasks', label: 'Задачи', href: route('admin.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/admin/tasks') },
+            { key: 'admin.projects', label: 'Проекты', href: route('admin.projects.index'), icon: FolderIcon, active: path.value.startsWith('/admin/projects') },
+            { key: 'admin.forms', label: 'Шаблоны', href: route('admin.forms.index'), icon: RectangleStackIcon, active: path.value.startsWith('/admin/forms') },
+            { key: 'admin.clients', label: 'Клиенты', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') },
+            { key: 'admin.team', label: 'Команда', href: route('admin.team.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/admin/team') },
+            { key: 'admin.invoices', label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },
+            { key: 'admin.reports', label: 'Отчёты', href: route('admin.reports.index'), icon: InboxIcon, active: path.value.startsWith('/admin/reports') },
+            { key: 'assistant', label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
         ];
     }
 
     if (isExecutor.value) {
         return [
-            { label: 'Обзор', href: route('executor.dashboard'), icon: HomeIcon, active: path.value === '/executor/dashboard' },
-            { label: 'Мои задачи', href: route('executor.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/executor/tasks') },
-            ...(hasClientDelegation.value ? [{ label: 'Мои заявки', href: route('client.tasks.index'), icon: RectangleStackIcon, active: path.value.startsWith('/tasks') }] : []),
-            { label: 'Отчёты', href: route('executor.reports.index'), icon: InboxIcon, active: path.value.startsWith('/executor/reports') },
-            { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
+            { key: 'executor.dashboard', label: 'Обзор', href: route('executor.dashboard'), icon: HomeIcon, active: path.value === '/executor/dashboard' },
+            { key: 'executor.tasks', label: 'Мои задачи', href: route('executor.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/executor/tasks') },
+            ...(hasClientDelegation.value ? [{ key: 'client.tasks', label: 'Мои заявки', href: route('client.tasks.index'), icon: RectangleStackIcon, active: path.value.startsWith('/tasks') }] : []),
+            { key: 'executor.reports', label: 'Отчёты', href: route('executor.reports.index'), icon: InboxIcon, active: path.value.startsWith('/executor/reports') },
+            { key: 'assistant', label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
         ];
     }
 
     return [
-        { label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' },
-        { label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') && !path.value.startsWith('/projects/system') },
-        { label: 'Задачи', href: route('client.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/tasks') },
-        ...(hasExecutorDelegation.value ? [{ label: 'Назначено мне', href: route('executor.tasks.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/executor/tasks') }] : []),
-        { label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
-        { label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') },
-        { label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
+        { key: 'client.dashboard', label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' },
+        { key: 'client.projects', label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') && !path.value.startsWith('/projects/system') },
+        { key: 'client.tasks', label: 'Задачи', href: route('client.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/tasks') },
+        ...(hasExecutorDelegation.value ? [{ key: 'executor.tasks', label: 'Назначено мне', href: route('executor.tasks.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/executor/tasks') }] : []),
+        { key: 'client.invoices', label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
+        { key: 'client.reports', label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') },
+        { key: 'assistant', label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
     ];
 });
+
+const sidebarEdit = ref(false);
+const sidebarSaving = ref(false);
+const dragKey = ref(null);
+
+function normalizeLayout(value) {
+    const map = new Map(baseNavigation.value.map((item) => [item.key, item]));
+    const source = Array.isArray(value) ? value : [];
+    const seen = new Set();
+    const result = [];
+
+    source.forEach((row) => {
+        if (!row || !map.has(row.key) || seen.has(row.key)) return;
+        seen.add(row.key);
+        result.push({ key: row.key, hidden: Boolean(row.hidden) });
+    });
+
+    baseNavigation.value.forEach((item) => {
+        if (!seen.has(item.key)) result.push({ key: item.key, hidden: false });
+    });
+
+    return result;
+}
+
+const savedLayout = ref(normalizeLayout(page.props.auth?.user?.sidebar_preferences));
+const draftLayout = ref([]);
+
+const allNavigation = computed(() => {
+    const map = new Map(baseNavigation.value.map((item) => [item.key, item]));
+
+    return (sidebarEdit.value ? draftLayout.value : savedLayout.value)
+        .map((row) => {
+            const item = map.get(row.key);
+            return item ? { ...item, hidden: row.hidden } : null;
+        })
+        .filter(Boolean);
+});
+
+const navigation = computed(() => allNavigation.value.filter((item) => !item.hidden));
+
+watch(
+    () => page.props.auth?.user?.sidebar_preferences,
+    (value) => {
+        if (!sidebarEdit.value) savedLayout.value = normalizeLayout(value);
+    },
+    { deep: true },
+);
+
+onMounted(() => {
+    savedLayout.value = normalizeLayout(page.props.auth?.user?.sidebar_preferences);
+});
+
+function startSidebarEdit() {
+    draftLayout.value = normalizeLayout(savedLayout.value);
+    sidebarEdit.value = true;
+}
+
+function cancelSidebarEdit() {
+    sidebarEdit.value = false;
+    dragKey.value = null;
+}
+
+function toggleSidebarItem(key) {
+    const row = draftLayout.value.find((item) => item.key === key);
+    if (row) row.hidden = !row.hidden;
+}
+
+function startSidebarDrag(key) {
+    dragKey.value = key;
+}
+
+function dropSidebarItem(targetKey) {
+    if (!dragKey.value || dragKey.value === targetKey) return;
+
+    const from = draftLayout.value.findIndex((item) => item.key === dragKey.value);
+    const to = draftLayout.value.findIndex((item) => item.key === targetKey);
+    if (from === -1 || to === -1) return;
+
+    const [moved] = draftLayout.value.splice(from, 1);
+    draftLayout.value.splice(to, 0, moved);
+    dragKey.value = null;
+}
+
+function saveSidebar() {
+    sidebarSaving.value = true;
+    router.patch(route('sidebar.update'), { items: draftLayout.value }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            savedLayout.value = draftLayout.value.map((item) => ({ ...item }));
+            sidebarEdit.value = false;
+        },
+        onFinish: () => (sidebarSaving.value = false),
+    });
+}
 
 const mobileNavigation = computed(() => navigation.value.filter((item) => !item.href.endsWith('/assistant')));
 
@@ -124,8 +221,22 @@ function logout() {
                 <span class="rounded-full border border-warning/25 bg-warning/10 px-2 py-[2px] font-mono text-[8px] uppercase tracking-[0.14em] text-warning">beta</span>
             </Link>
 
-            <p class="eyebrow mt-10 px-3">Рабочее пространство</p>
-            <nav class="mt-3 space-y-1">
+            <div class="mt-10 flex items-center justify-between gap-2 px-3">
+                <p class="eyebrow">Рабочее пространство</p>
+                <button
+                    type="button"
+                    :class="[
+                        'rounded-lg p-1.5 transition',
+                        sidebarEdit ? 'bg-primary-soft text-primary-700' : 'text-faint/50 hover:bg-ink/[0.04] hover:text-muted',
+                    ]"
+                    :title="sidebarEdit ? 'Закрыть настройку меню' : 'Настроить меню'"
+                    :aria-label="sidebarEdit ? 'Закрыть настройку меню' : 'Настроить меню'"
+                    @click="sidebarEdit ? cancelSidebarEdit() : startSidebarEdit()"
+                >
+                    <AdjustmentsHorizontalIcon class="h-3.5 w-3.5" />
+                </button>
+            </div>
+            <nav v-if="!sidebarEdit" class="mt-3 space-y-1">
                 <Link
                     v-for="item in navigation"
                     :key="item.label"
@@ -143,7 +254,50 @@ function logout() {
                 </Link>
             </nav>
 
+            <div v-else class="mt-3">
+                <p class="px-2 text-[9px] leading-relaxed text-muted">Перетащите разделы, чтобы изменить порядок. Глаз скрывает или возвращает пункт.</p>
+                <div class="mt-2 space-y-1.5">
+                    <div
+                        v-for="item in allNavigation"
+                        :key="item.key"
+                        draggable="true"
+                        :class="[
+                            'group flex items-center gap-2 rounded-xl border px-2.5 py-2 transition',
+                            item.hidden ? 'border-dashed border-line bg-transparent opacity-55' : 'border-line/70 bg-white/55',
+                            dragKey === item.key ? 'scale-[0.99] opacity-50' : '',
+                        ]"
+                        @dragstart="startSidebarDrag(item.key)"
+                        @dragover.prevent
+                        @drop.prevent="dropSidebarItem(item.key)"
+                        @dragend="dragKey = null"
+                    >
+                        <Bars3Icon class="h-3.5 w-3.5 shrink-0 cursor-grab text-faint active:cursor-grabbing" />
+                        <component :is="item.icon" :class="['h-4 w-4 shrink-0', item.hidden ? 'text-faint' : 'text-muted']" />
+                        <span :class="['min-w-0 flex-1 truncate text-[11px] font-semibold', item.hidden ? 'text-faint line-through' : 'text-ink-soft']">{{ item.label }}</span>
+                        <button
+                            type="button"
+                            :class="['rounded-md p-1 transition hover:bg-ink/[0.06]', item.hidden ? 'text-faint' : 'text-muted hover:text-ink']"
+                            :title="item.hidden ? 'Показать раздел' : 'Скрыть раздел'"
+                            :aria-label="item.hidden ? 'Показать раздел' : 'Скрыть раздел'"
+                            @click.stop="toggleSidebarItem(item.key)"
+                        >
+                            <EyeIcon v-if="item.hidden" class="h-3.5 w-3.5" />
+                            <EyeSlashIcon v-else class="h-3.5 w-3.5" />
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                    <button type="button" class="rounded-xl border border-line bg-white/50 px-2 py-2 text-[10px] font-semibold text-muted transition hover:text-ink" @click="cancelSidebarEdit">Отмена</button>
+                    <button type="button" class="rounded-xl bg-primary-600 px-2 py-2 text-[10px] font-semibold text-white transition hover:bg-primary-700 disabled:opacity-60" :disabled="sidebarSaving" @click="saveSidebar">
+                        {{ sidebarSaving ? 'Сохраняю…' : 'Сохранить' }}
+                    </button>
+                </div>
+                <p class="mt-2 px-1 text-right font-mono text-[8px] uppercase tracking-[0.08em] text-faint">{{ allNavigation.filter((item) => item.hidden).length }} скрыто</p>
+            </div>
+
             <button
+                v-if="!sidebarEdit"
                 type="button"
                 class="mt-6 flex w-full items-center gap-3 rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-surface px-3 py-3 text-left transition hover:border-primary-300"
                 @click="open"

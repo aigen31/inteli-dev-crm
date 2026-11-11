@@ -31,6 +31,7 @@ class User extends Authenticatable
         'locale',
         'theme',
         'features',
+        'sidebar_preferences',
     ];
 
     protected $hidden = [
@@ -45,6 +46,7 @@ class User extends Authenticatable
             'messenger_contacts' => 'array',
             'password' => 'hashed',
             'features' => 'array',
+            'sidebar_preferences' => 'array',
             'is_active' => 'boolean',
         ];
     }
