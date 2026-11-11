@@ -133,6 +133,8 @@ Route::middleware('auth')->group(function () {
         // Tasks
         Route::get('/tasks', [Admin\TaskController::class, 'index'])->name('tasks.index');
         Route::get('/tasks/create', [Admin\TaskController::class, 'create'])->name('tasks.create');
+        Route::get('/tasks/forms/create', [Admin\TaskController::class, 'createFromForm'])->name('tasks.forms.create');
+        Route::post('/tasks/forms/{formTemplate}', [Admin\TaskController::class, 'storeForm'])->name('tasks.forms.store');
         Route::post('/tasks', [Admin\TaskController::class, 'store'])->name('tasks.store');
         Route::patch('/tasks/bulk-status', [Admin\TaskController::class, 'bulkStatus'])->name('tasks.bulk-status');
         Route::get('/tasks/{task}', [Admin\TaskController::class, 'show'])->name('tasks.show');

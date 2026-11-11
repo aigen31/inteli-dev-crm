@@ -108,6 +108,12 @@ function setStatus(value) {
 <template>
     <AdminLayout title="Задачи">
         <template #actions>
+            <Link :href="route('admin.tasks.forms.create')">
+                <Button variant="secondary">
+                    <Squares2X2Icon class="h-4 w-4" />
+                    Из формы
+                </Button>
+            </Link>
             <Link :href="route('admin.forms.index')">
                 <Button variant="secondary">
                     <Squares2X2Icon class="h-4 w-4" />

@@ -12,6 +12,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BulkChangeTaskStatusRequest;
 use App\Http\Requests\Admin\ChangeTaskStatusRequest;
+use App\Http\Requests\Admin\StoreAdminFormTaskRequest;
 use App\Http\Requests\Admin\StoreTaskRequest;
 use App\Http\Requests\Admin\UpdateTaskRequest;
 use App\Models\Project;
@@ -20,6 +21,7 @@ use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\ConsentService;
 use App\Services\CustomFieldService;
+use App\Services\FormTemplateService;
 use App\Services\HtmlSanitizer;
 use App\Services\TaskTemplateService;
 use App\Support\Options;
@@ -87,6 +89,45 @@ class TaskController extends Controller
         return Inertia::render('Admin/Tasks/Create', [
             ...$this->formOptions(),
         ]);
+    }
+
+    public function createFromForm(): Response
+    {
+        return Inertia::render('Admin/Tasks/CreateFromForm', [
+            ...$this->formOptions(),
+            'forms' => \App\Models\FormTemplate::query()
+                ->active()
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->map(fn (\App\Models\FormTemplate $form): array => $form->toLibraryArray())
+                ->values(),
+        ]);
+    }
+
+    public function storeForm(
+        StoreAdminFormTaskRequest $request,
+        \App\Models\FormTemplate $formTemplate,
+        FormTemplateService $forms,
+    ): RedirectResponse {
+        $data = $request->validated();
+        $client = User::query()->findOrFail($data['client_id']);
+
+        $task = $forms->createTask($formTemplate, $client, [
+            'title' => $data['title'] ?? null,
+            'priority' => $data['priority'] ?? null,
+            'deadline' => $data['deadline'] ?? null,
+            'form_data' => $data['form_data'],
+        ], $request->user(), \App\Enums\TaskSource::Manual);
+
+        $task->update(array_filter([
+            'project_id' => $data['project_id'] ?? null,
+            'assignee_id' => $data['assignee_id'] ?? null,
+            'budget' => $data['budget'] ?? null,
+        ], fn ($value) => $value !== null && $value !== ''));
+
+        return redirect()->route('admin.tasks.show', $task)
+            ->with('success', 'Задача создана из формы.');
     }
 
     public function store(

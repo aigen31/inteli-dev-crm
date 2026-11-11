@@ -38,7 +38,7 @@ class FormTemplateService
         }
 
         $schema = $template->normalizedSchema();
-        $validator = Validator::make($payload, $this->rules($schema, $client), $this->messages($schema));
+        $validator = Validator::make($payload, $this->rules($schema, $creator), $this->messages($schema));
 
         if ($validator->fails()) {
             throw new ValidationException($validator);

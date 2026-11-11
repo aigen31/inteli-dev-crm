@@ -25,7 +25,8 @@ const props = defineProps({
 const { open } = useAssistant();
 const page = usePage();
 
-const selectedKey = ref(props.forms[0]?.key || null);
+const preferredForm = props.forms.find((form) => form.key === 'task-description-images') || props.forms[0];
+const selectedKey = ref(preferredForm?.key || null);
 const freeform = ref(props.forms.length === 0);
 const pickerOpen = ref(false);
 const selected = computed(() => props.forms.find((form) => form.key === selectedKey.value) || null);
@@ -54,13 +55,13 @@ function emptyFormData(template) {
 }
 
 const form = useForm({
-    title: props.forms[0]?.name || '',
+    title: preferredForm?.name || '',
     description: '',
     project_id: new URLSearchParams(window.location.search).get('project_id') || '',
     consent: false,
     priority: 'medium',
     deadline: '',
-    form_data: emptyFormData(props.forms[0]),
+    form_data: emptyFormData(preferredForm),
 });
 
 function choose(template) {
