@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\Task\ChangeTaskStatusAction;
 use App\Actions\Task\CreateTaskAction;
 use App\Enums\CustomFieldEntity;
+use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
@@ -15,6 +16,7 @@ use App\Http\Requests\Admin\ChangeTaskStatusRequest;
 use App\Http\Requests\Admin\StoreAdminFormTaskRequest;
 use App\Http\Requests\Admin\StoreTaskRequest;
 use App\Http\Requests\Admin\UpdateTaskRequest;
+use App\Models\FormTemplate;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskTemplate;
@@ -95,19 +97,19 @@ class TaskController extends Controller
     {
         return Inertia::render('Admin/Tasks/CreateFromForm', [
             ...$this->formOptions(),
-            'forms' => \App\Models\FormTemplate::query()
+            'forms' => FormTemplate::query()
                 ->active()
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get()
-                ->map(fn (\App\Models\FormTemplate $form): array => $form->toLibraryArray())
+                ->map(fn (FormTemplate $form): array => $form->toLibraryArray())
                 ->values(),
         ]);
     }
 
     public function storeForm(
         StoreAdminFormTaskRequest $request,
-        \App\Models\FormTemplate $formTemplate,
+        FormTemplate $formTemplate,
         FormTemplateService $forms,
     ): RedirectResponse {
         $data = $request->validated();
@@ -118,7 +120,7 @@ class TaskController extends Controller
             'priority' => $data['priority'] ?? null,
             'deadline' => $data['deadline'] ?? null,
             'form_data' => $data['form_data'],
-        ], $request->user(), \App\Enums\TaskSource::Manual);
+        ], $request->user(), TaskSource::Manual);
 
         $task->update(array_filter([
             'project_id' => $data['project_id'] ?? null,
