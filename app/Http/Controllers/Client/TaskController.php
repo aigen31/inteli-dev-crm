@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Client;
 use App\Actions\Task\ChangeTaskStatusAction;
 use App\Actions\Task\CreateTaskAction;
 use App\Enums\TaskStatus;
+use App\Events\Task\TaskStatusChanged;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ReviewTaskRequest;
 use App\Http\Requests\Client\StoreTaskRequest;
@@ -16,6 +17,7 @@ use App\Models\Task;
 use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use App\Services\FormTemplateService;
+use App\Services\HtmlSanitizer;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -152,6 +154,59 @@ class TaskController extends Controller
             ->with('success', 'Заявка отправлена.');
     }
 
+    public function edit(Request $request, Task $task): Response
+    {
+        $this->authorize('update', $task);
+
+        $task->load(['project:id,key,name,color', 'formTemplate']);
+
+        return Inertia::render('Client/Tasks/Edit', [
+            'task' => $task,
+            'projects' => Project::query()
+                ->visibleTo($request->user())
+                ->whereNull('archived_at')
+                ->orderBy('name')
+                ->get(['id', 'key', 'name', 'color']),
+            'priorities' => Options::priorities(),
+        ]);
+    }
+
+    public function update(Request $request, Task $task, HtmlSanitizer $sanitizer): RedirectResponse
+    {
+        $this->authorize('update', $task);
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'description' => ['nullable', 'string', 'max:60000'],
+            'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
+            'priority' => ['sometimes', 'string'],
+            'deadline' => ['nullable', 'date'],
+            'form_data' => ['nullable', 'array'],
+        ]);
+
+        if (! empty($data['project_id'])) {
+            Project::query()->visibleTo($request->user())->findOrFail($data['project_id']);
+        }
+
+        $oldStatus = $task->status;
+        $task->fill([
+            'title' => $data['title'],
+            'description' => $sanitizer->sanitize($data['description'] ?? ''),
+            'project_id' => $data['project_id'] ?? null,
+            'priority' => $data['priority'] ?? $task->priority->value,
+            'deadline' => $data['deadline'] ?? null,
+            'form_data' => $task->form_template_id ? ($data['form_data'] ?? []) : $task->form_data,
+            'status' => TaskStatus::PendingReview,
+        ])->save();
+
+        if ($oldStatus !== TaskStatus::PendingReview) {
+            TaskStatusChanged::dispatch($task->fresh(), $oldStatus, TaskStatus::PendingReview, $request->user(), 'Задача отредактирована клиентом.');
+        }
+
+        return redirect()->route('client.tasks.show', $task)
+            ->with('success', 'Задача обновлена и отправлена на повторное рассмотрение.');
+    }
+
     public function show(Request $request, Task $task): Response
     {
         $this->authorize('view', $task);
@@ -173,6 +228,7 @@ class TaskController extends Controller
         return Inertia::render('Client/Tasks/Show', [
             'task' => $task,
             'canReview' => $canReview,
+            'canEdit' => $request->user()->can('update', $task),
             'customFields' => $this->customFields->serializedValues($task),
         ]);
     }
