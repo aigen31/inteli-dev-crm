@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\ConsentLog;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,6 +14,15 @@ uses(RefreshDatabase::class);
 beforeEach(function (): void {
     Storage::fake('local');
     $this->client = User::factory()->client()->create();
+    $this->project = Project::query()->create([
+        'key' => 'LEG',
+        'name' => 'Legal project',
+        'client_id' => $this->client->id,
+        'created_by' => $this->client->id,
+        'status' => 'active',
+        'priority' => 'medium',
+        'color' => 'violet',
+    ]);
 });
 
 test('legal pages are public and readable', function (): void {
@@ -28,6 +38,7 @@ test('a client task requires consent and is recorded', function (): void {
     $payload = [
         'title' => 'Нужна помощь с сайтом',
         'description' => 'Подробное описание задачи для проверки.',
+        'project_id' => $this->project->id,
         'priority' => 'medium',
     ];
 

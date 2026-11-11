@@ -99,7 +99,7 @@ class TaskController extends Controller
     ): RedirectResponse {
         $data = $request->validate([
             'consent' => ['accepted'],
-            'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
+            'project_id' => ['required', 'uuid', 'exists:projects,id'],
         ]);
 
         if (! empty($data['project_id'])) {

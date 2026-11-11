@@ -114,9 +114,9 @@ const statusOptions = computed(() =>
                 />
                 <SelectInput
                     :model-value="modelValue.project_id || ''"
-                    label="Проект"
+                    label="Проект *"
                     :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))"
-                    placeholder="Без проекта"
+                    placeholder="Выберите проект" required
                     :error="error('project_id')"
                     @update:model-value="selectProject"
                 />

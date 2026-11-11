@@ -113,7 +113,7 @@ function submit() {
                     <p class="eyebrow">02 / Куда и кому</p>
                     <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <SelectInput v-model="form.client_id" label="Клиент" :options="clients.map((c) => ({ value: c.id, label: c.name }))" placeholder="Выберите клиента" :error="form.errors.client_id" />
-                        <SelectInput v-model="form.project_id" label="Проект" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Без проекта" :error="form.errors.project_id" />
+                        <SelectInput v-model="form.project_id" label="Проект *" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Выберите проект" required :error="form.errors.project_id" />
                         <SelectInput v-model="form.assignee_id" label="Исполнитель" :options="assignees.map((a) => ({ value: a.id, label: a.name }))" placeholder="Не назначен" :error="form.errors.assignee_id" />
                         <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" :error="form.errors.priority" />
                         <TextInput v-model="form.deadline" label="Срок" type="date" :error="form.errors.deadline" />
@@ -140,7 +140,7 @@ function submit() {
                     </div>
                     <div class="p-5">
                         <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="admin-form-task-consent" variant="contract" />
-                        <Button class="mt-4 w-full" :disabled="form.processing || !form.consent || !selected || !form.client_id" @click="submit">
+                        <Button class="mt-4 w-full" :disabled="form.processing || !form.consent || !selected || !form.client_id || !form.project_id" @click="submit">
                             {{ form.processing ? 'Создаю…' : 'Создать задачу из шаблона' }}
                         </Button>
                         <p class="mt-2 text-center text-[9px] leading-relaxed text-faint">Все поля шаблона сохранятся в карточке задачи.</p>

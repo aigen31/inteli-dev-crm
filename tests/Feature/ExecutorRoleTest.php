@@ -7,6 +7,7 @@ use App\Enums\ProjectMemberRole;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TaskReport;
 use App\Models\User;
@@ -35,10 +36,27 @@ test('an admin can create an executor account from the team section', function (
 test('an admin can assign an executor to a task and use themselves as the client', function (): void {
     $admin = User::factory()->admin()->create();
     $executor = User::factory()->executor()->create();
+    $project = Project::query()->create([
+        'key' => 'EXE',
+        'name' => 'Executor project',
+        'client_id' => $admin->id,
+        'created_by' => $admin->id,
+        'status' => 'active',
+        'priority' => 'medium',
+        'color' => 'violet',
+    ]);
+    ProjectMember::query()->create([
+        'project_id' => $project->id,
+        'user_id' => $executor->id,
+        'role' => 'member',
+        'delegation' => 'executor',
+        'added_by' => $admin->id,
+    ]);
 
     $this->actingAs($admin)
         ->post(route('admin.tasks.store'), [
             'client_id' => $admin->id,
+            'project_id' => $project->id,
             'assignee_id' => $executor->id,
             'title' => 'Executor task',
             'description' => 'A task for the executor.',
