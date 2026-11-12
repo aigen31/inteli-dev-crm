@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('an admin can load widget zone data and save its own layout', function (): void {
+test('an admin can load widget panel data and save its own layout', function (): void {
     $admin = User::factory()->admin()->create();
     $widgets = [
         ['id' => 'activity_calendar', 'w' => 3, 'h' => 2],
@@ -26,7 +26,7 @@ test('an admin can load widget zone data and save its own layout', function (): 
     expect($admin->fresh()->widget_zone_layout)->toBe($widgets);
 });
 
-test('a client cannot use the widget zone', function (): void {
+test('a client cannot use the widget panel', function (): void {
     $client = User::factory()->client()->create();
 
     $this->actingAs($client)->getJson(route('admin.widget-zone.data'))->assertForbidden();
