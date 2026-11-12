@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import ActivityCalendarWidget from '@/Components/Dashboard/ActivityCalendarWidget.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -7,7 +7,7 @@ import Button from '@/Components/UI/Button.vue';
 import { taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate, formatDateTime, formatMoney } from '@/Utils/formatters.js';
 import {
-    AdjustmentsHorizontalIcon, ArrowUpRightIcon, BanknotesIcon, Bars3Icon,
+    ArrowUpRightIcon, BanknotesIcon, Bars3Icon,
     CheckCircleIcon, ClockIcon, PlusIcon, Squares2X2Icon, UserGroupIcon, XMarkIcon,
 } from '@heroicons/vue/24/outline';
 
@@ -23,8 +23,11 @@ const props = defineProps({
 
 const emit = defineEmits(['update:layout', 'reset']);
 const catalogOpen = ref(false);
-const sizeMenu = ref(null);
 const dragIndex = ref(null);
+const grid = ref(null);
+const gridWidth = ref(0);
+const columns = ref(4);
+const resizing = ref(null);
 
 const catalog = [
     { id: 'clients', title: 'Клиенты', description: 'Активные аккаунты', icon: UserGroupIcon, w: 1, h: 1 },
@@ -39,8 +42,6 @@ const catalog = [
 ];
 const meta = (id) => catalog.find((item) => item.id === id) || catalog[0];
 const activeIds = computed(() => props.layout.map((item) => item.id));
-const colClass = { 1: 'lg:col-span-1', 2: 'lg:col-span-2', 3: 'lg:col-span-3', 4: 'lg:col-span-4' };
-const rowClass = { 1: 'lg:row-span-1', 2: 'lg:row-span-2', 3: 'lg:row-span-3', 4: 'lg:row-span-4' };
 const compact = (widget) => Number(widget.w) === 1;
 const short = (widget) => Number(widget.h) === 1;
 const visibleFocus = computed(() => (props.focusTasks || []).slice(0, 6));
@@ -53,7 +54,95 @@ function add(id) {
     update([...props.layout, { id, w: item.w, h: item.h }]);
     catalogOpen.value = false;
 }
-function setSize(id, w, h) { update(props.layout.map((item) => item.id === id ? { ...item, w, h } : item)); sizeMenu.value = null; }
+const GAP = 12;
+const desktopRow = 104;
+const mobileRow = 136;
+const rowHeight = computed(() => (columns.value === 1 ? mobileRow : desktopRow));
+const placements = computed(() => {
+    const cols = columns.value;
+    const rows = [];
+    const free = (row, col, w, h) => {
+        for (let r = row; r < row + h; r += 1) {
+            for (let c = col; c < col + w; c += 1) {
+                if (rows[r]?.[c]) return false;
+            }
+        }
+        return true;
+    };
+    const occupy = (row, col, w, h) => {
+        for (let r = row; r < row + h; r += 1) {
+            rows[r] ||= [];
+            for (let c = col; c < col + w; c += 1) rows[r][c] = true;
+        }
+    };
+    const placed = [];
+    props.layout.forEach((item) => {
+        const w = Math.min(cols, Math.max(1, Number(item.w) || 1));
+        const h = Math.min(4, Math.max(1, Number(item.h) || 1));
+        let row = 0;
+        let col = 0;
+        while (true) {
+            if (col + w > cols) { row += 1; col = 0; continue; }
+            if (free(row, col, w, h)) { occupy(row, col, w, h); placed.push({ id: item.id, row, col, w, h }); break; }
+            col += 1;
+        }
+    });
+    return { placed, rows: rows.length };
+});
+const colWidth = computed(() => {
+    const width = gridWidth.value || 1;
+    return (width - GAP * (columns.value - 1)) / columns.value;
+});
+const gridHeight = computed(() => placements.value.rows * rowHeight.value + Math.max(0, placements.value.rows - 1) * GAP);
+const placement = (id) => placements.value.placed.find((item) => item.id === id) || { row: 0, col: 0, w: 1, h: 1 };
+function styleFor(item) {
+    const p = placement(item.id);
+    return {
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        width: `${p.w * colWidth.value + (p.w - 1) * GAP}px`,
+        height: `${p.h * rowHeight.value + (p.h - 1) * GAP}px`,
+        transform: `translate(${p.col * (colWidth.value + GAP)}px, ${p.row * (rowHeight.value + GAP)}px)`,
+        transition: resizing.value?.id === item.id ? 'none' : 'transform 240ms cubic-bezier(.2,.8,.2,1), width 240ms cubic-bezier(.2,.8,.2,1), height 240ms cubic-bezier(.2,.8,.2,1)',
+    };
+}
+function startResize(event, item) {
+    event.preventDefault();
+    event.stopPropagation();
+    resizing.value = { id: item.id, startX: event.clientX, startY: event.clientY, startW: item.w, startH: item.h, item };
+    window.addEventListener('pointermove', onResize);
+    window.addEventListener('pointerup', endResize);
+}
+function onResize(event) {
+    if (!resizing.value) return;
+    const { id, startX, startY, startW, startH } = resizing.value;
+    const w = Math.min(4, Math.max(1, Math.round(startW + (event.clientX - startX) / (colWidth.value + GAP))));
+    const h = Math.min(4, Math.max(1, Math.round(startH + (event.clientY - startY) / (rowHeight.value + GAP))));
+    const current = props.layout.find((item) => item.id === id);
+    if (!current || (current.w === w && current.h === h)) return;
+    update(props.layout.map((item) => item.id === id ? { ...item, w, h } : item));
+}
+function endResize() {
+    resizing.value = null;
+    window.removeEventListener('pointermove', onResize);
+    window.removeEventListener('pointerup', endResize);
+}
+let observer;
+onMounted(() => {
+    if (!grid.value) return;
+    observer = new ResizeObserver((entries) => {
+        gridWidth.value = entries[0]?.contentRect.width || 0;
+        columns.value = gridWidth.value >= 900 ? 4 : gridWidth.value >= 600 ? 2 : 1;
+    });
+    observer.observe(grid.value);
+});
+onBeforeUnmount(() => {
+    observer?.disconnect();
+    window.removeEventListener('pointermove', onResize);
+    window.removeEventListener('pointerup', endResize);
+});
+
 function onDrop(index) {
     if (dragIndex.value === null || dragIndex.value === index) return;
     const next = [...props.layout];
@@ -62,7 +151,6 @@ function onDrop(index) {
     update(next);
     dragIndex.value = null;
 }
-function toggleSize(id) { sizeMenu.value = sizeMenu.value === id ? null : id; }
 </script>
 
 <template>
@@ -79,12 +167,13 @@ function toggleSize(id) { sizeMenu.value = sizeMenu.value === id ? null : id; }
             </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:auto-rows-[104px] lg:grid-cols-4">
+        <div ref="grid" class="relative w-full" :style="{ height: `${gridHeight}px` }">
             <article
                 v-for="(widget, index) in layout"
                 :key="widget.id"
                 :draggable="true"
-                :class="[colClass[widget.w], rowClass[widget.h], 'group relative flex min-h-[150px] flex-col overflow-visible rounded-[22px] border border-line/80 bg-surface shadow-[0_8px_24px_rgba(28,24,35,.035)] transition hover:border-line-strong lg:min-h-0']"
+                :class="['group absolute flex flex-col overflow-visible rounded-[22px] border border-line/80 bg-surface shadow-[0_8px_24px_rgba(28,24,35,.035)] hover:border-line-strong']"
+                :style="styleFor(widget)"
                 @dragstart="dragIndex = index"
                 @dragover.prevent
                 @drop.prevent="onDrop(index)"
@@ -93,9 +182,6 @@ function toggleSize(id) { sizeMenu.value = sizeMenu.value === id ? null : id; }
                 <div class="flex shrink-0 items-center gap-2 border-b border-line/65 px-3.5 py-2.5">
                     <Bars3Icon class="h-3.5 w-3.5 shrink-0 cursor-grab text-faint active:cursor-grabbing" />
                     <p class="min-w-0 flex-1 truncate text-[10px] font-bold text-ink-soft">{{ meta(widget.id).title }}</p>
-                    <button type="button" class="rounded-md p-1 text-faint opacity-60 transition hover:bg-ink/[0.06] hover:text-ink group-hover:opacity-100" :aria-label="`Размер ${meta(widget.id).title}`" @click.stop="toggleSize(widget.id)">
-                        <AdjustmentsHorizontalIcon class="h-3.5 w-3.5" />
-                    </button>
                     <button type="button" class="rounded-md p-1 text-faint opacity-60 transition hover:bg-danger/10 hover:text-danger-ink group-hover:opacity-100" :aria-label="`Удалить ${meta(widget.id).title}`" @click.stop="remove(widget.id)">
                         <XMarkIcon class="h-3.5 w-3.5" />
                     </button>
@@ -160,16 +246,9 @@ function toggleSize(id) { sizeMenu.value = sizeMenu.value === id ? null : id; }
                         <Link :href="route('admin.forms.index')" class="flex items-center gap-2 rounded-[9px] px-2 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:bg-primary-soft/40"><Squares2X2Icon class="h-3.5 w-3.5 text-accent" />Шаблоны <ArrowUpRightIcon class="ml-auto h-3 w-3 text-faint" /></Link>
                     </div>
                 </div>
-
-                <div v-if="sizeMenu === widget.id" class="absolute right-2 top-11 z-30 w-[180px] rounded-[14px] border border-line bg-surface p-2.5 shadow-[0_18px_40px_rgba(16,13,24,.18)]" @click.stop>
-                    <p class="px-1 font-mono text-[8px] uppercase tracking-[0.1em] text-faint">Ширина × высота</p>
-                    <div class="mt-2 grid grid-cols-4 gap-1">
-                        <template v-for="h in 4" :key="h">
-                            <button v-for="w in 4" :key="`${w}-${h}`" type="button" :class="['flex h-7 items-center justify-center rounded-[6px] font-mono text-[8px] transition', widget.w === w && widget.h === h ? 'bg-primary-600 text-white' : 'bg-surface-2 text-muted hover:bg-primary-soft hover:text-primary-800']" :aria-label="`${w} на ${h}`" @click="setSize(widget.id, w, h)">{{ w }}×{{ h }}</button>
-                        </template>
-                    </div>
-                    <button type="button" class="mt-2 w-full rounded-[7px] px-1 py-1 text-left text-[8px] font-semibold text-muted hover:text-ink" @click="remove(widget.id)">Удалить виджет</button>
-                </div>
+                <button type="button" class="absolute bottom-1 right-1 flex h-4 w-4 cursor-nwse-resize items-end justify-end p-0.5 text-faint opacity-30 transition hover:text-primary-600 group-hover:opacity-100" :aria-label="`Изменить размер ${meta(widget.id).title}`" @pointerdown="startResize($event, widget)">
+                    <svg viewBox="0 0 12 12" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M11 5 5 11M11 9l-2 2" stroke-linecap="round"/></svg>
+                </button>
             </article>
         </div>
 
