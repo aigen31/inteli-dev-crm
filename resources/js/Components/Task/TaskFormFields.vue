@@ -12,7 +12,7 @@ const props = defineProps({
     modelValue: { type: Object, required: true },
     clients: { type: Array, default: () => [] },
     projects: { type: Array, default: () => [] },
-    calendarTasks: { type: Array, default: () => [] },
+    assigneeId: { type: String, default: null },
     assignees: { type: Array, default: () => [] },
     types: { type: Array, default: () => [] },
     priorities: { type: Array, default: () => [] },
@@ -158,14 +158,14 @@ const statusOptions = computed(() =>
                 <TaskDateCalendar
                     :model-value="modelValue.starts_at || ''"
                     label="Старт работ"
-                    :tasks="calendarTasks"
+                    :assignee-id="modelValue.assignee_id || null"
                     :error="error('starts_at')"
                     @update:model-value="update('starts_at', $event)"
                 />
                 <TaskDateCalendar
                     :model-value="modelValue.deadline || ''"
                     label="Дедлайн"
-                    :tasks="calendarTasks"
+                    :assignee-id="modelValue.assignee_id || null"
                     :error="error('deadline')"
                     @update:model-value="update('deadline', $event)"
                 />

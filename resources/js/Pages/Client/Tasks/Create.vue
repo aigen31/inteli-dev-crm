@@ -20,7 +20,7 @@ const props = defineProps({
     forms: { type: Array, default: () => [] },
     priorities: { type: Array, default: () => [] },
     projects: { type: Array, default: () => [] },
-    calendarTasks: { type: Array, default: () => [] },
+
 });
 
 const { open } = useAssistant();
@@ -294,8 +294,8 @@ function submit() {
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" placeholder="Выберите приоритет" :error="form.errors.priority" />
-                                <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :tasks="calendarTasks" :error="form.errors.starts_at" />
-                                <TaskDateCalendar v-model="form.deadline" label="Желаемый срок" :tasks="calendarTasks" :error="form.errors.deadline" />
+                                <TaskDateCalendar v-model="form.starts_at" label="Старт работ"  :error="form.errors.starts_at" />
+                                <TaskDateCalendar v-model="form.deadline" label="Желаемый срок"  :error="form.errors.deadline" />
                             </div>
                         </div>
                     </div>

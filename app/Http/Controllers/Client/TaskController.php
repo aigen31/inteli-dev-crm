@@ -88,7 +88,6 @@ class TaskController extends Controller
                 ->values(),
             'priorities' => Options::priorities(),
             'forms' => $forms,
-            'calendarTasks' => $this->calendarTasks($user),
         ]);
     }
 
@@ -171,7 +170,6 @@ class TaskController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'key', 'name', 'color']),
             'priorities' => Options::priorities(),
-            'calendarTasks' => $this->calendarTasks($request->user(), $task),
         ]);
     }
 
@@ -211,28 +209,6 @@ class TaskController extends Controller
 
         return redirect()->route('client.tasks.show', $task)
             ->with('success', 'Задача обновлена и отправлена на повторное рассмотрение.');
-    }
-
-    /**
-     * Dates already used by tasks, shown as busy intervals in the date picker.
-     */
-    private function calendarTasks(User $user, ?Task $except = null): array
-    {
-        return Task::query()
-            ->visibleTo($user)
-            ->when($except, fn ($query) => $query->whereKeyNot($except->id))
-            ->where(fn ($query) => $query->whereNotNull('starts_at')->orWhereNotNull('deadline'))
-            ->orderBy('starts_at')
-            ->get(['id', 'title', 'starts_at', 'deadline', 'status'])
-            ->map(fn (Task $task): array => [
-                'id' => $task->id,
-                'title' => $task->title,
-                'starts_at' => $task->starts_at?->toDateString(),
-                'deadline' => $task->deadline?->toDateString(),
-                'status' => $task->status->value,
-            ])
-            ->values()
-            ->all();
     }
 
     public function show(Request $request, Task $task): Response

@@ -14,7 +14,7 @@ const props = defineProps({
     task: { type: Object, required: true },
     projects: { type: Array, default: () => [] },
     priorities: { type: Array, default: () => [] },
-    calendarTasks: { type: Array, default: () => [] },
+
 });
 
 const form = useForm({
@@ -59,8 +59,8 @@ function submit() {
                         <div class="sm:col-span-2"><TextInput v-model="form.title" label="Название" :error="form.errors.title" /></div>
                         <SelectInput v-model="form.project_id" label="Проект" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Без проекта" :error="form.errors.project_id" />
                         <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" :error="form.errors.priority" />
-                        <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :tasks="calendarTasks" :error="form.errors.starts_at" />
-                        <TaskDateCalendar v-model="form.deadline" label="Дедлайн" :tasks="calendarTasks" :error="form.errors.deadline" />
+                        <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :task-id="task.id" :error="form.errors.starts_at" />
+                        <TaskDateCalendar v-model="form.deadline" label="Дедлайн" :task-id="task.id" :error="form.errors.deadline" />
                     </div>
                 </section>
 

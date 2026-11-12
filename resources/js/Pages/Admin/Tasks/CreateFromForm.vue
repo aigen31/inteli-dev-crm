@@ -17,7 +17,7 @@ const props = defineProps({
     projects: { type: Array, default: () => [] },
     assignees: { type: Array, default: () => [] },
     priorities: { type: Array, default: () => [] },
-    calendarTasks: { type: Array, default: () => [] },
+
 });
 
 const preferred = props.forms.find((form) => form.key === 'task-description-images') || props.forms[0];
@@ -119,8 +119,8 @@ function submit() {
                         <SelectInput v-model="form.project_id" label="Проект *" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Выберите проект" required :error="form.errors.project_id" />
                         <SelectInput v-model="form.assignee_id" label="Исполнитель" :options="assignees.map((a) => ({ value: a.id, label: a.name }))" placeholder="Не назначен" :error="form.errors.assignee_id" />
                         <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" :error="form.errors.priority" />
-                        <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :tasks="calendarTasks" :error="form.errors.starts_at" />
-                        <TaskDateCalendar v-model="form.deadline" label="Дедлайн" :tasks="calendarTasks" :error="form.errors.deadline" />
+                        <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :assignee-id="form.assignee_id || null" :error="form.errors.starts_at" />
+                        <TaskDateCalendar v-model="form.deadline" label="Дедлайн" :assignee-id="form.assignee_id || null" :error="form.errors.deadline" />
                         <TextInput v-model="form.budget" label="Бюджет, ₽" type="number" step="0.01" min="0" placeholder="Необязательно" :error="form.errors.budget" />
                         <div class="sm:col-span-2"><TextInput v-model="form.title" label="Название задачи" :error="form.errors.title" placeholder="Название из формы" /></div>
                     </div>
