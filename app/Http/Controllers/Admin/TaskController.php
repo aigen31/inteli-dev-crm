@@ -11,7 +11,7 @@ use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\BulkChangeTaskStatusRequest;
+use App\Http\Requests\Admin\BulkUpdateTasksRequest;
 use App\Http\Requests\Admin\ChangeTaskStatusRequest;
 use App\Http\Requests\Admin\StoreAdminFormTaskRequest;
 use App\Http\Requests\Admin\StoreTaskRequest;
@@ -27,6 +27,7 @@ use App\Services\HtmlSanitizer;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -67,6 +68,8 @@ class TaskController extends Controller
             'filters' => $request->only('status', 'client_id', 'type', 'project_id', 'q'),
             'statuses' => Options::taskStatuses(),
             'types' => Options::taskTypes(),
+            'assignees' => User::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'role']),
+            'priorities' => Options::priorities(),
             'clients' => User::query()->where('role', UserRole::Client)->orderBy('name')->get(['id', 'name']),
             'projects' => Project::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'key', 'name', 'color']),
             'counts' => [
@@ -216,38 +219,49 @@ class TaskController extends Controller
         return back()->with('success', "Статус изменён на «{$newStatus->label()}».");
     }
 
-    public function bulkStatus(BulkChangeTaskStatusRequest $request, ChangeTaskStatusAction $action): RedirectResponse
+    public function bulkUpdate(BulkUpdateTasksRequest $request, ChangeTaskStatusAction $action): RedirectResponse
     {
-        $newStatus = TaskStatus::from($request->validated('status'));
-        $comment = $request->validated('comment');
-        $ids = $request->validated('task_ids');
+        $data = $request->validated();
+        $ids = $data['task_ids'];
+        $status = isset($data['status']) ? TaskStatus::from($data['status']) : null;
+        $comment = $data['comment'] ?? null;
+        $fields = Arr::except($data, ['task_ids', 'status', 'comment']);
 
-        $tasks = Task::query()
-            ->whereIn('id', $ids)
-            ->get();
-
-        $changed = 0;
-        $skipped = 0;
+        $tasks = Task::query()->whereIn('id', $ids)->get();
+        $updated = 0;
+        $statusChanged = 0;
+        $statusSkipped = 0;
 
         foreach ($tasks as $task) {
-            if (! $task->status->canTransitionTo($newStatus) || ! $task->status->canBeChangedBy(UserRole::Admin, $newStatus)) {
-                $skipped++;
-
-                continue;
+            $task->fill($fields);
+            if ($task->isDirty()) {
+                $task->save();
             }
 
-            $action->execute($task, $newStatus, $request->user(), $comment);
-            $changed++;
+            if ($status !== null) {
+                if ($task->status->canTransitionTo($status) && $task->status->canBeChangedBy(UserRole::Admin, $status)) {
+                    $action->execute($task, $status, $request->user(), $comment);
+                    $statusChanged++;
+                } else {
+                    $statusSkipped++;
+                }
+            }
+
+            $updated++;
         }
 
-        if ($changed === 0) {
-            return back()->with('error', 'Ни одну из выбранных задач нельзя перевести в этот статус.');
+        if ($updated === 0) {
+            return back()->with('error', 'Не удалось обновить выбранные задачи.');
         }
 
-        $message = "Статус изменён: {$changed}.";
+        $message = "Обновлено задач: {$updated}.";
 
-        if ($skipped > 0) {
-            $message .= " Пропущено: {$skipped}.";
+        if ($status !== null) {
+            $message .= " Статус изменён: {$statusChanged}.";
+        }
+
+        if ($statusSkipped > 0) {
+            $message .= " Пропущено по статусу: {$statusSkipped}.";
         }
 
         return back()->with('success', $message);

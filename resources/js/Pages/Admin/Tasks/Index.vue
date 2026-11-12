@@ -1,6 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -8,7 +8,7 @@ import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
 import Segmented from '@/Components/UI/Segmented.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
-import BulkStatusPanel from '@/Components/Tasks/BulkStatusPanel.vue';
+import BulkTaskEditor from '@/Components/Tasks/BulkTaskEditor.vue';
 import { taskPriorityLabels, taskStatusLabels, taskTypeLabels } from '@/Utils/constants.js';
 import { formatDate } from '@/Utils/formatters.js';
 import { MagnifyingGlassIcon, PlusIcon, Squares2X2Icon } from '@heroicons/vue/24/outline';
@@ -20,6 +20,8 @@ const props = defineProps({
     types: Array,
     clients: Array,
     projects: Array,
+    assignees: Array,
+    priorities: Array,
     counts: Object,
 });
 
@@ -32,13 +34,13 @@ const local = reactive({
 });
 
 const selectedIds = ref([]);
-const bulkForm = useForm({ task_ids: [], status: '', comment: '' });
+const bulkOpen = ref(false);
 
 const selectedTasks = computed(() => (props.tasks?.data || []).filter((task) => selectedIds.value.includes(task.id)));
 const allSelected = computed(() => (props.tasks?.data || []).length > 0 && props.tasks.data.every((task) => selectedIds.value.includes(task.id)));
 
 watch(selectedIds, (ids) => {
-    bulkForm.task_ids = [...ids];
+    if (!ids.length) bulkOpen.value = false;
 });
 
 watch(
@@ -60,20 +62,7 @@ function toggleAll(event) {
 
 function clearSelection() {
     selectedIds.value = [];
-    bulkForm.reset();
-}
-
-function applyBulk({ status, comment }) {
-    bulkForm.status = status;
-    bulkForm.comment = comment;
-    bulkForm.task_ids = [...selectedIds.value];
-    bulkForm.patch(route('admin.tasks.bulk-status'), {
-        preserveScroll: true,
-        onSuccess: () => {
-            selectedIds.value = [];
-            bulkForm.reset();
-        },
-    });
+    bulkOpen.value = false;
 }
 
 const quickStatuses = [
@@ -166,7 +155,10 @@ function setStatus(value) {
                         <input type="checkbox" :checked="allSelected" class="h-3.5 w-3.5 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="toggleAll" />
                         Выбрать страницу
                     </label>
-                    <span v-if="selectedIds.length" class="font-mono text-[9px] uppercase tracking-[0.1em] text-primary-700">{{ $t('выбрано') }} {{ selectedIds.length }}</span>
+                    <div v-if="selectedIds.length" class="flex items-center gap-2">
+                        <span class="font-mono text-[9px] uppercase tracking-[0.1em] text-primary-700">{{ $t('выбрано') }} {{ selectedIds.length }}</span>
+                        <Button size="sm" @click="bulkOpen = true">Изменить</Button>
+                    </div>
                 </div>
                 <div class="divide-y divide-line/70">
                 <div
@@ -211,12 +203,18 @@ function setStatus(value) {
             <Pagination :links="tasks" />
         </div>
 
-        <BulkStatusPanel
+        <BulkTaskEditor
             v-if="selectedTasks.length"
+            :open="bulkOpen"
+            :endpoint="route('admin.tasks.bulk-update')"
             :selected-tasks="selectedTasks"
-            :errors="bulkForm.errors"
-            :processing="bulkForm.processing"
-            @apply="applyBulk"
+            :projects="projects"
+            :clients="clients"
+            :assignees="assignees"
+            :types="types"
+            :priorities="priorities"
+            :statuses="statuses"
+            @done="clearSelection"
             @clear="clearSelection"
         />
     </AdminLayout>
