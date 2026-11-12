@@ -7,6 +7,7 @@ use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\Auth;
 use App\Http\Controllers\CalendarIntervalController;
 use App\Http\Controllers\Client;
+use App\Http\Controllers\DashboardLayoutController;
 use App\Http\Controllers\Executor;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FileController;
@@ -225,6 +226,7 @@ Route::middleware('auth')->group(function () {
 // Reports are shared by both roles; the policy checks the recipient.
 Route::middleware(['auth', 'is_active'])->group(function () {
     Route::patch('/sidebar-preferences', [SidebarPreferenceController::class, 'update'])->name('sidebar.update');
+    Route::patch('/dashboard-layout', [DashboardLayoutController::class, 'update'])->name('dashboard.layout');
     Route::get('/reports/{report}', [ReportController::class, 'show'])->whereUuid('report')->name('reports.show');
     Route::get('/reports/{report}/screenshot', [ReportController::class, 'screenshot'])->whereUuid('report')->name('reports.screenshot');
 });

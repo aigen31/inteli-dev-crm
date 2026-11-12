@@ -32,6 +32,7 @@ class User extends Authenticatable
         'theme',
         'features',
         'sidebar_preferences',
+        'dashboard_layout',
     ];
 
     protected $hidden = [
@@ -47,6 +48,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'features' => 'array',
             'sidebar_preferences' => 'array',
+            'dashboard_layout' => 'array',
             'is_active' => 'boolean',
         ];
     }

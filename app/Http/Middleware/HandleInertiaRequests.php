@@ -44,6 +44,7 @@ class HandleInertiaRequests extends Middleware
                     'has_executor_delegation' => $user->hasExecutorDelegation(),
                     'initials' => $this->initials($user->name),
                     'sidebar_preferences' => $user->sidebar_preferences,
+                    'dashboard_layout' => $user->dashboard_layout,
                 ] : null,
             ],
             'flash' => [
