@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { CalendarDaysIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { validationMessage } from '@/Utils/validation';
+import { taskStatusLabels } from '@/Utils/constants.js';
 
 const props = defineProps({
     modelValue: { type: String, default: '' },
@@ -21,6 +22,9 @@ const view = ref(startOfMonth(parseDate(props.modelValue) || new Date()));
 const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const intervals = ref([]);
 const loading = ref(false);
+const taskPopover = ref(null);
+const dateTasks = ref([]);
+const tasksLoading = ref(false);
 
 async function loadIntervals() {
     if (!props.assigneeId && !props.taskId) {
@@ -44,7 +48,6 @@ async function loadIntervals() {
 }
 const monthStartKey = computed(() => dateKey(new Date(view.value.getFullYear(), view.value.getMonth(), 1)));
 const monthEndKey = computed(() => dateKey(new Date(view.value.getFullYear(), view.value.getMonth() + 1, 0)));
-const monthIntervals = computed(() => intervals.value.filter((item) => item.start <= monthEndKey.value && item.end >= monthStartKey.value));
 const monthLabel = computed(() => new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(view.value));
 const display = computed(() => props.modelValue ? new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(parseDate(normalize(props.modelValue))) : props.placeholder);
 
@@ -78,27 +81,51 @@ function parseDate(value) {
 function startOfMonth(date) { return new Date(date.getFullYear(), date.getMonth(), 1); }
 function dateKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 function busyFor(key) { return intervals.value.filter((item) => item.start <= key && key <= item.end); }
-function formatRange(item) {
-    const start = parseDate(item.start);
-    const end = parseDate(item.end);
-    const fmt = new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: '2-digit' });
-    return item.start === item.end ? fmt.format(start) : `${fmt.format(start)} — ${fmt.format(end)}`;
+async function loadDateTasks(key) {
+    tasksLoading.value = true;
+    dateTasks.value = [];
+    try {
+        const params = props.taskId ? { task_id: props.taskId, date: key } : { assignee_id: props.assigneeId, date: key };
+        const { data } = await axios.get(route('calendar.tasks'), { params });
+        dateTasks.value = data.tasks || [];
+    } catch {
+        dateTasks.value = [];
+    } finally {
+        tasksLoading.value = false;
+    }
 }
+
 function choose(cell) {
     emit('update:modelValue', cell.key);
+    if (cell.busy) {
+        taskPopover.value = cell.key;
+        loadDateTasks(cell.key);
+        return;
+    }
+    taskPopover.value = null;
     open.value = false;
 }
+
+function closeTaskPopover() {
+    taskPopover.value = null;
+}
+
+function formatDayLabel(key) {
+    return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(parseDate(key));
+}
 function moveMonth(delta) { view.value = new Date(view.value.getFullYear(), view.value.getMonth() + delta, 1); }
-function onOutside(event) { if (root.value && !root.value.contains(event.target)) open.value = false; }
-function onKeydown(event) { if (event.key === 'Escape') open.value = false; }
+function onOutside(event) { if (root.value && !root.value.contains(event.target)) { open.value = false; taskPopover.value = null; } }
+function onKeydown(event) { if (event.key === 'Escape') { open.value = false; taskPopover.value = null; } }
 function toggle() {
     if (!open.value) view.value = startOfMonth(parseDate(normalize(props.modelValue)) || new Date());
     open.value = !open.value;
     if (open.value) loadIntervals();
+    if (!open.value) taskPopover.value = null;
 }
 
 watch([() => props.assigneeId, () => props.taskId], () => {
     loadIntervals();
+    if (taskPopover.value) loadDateTasks(taskPopover.value);
 });
 
 watch(() => props.modelValue, (value) => {
@@ -138,7 +165,7 @@ onBeforeUnmount(() => {
         <p v-if="error" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(error) }}</p>
 
         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="-translate-y-1 opacity-0" enter-to-class="translate-y-0 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="translate-y-0 opacity-100" leave-to-class="-translate-y-1 opacity-0">
-            <div v-if="open" class="absolute left-0 top-full z-[60] mt-2 w-[340px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[20px] border border-line bg-surface shadow-[0_22px_60px_rgba(16,13,24,.18)]" @click.stop>
+            <div v-if="open" class="absolute left-0 top-full z-[60] mt-2 w-[340px] max-w-[calc(100vw-32px)] overflow-visible rounded-[20px] border border-line bg-surface shadow-[0_22px_60px_rgba(16,13,24,.18)]" @click.stop>
                 <div class="flex items-center justify-between border-b border-line/70 bg-surface-2/45 px-3 py-2.5">
                     <button type="button" class="rounded-lg p-1.5 text-muted transition hover:bg-white/60 hover:text-ink" aria-label="Предыдущий месяц" @click="moveMonth(-1)"><ChevronLeftIcon class="h-4 w-4" /></button>
                     <p class="text-[11px] font-bold capitalize text-ink">{{ monthLabel }}</p>
@@ -149,39 +176,45 @@ onBeforeUnmount(() => {
                         <span v-for="day in weekdays" :key="day" class="py-1 text-center font-mono text-[8px] uppercase tracking-[0.08em] text-faint">{{ day }}</span>
                     </div>
                     <div class="grid grid-cols-7 gap-1">
-                        <button
-                            v-for="cell in cells"
-                            :key="cell.key"
-                            type="button"
-                            :class="[
-                                'relative flex h-9 items-center justify-center rounded-[10px] text-[11px] transition',
-                                !cell.current && 'text-faint/55',
-                                cell.selected && 'bg-primary-600 font-semibold text-white',
-                                !cell.selected && cell.busy && 'bg-[#FBF0E6] font-semibold text-warning',
-                                !cell.selected && !cell.busy && 'text-ink-soft hover:bg-primary-soft/60',
-                                cell.today && !cell.selected && 'ring-1 ring-inset ring-primary-300',
-                            ]"
-                            :aria-label="`${cell.day}${cell.busy ? ', есть занятые задачи' : ''}`"
-                            @click="choose(cell)"
-                        >
-                            {{ cell.day }}
-                            <span v-if="cell.busy" :class="['absolute bottom-1 h-1 w-1 rounded-full', cell.selected ? 'bg-white/80' : 'bg-warning']"></span>
-                        </button>
+                        <div v-for="cell in cells" :key="cell.key" class="relative">
+                            <button
+                                type="button"
+                                :class="[
+                                    'relative flex h-9 w-full items-center justify-center rounded-[10px] text-[11px] transition',
+                                    !cell.current && 'text-faint/55',
+                                    cell.selected && 'bg-primary-600 font-semibold text-white',
+                                    !cell.selected && cell.busy && 'bg-[#FBF0E6] font-semibold text-warning',
+                                    !cell.selected && !cell.busy && 'text-ink-soft hover:bg-primary-soft/60',
+                                    cell.today && !cell.selected && 'ring-1 ring-inset ring-primary-300',
+                                ]"
+                                :aria-label="`${cell.day}${cell.busy ? ', есть занятые задачи' : ''}`"
+                                @click="choose(cell)"
+                            >
+                                {{ cell.day }}
+                                <span v-if="cell.busy" :class="['absolute bottom-1 h-1 w-1 rounded-full', cell.selected ? 'bg-white/80' : 'bg-warning']"></span>
+                            </button>
+                            <div v-if="taskPopover === cell.key" class="absolute bottom-full left-1/2 z-[90] mb-2 w-[230px] -translate-x-1/2 rounded-[14px] border border-line bg-surface p-2.5 text-left shadow-[0_16px_40px_rgba(16,13,24,.22)]">
+                                <div class="flex items-center justify-between gap-2">
+                                    <p class="text-[10px] font-bold text-ink">{{ formatDayLabel(cell.key) }}</p>
+                                    <button type="button" class="rounded p-1 text-faint hover:bg-ink/[0.06] hover:text-ink" aria-label="Закрыть задачи" @click="closeTaskPopover"><XMarkIcon class="h-3 w-3" /></button>
+                                </div>
+                                <p v-if="tasksLoading" class="mt-1 text-[9px] text-muted">Загружаю…</p>
+                                <div v-else-if="dateTasks.length" class="mt-1.5 space-y-1">
+                                    <div v-for="task in dateTasks" :key="task.id" class="rounded-[8px] bg-surface-2/60 px-2 py-1.5">
+                                        <p class="truncate text-[9px] font-semibold text-ink">{{ task.title }}</p>
+                                        <p class="mt-0.5 text-[8px] text-muted">{{ taskStatusLabels[task.status] || task.status }}</p>
+                                    </div>
+                                </div>
+                                <p v-else class="mt-1 text-[9px] text-muted">Нет доступных задач на эту дату.</p>
+                                <button type="button" class="mt-2 w-full rounded-[8px] bg-primary-soft px-2 py-1.5 text-[9px] font-semibold text-primary-800" @click="closeTaskPopover">Готово</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="mt-3 flex items-center gap-3 border-t border-line/60 pt-2 text-[8px] text-faint">
                         <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-[3px] bg-[#FBF0E6]"></span>занято</span>
                         <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-[3px] bg-primary-600"></span>выбрано</span>
                         <span class="ml-auto">можно выбрать любую дату</span>
                     </div>
-                    <div v-if="monthIntervals.length" class="mt-3 max-h-[128px] space-y-1 overflow-y-auto">
-                        <p class="font-mono text-[8px] uppercase tracking-[0.1em] text-faint">Занятые интервалы</p>
-                        <div v-for="item in monthIntervals" :key="item.start + item.end" class="flex items-center gap-2 rounded-[9px] bg-surface-2/55 px-2 py-1.5">
-                            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-warning"></span>
-                            <span class="shrink-0 font-mono text-[8px] text-ink-soft">{{ formatRange(item) }}</span>
-                            <span class="ml-auto text-[8px] text-faint">{{ loading ? 'обновляю…' : '' }}</span>
-                        </div>
-                    </div>
-                    <p v-else class="mt-3 rounded-[9px] bg-surface-2/45 px-2 py-1.5 text-[9px] text-muted">Нет занятых интервалов для выбранного исполнителя.</p>
                 </div>
             </div>
         </transition>
