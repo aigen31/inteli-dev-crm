@@ -6,6 +6,7 @@ import Button from '@/Components/UI/Button.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
+import TaskDateCalendar from '@/Components/Form/TaskDateCalendar.vue';
 import StructuredForm from '@/Components/FormTemplates/StructuredForm.vue';
 import { ArrowLeftIcon, ArrowPathIcon, PencilSquareIcon } from '@heroicons/vue/24/outline';
 
@@ -13,6 +14,7 @@ const props = defineProps({
     task: { type: Object, required: true },
     projects: { type: Array, default: () => [] },
     priorities: { type: Array, default: () => [] },
+    calendarTasks: { type: Array, default: () => [] },
 });
 
 const form = useForm({
@@ -20,6 +22,7 @@ const form = useForm({
     description: props.task.description || '',
     project_id: props.task.project_id || '',
     priority: props.task.priority || 'medium',
+    starts_at: props.task.starts_at || '',
     deadline: props.task.deadline || '',
     form_data: props.task.form_data || { fields: {}, groups: {} },
 });
@@ -56,7 +59,8 @@ function submit() {
                         <div class="sm:col-span-2"><TextInput v-model="form.title" label="Название" :error="form.errors.title" /></div>
                         <SelectInput v-model="form.project_id" label="Проект" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Без проекта" :error="form.errors.project_id" />
                         <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" :error="form.errors.priority" />
-                        <TextInput v-model="form.deadline" label="Срок" type="date" :error="form.errors.deadline" />
+                        <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :tasks="calendarTasks" :error="form.errors.starts_at" />
+                        <TaskDateCalendar v-model="form.deadline" label="Дедлайн" :tasks="calendarTasks" :error="form.errors.deadline" />
                     </div>
                 </section>
 

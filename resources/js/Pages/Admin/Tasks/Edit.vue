@@ -12,6 +12,7 @@ const props = defineProps({
     clients: Array,
     projects: Array,
     assignees: Array,
+    calendarTasks: { type: Array, default: () => [] },
     types: Array,
     priorities: Array,
     statuses: Array,
@@ -31,6 +32,7 @@ const form = useForm({
     estimated_minutes: props.task?.estimated_minutes || '',
     budget: props.task?.budget || '',
     assignee_id: props.task?.assignee_id || '',
+    starts_at: props.task?.starts_at || '',
     deadline: props.task?.deadline || '',
     custom_fields: values.value,
 });
@@ -63,6 +65,7 @@ function submit() {
             :clients="clients"
             :projects="projects"
             :assignees="assignees"
+            :calendar-tasks="calendarTasks"
             :types="types"
             :priorities="priorities"
             :statuses="statuses"

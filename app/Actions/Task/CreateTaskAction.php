@@ -54,6 +54,7 @@ class CreateTaskAction
             'estimated_minutes' => $data['estimated_minutes'] ?? null,
             'budget' => $data['budget'] ?? null,
             'deadline' => $data['deadline'] ?? null,
+            'starts_at' => $data['starts_at'] ?? null,
         ]);
 
         TaskCreated::dispatch($task);

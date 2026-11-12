@@ -24,6 +24,7 @@ const props = defineProps({
     clients: Array,
     projects: Array,
     assignees: Array,
+    calendarTasks: { type: Array, default: () => [] },
     types: Array,
     priorities: Array,
     statuses: Array,
@@ -45,6 +46,7 @@ const form = useForm({
     estimated_minutes: '',
     budget: '',
     assignee_id: '',
+    starts_at: '',
     deadline: '',
     custom_fields: {},
     consent: false,
@@ -80,6 +82,7 @@ const draft = useTaskDraft({
         estimated_minutes: form.estimated_minutes,
         budget: form.budget,
         assignee_id: form.assignee_id,
+        starts_at: form.starts_at,
         deadline: form.deadline,
         custom_fields: form.custom_fields,
     }),
@@ -146,6 +149,7 @@ function submit() {
                     :clients="clients"
                     :projects="projects"
                     :assignees="assignees"
+                    :calendar-tasks="calendarTasks"
                     :types="types"
                     :priorities="priorities"
                     :statuses="statuses"

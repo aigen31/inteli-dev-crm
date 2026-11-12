@@ -48,7 +48,7 @@ function addComment() {
         <div class="mb-5 flex flex-wrap items-center gap-2.5">
             <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
             <Badge :status="task.priority" type="priority">{{ taskPriorityLabels[task.priority] }}</Badge>
-            <span class="text-[11px] text-muted">{{ task.deadline ? `срок ${formatDate(task.deadline)}` : 'срок не задан' }}</span>
+            <span class="text-[11px] text-muted">{{ task.starts_at ? `старт ${formatDate(task.starts_at)} · ` : '' }}{{ task.deadline ? `срок ${formatDate(task.deadline)}` : 'срок не задан' }}</span>
             <Link v-if="canEdit" :href="route('client.tasks.edit', task.id)" class="ml-auto">
                 <Button variant="secondary" size="sm"><PencilSquareIcon class="h-3.5 w-3.5" />Редактировать</Button>
             </Link>
@@ -139,6 +139,7 @@ function addComment() {
                     <dl class="space-y-3 text-[12px]">
                         <div class="flex items-center justify-between"><dt class="text-muted">Статус</dt><dd><Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge></dd></div>
                         <div class="flex items-center justify-between"><dt class="text-muted">Приоритет</dt><dd>{{ taskPriorityLabels[task.priority] }}</dd></div>
+                        <div class="flex items-center justify-between"><dt class="text-muted">Старт</dt><dd class="font-mono text-[11px]">{{ formatDate(task.starts_at) }}</dd></div>
                         <div class="flex items-center justify-between"><dt class="text-muted">Дедлайн</dt><dd class="font-mono text-[11px]">{{ formatDate(task.deadline) }}</dd></div>
                         <div class="flex items-center justify-between"><dt class="text-muted">Создана</dt><dd class="font-mono text-[10px]">{{ formatDateTime(task.created_at) }}</dd></div>
                     </dl>

@@ -117,6 +117,7 @@ class TaskController extends Controller
             'project_id' => $data['project_id'] ?? null,
             'priority' => $data['priority'] ?? null,
             'deadline' => $data['deadline'] ?? null,
+            'starts_at' => $data['starts_at'] ?? null,
             'form_data' => $data['form_data'],
         ], $request->user(), TaskSource::Manual);
 
@@ -286,6 +287,18 @@ class TaskController extends Controller
             'statuses' => Options::taskStatuses(),
             'fields' => $this->customFields->serializedDefinitions(CustomFieldEntity::Task),
             'projects' => Project::query()->whereNull('archived_at')->with(['members:id,project_id,user_id,delegation'])->orderBy('name')->get(['id', 'key', 'name', 'color', 'client_id']),
+            'calendarTasks' => Task::query()
+                ->where(fn ($query) => $query->whereNotNull('starts_at')->orWhereNotNull('deadline'))
+                ->orderBy('starts_at')
+                ->get(['id', 'title', 'starts_at', 'deadline', 'status'])
+                ->map(fn (Task $task): array => [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'starts_at' => $task->starts_at?->toDateString(),
+                    'deadline' => $task->deadline?->toDateString(),
+                    'status' => $task->status->value,
+                ])
+                ->values(),
         ];
     }
 }

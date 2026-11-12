@@ -8,6 +8,7 @@ import StructuredForm from '@/Components/FormTemplates/StructuredForm.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
+import TaskDateCalendar from '@/Components/Form/TaskDateCalendar.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import TaskDraftNotice from '@/Components/Task/TaskDraftNotice.vue';
 import { useTaskDraft } from '@/Composables/useTaskDraft';
@@ -19,6 +20,7 @@ const props = defineProps({
     forms: { type: Array, default: () => [] },
     priorities: { type: Array, default: () => [] },
     projects: { type: Array, default: () => [] },
+    calendarTasks: { type: Array, default: () => [] },
 });
 
 const { open } = useAssistant();
@@ -59,6 +61,7 @@ const form = useForm({
     project_id: new URLSearchParams(window.location.search).get('project_id') || '',
     consent: false,
     priority: 'medium',
+    starts_at: '',
     deadline: '',
     form_data: emptyFormData(preferredForm),
 });
@@ -97,6 +100,7 @@ const draft = useTaskDraft({
         description: form.description,
         project_id: form.project_id,
         priority: form.priority,
+        starts_at: form.starts_at,
         deadline: form.deadline,
         form_data: form.form_data,
     }),
@@ -290,7 +294,8 @@ function submit() {
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" placeholder="Выберите приоритет" :error="form.errors.priority" />
-                                <TextInput v-model="form.deadline" label="Желаемый срок" type="date" :error="form.errors.deadline" />
+                                <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :tasks="calendarTasks" :error="form.errors.starts_at" />
+                                <TaskDateCalendar v-model="form.deadline" label="Желаемый срок" :tasks="calendarTasks" :error="form.errors.deadline" />
                             </div>
                         </div>
                     </div>

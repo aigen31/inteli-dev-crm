@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import RichTextEditor from '@/Components/Form/RichTextEditor.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
+import TaskDateCalendar from '@/Components/Form/TaskDateCalendar.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import CustomFieldsForm from '@/Components/CustomFields/CustomFieldsForm.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -11,6 +12,7 @@ const props = defineProps({
     modelValue: { type: Object, required: true },
     clients: { type: Array, default: () => [] },
     projects: { type: Array, default: () => [] },
+    calendarTasks: { type: Array, default: () => [] },
     assignees: { type: Array, default: () => [] },
     types: { type: Array, default: () => [] },
     priorities: { type: Array, default: () => [] },
@@ -153,10 +155,17 @@ const statusOptions = computed(() =>
                     :error="error('status')"
                     @update:model-value="update('status', $event)"
                 />
-                <TextInput
+                <TaskDateCalendar
+                    :model-value="modelValue.starts_at || ''"
+                    label="Старт работ"
+                    :tasks="calendarTasks"
+                    :error="error('starts_at')"
+                    @update:model-value="update('starts_at', $event)"
+                />
+                <TaskDateCalendar
                     :model-value="modelValue.deadline || ''"
-                    label="Дедлайн (необязательно)"
-                    type="date"
+                    label="Дедлайн"
+                    :tasks="calendarTasks"
                     :error="error('deadline')"
                     @update:model-value="update('deadline', $event)"
                 />

@@ -23,7 +23,8 @@ class StoreTaskRequest extends FormRequest
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'description' => ['nullable', 'string', 'max:60000'],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
-            'deadline' => ['nullable', 'date', 'after_or_equal:today'],
+            'starts_at' => ['nullable', 'date'],
+            'deadline' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'custom_fields' => ['nullable', 'array'],
         ];
     }
