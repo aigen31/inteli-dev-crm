@@ -25,7 +25,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:layout', 'reset']);
 const catalogOpen = ref(false);
-const dragIndex = ref(null);
+const draggingId = ref(null);
 const grid = ref(null);
 const gridWidth = ref(0);
 const columns = ref(4);
@@ -157,13 +157,28 @@ onBeforeUnmount(() => {
     window.removeEventListener('pointerup', endResize);
 });
 
-function onDrop(index) {
-    if (dragIndex.value === null || dragIndex.value === index) return;
+function startDrag(widget, event) {
+    draggingId.value = widget.id;
+    if (event?.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', widget.id);
+    }
+}
+
+function onDragEnter(index) {
+    if (!draggingId.value) return;
+    const from = props.layout.findIndex((item) => item.id === draggingId.value);
+    if (from === -1 || from === index) return;
     const next = [...props.layout];
-    const [moved] = next.splice(dragIndex.value, 1);
-    next.splice(index, 0, moved);
+    const [moved] = next.splice(from, 1);
+    const insertAt = from < index ? index - 1 : index;
+    if (insertAt === from) return;
+    next.splice(insertAt, 0, moved);
     update(next);
-    dragIndex.value = null;
+}
+
+function endDrag() {
+    draggingId.value = null;
 }
 </script>
 
@@ -186,12 +201,13 @@ function onDrop(index) {
                 v-for="(widget, index) in layout"
                 :key="widget.id"
                 :draggable="true"
-                :class="['group absolute flex flex-col overflow-visible rounded-[22px] border border-line/80 bg-surface shadow-[0_8px_24px_rgba(28,24,35,.035)] hover:border-line-strong']"
+                :class="['group absolute flex flex-col overflow-visible rounded-[22px] border border-line/80 bg-surface shadow-[0_8px_24px_rgba(28,24,35,.035)] transition-[opacity,box-shadow,border-color] duration-200 hover:border-line-strong', draggingId === widget.id && 'z-20 opacity-45 ring-2 ring-primary-300 shadow-[0_18px_45px_rgba(83,61,130,.18)]']"
                 :style="styleFor(widget)"
-                @dragstart="dragIndex = index"
+                @dragstart="startDrag(widget, $event)"
+                @dragenter.prevent="onDragEnter(index)"
                 @dragover.prevent
-                @drop.prevent="onDrop(index)"
-                @dragend="dragIndex = null"
+                @drop.prevent="endDrag"
+                @dragend="endDrag"
             >
                 <div class="flex shrink-0 items-center gap-2 border-b border-line/65 px-3.5 py-2.5">
                     <Bars3Icon class="h-3.5 w-3.5 shrink-0 cursor-grab text-faint active:cursor-grabbing" />
