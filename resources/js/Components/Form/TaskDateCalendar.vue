@@ -146,7 +146,7 @@ onBeforeUnmount(() => {
 
 <template>
     <div ref="root" class="relative">
-        <label class="mb-1.5 block text-[11px] font-semibold text-ink-soft">{{ label }}</label>
+        <label v-if="label" class="mb-1.5 block text-[11px] font-semibold text-ink-soft">{{ label }}</label>
         <button
             type="button"
             :class="[

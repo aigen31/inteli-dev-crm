@@ -2,6 +2,7 @@
 import { computed, reactive, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@/Components/UI/Button.vue';
+import TaskDateCalendar from '@/Components/Form/TaskDateCalendar.vue';
 import { XMarkIcon, AdjustmentsHorizontalIcon, ArrowPathIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
 import { validationMessage } from '@/Utils/validation';
 
@@ -64,6 +65,11 @@ const groups = computed(() => [
 
 const chosen = computed(() => Object.values(enabled).filter(Boolean).length);
 const hasFields = computed(() => chosen.value > 0);
+const bulkAssigneeId = computed(() => {
+    if (enabled.assignee_id && values.assignee_id) return values.assignee_id;
+    const ids = [...new Set(props.selectedTasks.map((task) => task.assignee_id).filter(Boolean))];
+    return ids.length === 1 ? ids[0] : null;
+});
 const fieldErrors = computed(() => Object.entries(form.errors).filter(([key]) => enabled[key] || key === 'fields'));
 
 watch(() => props.selectedTasks, (tasks) => {
@@ -144,6 +150,7 @@ function reset() {
                                                     <option value="">{{ field.empty || '—' }}</option>
                                                     <option v-for="option in field.options" :key="option.value" :value="option.value">{{ option.label }}</option>
                                                 </select>
+                                                <TaskDateCalendar v-else-if="field.type === 'date'" v-model="values[field.key]" label="" :assignee-id="bulkAssigneeId" :error="form.errors[field.key]" />
                                                 <input v-else v-model="values[field.key]" :type="field.type" :placeholder="field.placeholder" :min="field.key === 'estimated_minutes' || field.key === 'budget' ? 0 : undefined" :step="field.key === 'budget' ? '0.01' : undefined" class="h-8 w-full rounded-[9px] border border-line bg-white/70 px-2 text-[10px] text-ink focus:border-primary-400 focus:outline-none" />
                                             </div>
                                         </div>
