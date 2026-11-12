@@ -43,7 +43,6 @@ class CalendarIntervalController extends Controller
                 'end' => $task->deadline?->toDateString() ?? $task->starts_at?->toDateString(),
             ])
             ->filter(fn (array $interval): bool => $interval['start'] !== null && $interval['end'] !== null)
-            ->unique(fn (array $interval): string => $interval['start'].'|'.$interval['end'])
             ->values();
 
         return response()->json(['intervals' => $intervals]);
