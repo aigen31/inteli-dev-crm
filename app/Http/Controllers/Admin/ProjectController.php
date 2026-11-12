@@ -8,6 +8,8 @@ use App\Enums\ProjectDelegation;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
 use App\Enums\TaskPriority;
+use App\Enums\TaskStatus;
+use App\Enums\TaskType;
 use App\Exceptions\AiException;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
@@ -110,6 +112,10 @@ class ProjectController extends Controller
                 'label' => $priority->label(),
             ]),
             'clients' => User::query()->where('role', 'client')->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'assignees' => User::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'role']),
+            'types' => collect(TaskType::cases())->map(fn (TaskType $type): array => ['value' => $type->value, 'label' => $type->label()]),
+            'taskStatuses' => collect(TaskStatus::cases())->map(fn (TaskStatus $status): array => ['value' => $status->value, 'label' => $status->label()]),
+            'projects' => Project::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'key', 'name', 'color']),
         ]);
     }
 

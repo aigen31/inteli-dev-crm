@@ -1,4 +1,5 @@
 <script setup>
+import { computed, ref, watch } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -7,6 +8,7 @@ import EmptyState from '@/Components/UI/EmptyState.vue';
 import ProjectContextPanel from '@/Components/Projects/ProjectContextPanel.vue';
 import ProjectAccessPanel from '@/Components/Projects/ProjectAccessPanel.vue';
 import ProjectTaskFilter from '@/Components/Projects/ProjectTaskFilter.vue';
+import BulkTaskEditor from '@/Components/Tasks/BulkTaskEditor.vue';
 import { useProjectTaskFilter } from '@/Composables/useProjectTaskFilter';
 import ProjectInvitesPanel from '@/Components/Projects/ProjectInvitesPanel.vue';
 import ShareButton from '@/Components/Share/ShareButton.vue';
@@ -30,13 +32,36 @@ const props = defineProps({
     statuses: Array,
     priorities: Array,
     clients: Array,
+    assignees: { type: Array, default: () => [] },
+    types: { type: Array, default: () => [] },
+    projects: { type: Array, default: () => [] },
+    taskStatuses: { type: Array, default: () => [] },
     availableMembers: Array,
     inviteRoles: { type: Array, default: () => [] },
 });
 
 const { open } = useAssistant();
-const statuses = ['pending_review', 'queued', 'in_progress', 'awaiting_review', 'rejected_by_client', 'completed', 'rejected_by_admin'];
-const { status, filteredTasks, setStatus } = useProjectTaskFilter(() => props.tasks, statuses);
+const filterStatuses = ['pending_review', 'queued', 'in_progress', 'awaiting_review', 'rejected_by_client', 'completed', 'rejected_by_admin'];
+const { status, filteredTasks, setStatus } = useProjectTaskFilter(() => props.tasks, filterStatuses);
+const selectedIds = ref([]);
+const bulkOpen = ref(false);
+const selectedTasks = computed(() => filteredTasks.value.filter((task) => selectedIds.value.includes(task.id)));
+const allSelected = computed(() => filteredTasks.value.length > 0 && filteredTasks.value.every((task) => selectedIds.value.includes(task.id)));
+
+watch(selectedIds, (ids) => { if (!ids.length) bulkOpen.value = false; });
+
+function toggleTask(id) {
+    selectedIds.value = selectedIds.value.includes(id) ? selectedIds.value.filter((taskId) => taskId !== id) : [...selectedIds.value, id];
+}
+
+function toggleAll(event) {
+    selectedIds.value = event.target.checked ? filteredTasks.value.map((task) => task.id) : [];
+}
+
+function clearSelection() {
+    selectedIds.value = [];
+    bulkOpen.value = false;
+}
 
 const statusTone = {
     active: 'bg-primary-soft text-primary-800',
@@ -115,22 +140,27 @@ function archive() {
                         <CheckCircleIcon class="h-4 w-4 text-primary-600" />
                         <p class="text-[12px] font-bold text-ink">Задачи</p>
                         <span class="font-mono text-[9px] text-faint">{{ filteredTasks.length }}<template v-if="status"> / {{ progress.total }}</template></span>
-                        <ProjectTaskFilter class="sm:ml-auto" :model-value="status" :statuses="statuses" @update:model-value="setStatus" />
+                        <label class="inline-flex cursor-pointer items-center gap-1.5 text-[10px] font-semibold text-muted">
+                            <input type="checkbox" :checked="allSelected" class="h-3.5 w-3.5 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="toggleAll" />
+                            Все
+                        </label>
+                        <Button v-if="selectedIds.length" size="sm" @click="bulkOpen = true">Изменить · {{ selectedIds.length }}</Button>
+                        <ProjectTaskFilter class="sm:ml-auto" :model-value="status" :statuses="filterStatuses" @update:model-value="setStatus" />
                         <Link :href="route('admin.projects.edit', project.id)" class="text-[10px] text-muted hover:text-ink">настройки</Link>
                     </header>
 
                     <div v-if="filteredTasks.length" class="divide-y divide-line/70">
-                        <Link
-                            v-for="task in filteredTasks"
-                            :key="task.id"
-                            :href="route('admin.tasks.show', task.id)"
-                            class="flex items-center gap-3 px-5 py-3 transition hover:bg-primary-soft/30"
-                        >
-                            <span class="w-[54px] shrink-0 font-mono text-[9px] text-faint">{{ task.number ? project.key + '-' + task.number : '—' }}</span>
-                            <span class="min-w-0 flex-1 truncate text-[12px] font-medium text-ink">{{ task.title }}</span>
-                            <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
-                            <span v-if="task.deadline" class="hidden font-mono text-[9px] text-faint sm:block">{{ formatDate(task.deadline) }}</span>
-                        </Link>
+                        <div v-for="task in filteredTasks" :key="task.id" :class="['flex items-stretch transition', selectedIds.includes(task.id) ? 'bg-primary-500/[0.045]' : 'hover:bg-primary-soft/30']">
+                            <label class="flex shrink-0 cursor-pointer items-center pl-5 pr-1" :aria-label="`Выбрать задачу ${task.title}`">
+                                <input type="checkbox" :checked="selectedIds.includes(task.id)" class="h-4 w-4 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="toggleTask(task.id)" />
+                            </label>
+                            <Link :href="route('admin.tasks.show', task.id)" class="flex min-w-0 flex-1 items-center gap-3 py-3 pr-5">
+                                <span class="w-[54px] shrink-0 font-mono text-[9px] text-faint">{{ task.number ? project.key + '-' + task.number : '—' }}</span>
+                                <span class="min-w-0 flex-1 truncate text-[12px] font-medium text-ink">{{ task.title }}</span>
+                                <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
+                                <span v-if="task.deadline" class="hidden font-mono text-[9px] text-faint sm:block">{{ formatDate(task.deadline) }}</span>
+                            </Link>
+                        </div>
                     </div>
 
                     <div v-else class="px-5 py-8 text-center">
@@ -167,5 +197,20 @@ function archive() {
 
             <ProjectContextPanel class="min-w-0" :project="project" :studies="studies" />
         </div>
+
+        <BulkTaskEditor
+            v-if="selectedTasks.length"
+            :open="bulkOpen"
+            :endpoint="route('admin.tasks.bulk-update')"
+            :selected-tasks="selectedTasks"
+            :projects="projects"
+            :clients="clients"
+            :assignees="assignees"
+            :types="types"
+            :priorities="priorities"
+            :statuses="taskStatuses"
+            @done="clearSelection"
+            @clear="clearSelection"
+        />
     </AdminLayout>
 </template>
