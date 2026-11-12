@@ -1,12 +1,14 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { validationMessage } from '@/Utils/validation';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowRightIcon, CheckCircleIcon, EyeIcon, EyeSlashIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
 
 const showPassword = ref(false);
+const page = usePage();
+const flashSuccess = computed(() => page.props.flash?.success || '');
 
 const form = useForm({
     email: '',
@@ -52,6 +54,7 @@ function submit() {
                     <p class="text-[13px] leading-relaxed text-muted">
                         Клиенты, задачи, шаблоны и счета — в одном тихом месте. Без регистрации: аккаунт создаёт владелец.
                     </p>
+                    <p v-if="flashSuccess" class="mt-4 rounded-[13px] border border-success/20 bg-success/[0.07] px-3.5 py-2.5 text-[11px] leading-relaxed text-success">{{ flashSuccess }}</p>
 
                     <form class="mt-8 space-y-4" @submit.prevent="submit">
                         <div>

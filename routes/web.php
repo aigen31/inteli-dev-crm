@@ -16,6 +16,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NavigationHistoryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SecretFeatureController;
+use App\Http\Controllers\SidebarPreferenceController;
 use App\Http\Controllers\SystemProjectController;
 use App\Http\Controllers\Webhook\YooKassaWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -29,6 +30,10 @@ Route::middleware('guest')->group(function () {
 
 // UI language can be changed before login too.
 Route::get('/locale/{locale}', LocaleController::class)->name('locale.update');
+
+// Password reset from an admin-created link.
+Route::get('/reset-password/{token}', [Auth\PasswordResetController::class, 'show'])->name('password.reset');
+Route::post('/reset-password', [Auth\PasswordResetController::class, 'store'])->middleware('throttle:10,1')->name('password.reset.store');
 
 // Authenticated
 Route::middleware('auth')->group(function () {
@@ -104,6 +109,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/team/create', [Admin\TeamController::class, 'create'])->name('team.create');
         Route::post('/team', [Admin\TeamController::class, 'store'])->name('team.store');
         Route::patch('/team/{executor}/toggle', [Admin\TeamController::class, 'toggle'])->name('team.toggle');
+
+        // Password reset links
+        Route::post('/users/{user}/password-reset', [Admin\UserPasswordResetController::class, 'store'])->name('users.password-reset');
 
         // Clients
         Route::get('/clients', [Admin\ClientController::class, 'index'])->name('clients.index');
@@ -213,7 +221,7 @@ Route::middleware('auth')->group(function () {
 
 // Reports are shared by both roles; the policy checks the recipient.
 Route::middleware(['auth', 'is_active'])->group(function () {
-    Route::patch('/sidebar-preferences', [\App\Http\Controllers\SidebarPreferenceController::class, 'update'])->name('sidebar.update');
+    Route::patch('/sidebar-preferences', [SidebarPreferenceController::class, 'update'])->name('sidebar.update');
     Route::get('/reports/{report}', [ReportController::class, 'show'])->whereUuid('report')->name('reports.show');
     Route::get('/reports/{report}/screenshot', [ReportController::class, 'screenshot'])->whereUuid('report')->name('reports.screenshot');
 });

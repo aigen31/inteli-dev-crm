@@ -4,6 +4,7 @@ import { Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
+import ResetPasswordButton from '@/Components/Admin/ResetPasswordButton.vue';
 import { MagnifyingGlassIcon, PlusIcon, UserGroupIcon, WrenchScrewdriverIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -69,9 +70,12 @@ function initials(name) {
                     </div>
                     <span :class="['rounded-full px-2 py-0.5 text-[9px] font-semibold', executor.is_active ? 'bg-success/10 text-success' : 'bg-ink/[0.06] text-muted']">{{ executor.is_active ? 'активен' : 'выкл' }}</span>
                 </div>
-                <div class="mt-4 flex items-center justify-between border-t border-line/70 pt-3">
+                <div class="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-line/70 pt-3">
                     <span class="inline-flex items-center gap-1.5 text-[10px] text-muted"><UserGroupIcon class="h-3.5 w-3.5" />{{ executor.assigned_tasks_count }} задач</span>
-                    <button type="button" class="text-[9px] font-semibold text-primary-700 hover:underline" @click="toggle(executor)">{{ executor.is_active ? 'Деактивировать' : 'Активировать' }}</button>
+                    <div class="flex items-center gap-2">
+                        <ResetPasswordButton :action="route('admin.users.password-reset', executor.id)" :user-name="executor.name" />
+                        <button type="button" class="text-[9px] font-semibold text-primary-700 hover:underline" @click="toggle(executor)">{{ executor.is_active ? 'Деактивировать' : 'Активировать' }}</button>
+                    </div>
                 </div>
             </article>
         </div>

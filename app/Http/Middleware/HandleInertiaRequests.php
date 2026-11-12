@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'api_token' => fn () => $request->session()->get('api_token'),
+                'reset_link' => fn () => $request->session()->get('reset_link'),
             ],
             'navigation' => [
                 'recent' => fn (): array => $user ? $this->navigation->recent($user) : [],
