@@ -77,7 +77,7 @@ function toggleSize(id) { sizeMenu.value = sizeMenu.value === id ? null : id; }
             </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:auto-rows-[88px] lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:auto-rows-[104px] lg:grid-cols-4">
             <article
                 v-for="(widget, index) in layout"
                 :key="widget.id"
@@ -99,15 +99,15 @@ function toggleSize(id) { sizeMenu.value = sizeMenu.value === id ? null : id; }
                     </button>
                 </div>
 
-                <div class="min-h-0 flex-1 overflow-hidden p-3.5">
+                <div :class="['min-h-0 flex-1 overflow-hidden', short(widget) ? 'p-2.5' : 'p-3.5']">
                     <div v-if="widget.id === 'clients'" class="flex h-full flex-col justify-between">
                         <div class="flex items-start justify-between gap-2"><p class="font-mono text-[8px] uppercase tracking-[0.1em] text-muted">Клиенты</p><UserGroupIcon class="h-4 w-4 text-primary-500" /></div>
-                        <p class="font-display text-[28px] font-medium leading-none tracking-[-0.04em] text-ink">{{ counters?.clients ?? 0 }}</p>
+                        <p class="font-display text-[24px] font-medium leading-none tracking-[-0.04em] text-ink">{{ counters?.clients ?? 0 }}</p>
                         <p v-if="!short(widget)" class="text-[9px] text-muted">активные аккаунты</p>
                     </div>
                     <div v-else-if="widget.id === 'active_tasks'" class="flex h-full flex-col justify-between">
                         <div class="flex items-start justify-between gap-2"><p class="font-mono text-[8px] uppercase tracking-[0.1em] text-muted">В работе</p><ClockIcon class="h-4 w-4 text-accent" /></div>
-                        <p class="font-display text-[28px] font-medium leading-none tracking-[-0.04em] text-ink">{{ counters?.active_tasks ?? 0 }}</p>
+                        <p class="font-display text-[24px] font-medium leading-none tracking-[-0.04em] text-ink">{{ counters?.active_tasks ?? 0 }}</p>
                         <p v-if="!short(widget)" class="text-[9px] text-muted">{{ counters?.overdue ?? 0 }} просрочено</p>
                     </div>
                     <div v-else-if="widget.id === 'revenue'" class="flex h-full flex-col justify-between">
@@ -117,7 +117,7 @@ function toggleSize(id) { sizeMenu.value = sizeMenu.value === id ? null : id; }
                     </div>
                     <div v-else-if="widget.id === 'templates'" class="flex h-full flex-col justify-between">
                         <div class="flex items-start justify-between gap-2"><p class="font-mono text-[8px] uppercase tracking-[0.1em] text-muted">Шаблоны</p><Squares2X2Icon class="h-4 w-4 text-sky" /></div>
-                        <p class="font-display text-[28px] font-medium leading-none tracking-[-0.04em] text-ink">{{ counters?.forms ?? 0 }}</p>
+                        <p class="font-display text-[24px] font-medium leading-none tracking-[-0.04em] text-ink">{{ counters?.forms ?? 0 }}</p>
                         <p v-if="!short(widget)" class="text-[9px] text-muted">структурированные заявки</p>
                     </div>
                     <div v-else-if="widget.id === 'focus'" class="flex h-full flex-col">
