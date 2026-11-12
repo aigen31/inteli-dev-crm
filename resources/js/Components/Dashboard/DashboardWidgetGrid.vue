@@ -97,34 +97,46 @@ const gridHeight = computed(() => placements.value.rows * rowHeight.value + Math
 const placement = (id) => placements.value.placed.find((item) => item.id === id) || { row: 0, col: 0, w: 1, h: 1 };
 function styleFor(item) {
     const p = placement(item.id);
+    const active = resizing.value?.id === item.id;
+    const previewW = active ? resizing.value.previewW : p.w;
+    const previewH = active ? resizing.value.previewH : p.h;
     return {
         position: 'absolute',
         top: '0px',
         left: '0px',
-        width: `${p.w * colWidth.value + (p.w - 1) * GAP}px`,
-        height: `${p.h * rowHeight.value + (p.h - 1) * GAP}px`,
+        width: `${previewW * colWidth.value + (previewW - 1) * GAP}px`,
+        height: `${previewH * rowHeight.value + (previewH - 1) * GAP}px`,
         transform: `translate(${p.col * (colWidth.value + GAP)}px, ${p.row * (rowHeight.value + GAP)}px)`,
-        transition: resizing.value?.id === item.id ? 'none' : 'transform 240ms cubic-bezier(.2,.8,.2,1), width 240ms cubic-bezier(.2,.8,.2,1), height 240ms cubic-bezier(.2,.8,.2,1)',
+        transition: active ? 'none' : 'transform 260ms cubic-bezier(.2,.8,.2,1), width 260ms cubic-bezier(.2,.8,.2,1), height 260ms cubic-bezier(.2,.8,.2,1)',
     };
 }
 function startResize(event, item) {
     event.preventDefault();
     event.stopPropagation();
-    resizing.value = { id: item.id, startX: event.clientX, startY: event.clientY, startW: item.w, startH: item.h, item };
+    resizing.value = { id: item.id, startX: event.clientX, startY: event.clientY, startW: item.w, startH: item.h, previewW: item.w, previewH: item.h, item };
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'nwse-resize';
     window.addEventListener('pointermove', onResize);
     window.addEventListener('pointerup', endResize);
 }
 function onResize(event) {
     if (!resizing.value) return;
     const { id, startX, startY, startW, startH } = resizing.value;
-    const w = Math.min(4, Math.max(1, Math.round(startW + (event.clientX - startX) / (colWidth.value + GAP))));
-    const h = Math.min(4, Math.max(1, Math.round(startH + (event.clientY - startY) / (rowHeight.value + GAP))));
+    const rawW = Math.min(4, Math.max(1, startW + (event.clientX - startX) / (colWidth.value + GAP)));
+    const rawH = Math.min(4, Math.max(1, startH + (event.clientY - startY) / (rowHeight.value + GAP)));
+    resizing.value = { ...resizing.value, previewW: rawW, previewH: rawH };
+    // Snap earlier than the midpoint: 25% into the next column/row is enough
+    // for the neighbours to start moving while the active edge is still dragged.
+    const w = Math.min(4, Math.max(1, Math.floor(rawW + 0.75)));
+    const h = Math.min(4, Math.max(1, Math.floor(rawH + 0.75)));
     const current = props.layout.find((item) => item.id === id);
     if (!current || (current.w === w && current.h === h)) return;
     update(props.layout.map((item) => item.id === id ? { ...item, w, h } : item));
 }
 function endResize() {
     resizing.value = null;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
     window.removeEventListener('pointermove', onResize);
     window.removeEventListener('pointerup', endResize);
 }
@@ -167,7 +179,7 @@ function onDrop(index) {
             </div>
         </div>
 
-        <div ref="grid" class="relative w-full" :style="{ height: `${gridHeight}px` }">
+        <div ref="grid" class="relative w-full transition-[height] duration-[260ms] ease-[cubic-bezier(.2,.8,.2,1)]" :style="{ height: `${gridHeight}px` }">
             <article
                 v-for="(widget, index) in layout"
                 :key="widget.id"
