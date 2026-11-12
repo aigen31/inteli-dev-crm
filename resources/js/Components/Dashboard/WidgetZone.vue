@@ -67,14 +67,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <button type="button" class="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-primary-200/70 bg-surface/90 px-4 py-2.5 text-[10px] font-bold text-primary-800 shadow-[0_12px_30px_rgba(83,61,130,.16)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-[0_16px_36px_rgba(83,61,130,.22)] sm:bottom-6 sm:right-6" aria-label="Открыть зону виджетов" @click="openZone">
+    <button type="button" class="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-primary-200/70 bg-surface/90 px-4 py-2.5 text-[10px] font-bold text-primary-800 shadow-[0_12px_30px_rgba(83,61,130,.16)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-[0_16px_36px_rgba(83,61,130,.22)] sm:bottom-6 sm:right-6" aria-label="Открыть панель виджетов" @click="openZone">
         <Squares2X2Icon class="h-4 w-4 text-primary-600" />
-        <span class="hidden sm:inline">Зона виджетов</span>
+        <span class="hidden sm:inline">Панель виджетов</span>
     </button>
 
     <Teleport to="body">
         <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-            <div v-if="open" class="fixed inset-0 z-[75] overflow-y-auto bg-[#f4f0e8]" role="dialog" aria-modal="true" aria-label="Зона виджетов">
+            <div v-if="open" class="fixed inset-0 z-[75] overflow-y-auto bg-[#f4f0e8]" role="dialog" aria-modal="true" aria-label="Панель виджетов">
                 <div class="pointer-events-none fixed inset-x-0 top-0 h-[420px] bg-gradient-to-b from-primary-100/50 via-[#f4f0e8]/60 to-transparent"></div>
                 <header class="sticky top-0 z-20 border-b border-line/60 bg-[#f4f0e8]/85 backdrop-blur-xl">
                     <div class="mx-auto flex max-w-[1320px] items-start justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
@@ -82,11 +82,11 @@ onBeforeUnmount(() => {
                             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-ink text-canvas shadow-sm"><Squares2X2Icon class="h-5 w-5" /></span>
                             <div>
                                 <p class="font-mono text-[8px] uppercase tracking-[0.16em] text-primary-700">Личный холст</p>
-                                <h2 class="mt-1 font-display text-[22px] font-medium tracking-[-0.04em] text-ink sm:text-[28px]">Зона виджетов</h2>
+                                <h2 class="mt-1 font-display text-[22px] font-medium tracking-[-0.04em] text-ink sm:text-[28px]">Панель виджетов</h2>
                                 <p class="mt-1 max-w-[520px] text-[10px] leading-relaxed text-muted">Любой виджет из каталога, свободная сетка и доступ из любого раздела. Раскладка сохраняется отдельно от обзора.</p>
                             </div>
                         </div>
-                        <button ref="closeButton" type="button" class="rounded-full border border-line bg-white/60 p-2 text-muted transition hover:border-line-strong hover:text-ink" aria-label="Закрыть зону виджетов" @click="closeZone"><XMarkIcon class="h-4 w-4" /></button>
+                        <button ref="closeButton" type="button" class="rounded-full border border-line bg-white/60 p-2 text-muted transition hover:border-line-strong hover:text-ink" aria-label="Закрыть панель виджетов" @click="closeZone"><XMarkIcon class="h-4 w-4" /></button>
                     </div>
                 </header>
 
