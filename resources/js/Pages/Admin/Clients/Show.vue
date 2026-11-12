@@ -5,6 +5,7 @@ import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import Card from '@/Components/UI/Card.vue';
+import ResetPasswordButton from '@/Components/Admin/ResetPasswordButton.vue';
 import CustomFieldsForm from '@/Components/CustomFields/CustomFieldsForm.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import { invoiceStatusLabels, taskStatusLabels } from '@/Utils/constants.js';
@@ -45,6 +46,7 @@ function deactivate() {
                     Задача
                 </Button>
             </Link>
+            <ResetPasswordButton :action="route('admin.users.password-reset', client.id)" :user-name="client.name" />
             <Link :href="route('admin.clients.edit', client.id)">
                 <Button variant="secondary">
                     <PencilSquareIcon class="h-4 w-4" />
