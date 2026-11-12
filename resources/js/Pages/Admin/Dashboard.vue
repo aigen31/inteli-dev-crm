@@ -39,6 +39,7 @@ const defaultLayout = [
     { id: 'activity', w: 2, h: 2 },
     { id: 'deadlines', w: 2, h: 1 },
     { id: 'quick_links', w: 2, h: 1 },
+    { id: 'activity_calendar', w: 2, h: 2 },
 ];
 const allowed = new Set(defaultLayout.map((item) => item.id));
 function normalize(value) {

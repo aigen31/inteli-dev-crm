@@ -70,3 +70,29 @@ test('tasks on a calendar date are visible only when the user can open them', fu
         ->assertJsonPath('tasks.0.title', 'Visible client task')
         ->assertJsonMissingPath('tasks.0.project');
 });
+
+test('activity calendar summarises workload for admins only', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = User::factory()->client()->create();
+    $executor = User::factory()->executor()->create();
+    foreach (range(1, 2) as $index) {
+        Task::factory()->create([
+            'client_id' => $client->id,
+            'created_by' => $admin->id,
+            'assignee_id' => $executor->id,
+            'starts_at' => '2026-11-16',
+            'deadline' => '2026-11-18',
+        ]);
+    }
+
+    $this->actingAs($admin)
+        ->getJson(route('calendar.activity', ['month' => '2026-11']))
+        ->assertOk()
+        ->assertJsonPath('days.2026-11-16', 2)
+        ->assertJsonPath('days.2026-11-18', 2)
+        ->assertJsonPath('days.2026-11-15', null);
+
+    $this->actingAs($client)
+        ->getJson(route('calendar.activity', ['month' => '2026-11']))
+        ->assertForbidden();
+});

@@ -41,6 +41,7 @@ Route::post('/reset-password', [Auth\PasswordResetController::class, 'store'])->
 Route::middleware('auth')->group(function () {
     Route::get('/calendar/intervals', CalendarIntervalController::class)->middleware('is_active')->name('calendar.intervals');
     Route::get('/calendar/tasks', [CalendarIntervalController::class, 'tasks'])->middleware('is_active')->name('calendar.tasks');
+    Route::get('/calendar/activity', [CalendarIntervalController::class, 'activity'])->middleware('is_active')->name('calendar.activity');
     Route::get('/help', [HelpController::class, 'index'])->name('help.index');
     Route::get('/feedback', [FeedbackController::class, 'index'])->middleware('is_active')->name('feedback.index');
 
