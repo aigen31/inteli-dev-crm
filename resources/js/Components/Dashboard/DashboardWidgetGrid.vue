@@ -19,6 +19,8 @@ const props = defineProps({
     recentHistory: Array,
     pendingInvoices: Array,
     upcomingDeadlines: Array,
+    heading: { type: String, default: 'Рабочий стол' },
+    hint: { type: String, default: 'Перетаскивайте виджеты, меняйте размер и собирайте свой обзор.' },
 });
 
 const emit = defineEmits(['update:layout', 'reset']);
@@ -169,8 +171,8 @@ function onDrop(index) {
     <section class="mt-5">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
-                <p class="eyebrow">Рабочий стол</p>
-                <p class="mt-1 text-[11px] text-muted">Перетаскивайте виджеты, меняйте размер и собирайте свой обзор.</p>
+                <p class="eyebrow">{{ heading }}</p>
+                <p class="mt-1 text-[11px] text-muted">{{ hint }}</p>
             </div>
             <div class="flex items-center gap-2">
                 <button type="button" class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/55 px-3 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:border-primary-300 hover:text-primary-700" @click="catalogOpen = true">
@@ -272,7 +274,7 @@ function onDrop(index) {
     </section>
 
     <Teleport to="body">
-        <div v-if="catalogOpen" class="fixed inset-0 z-[70] flex justify-end bg-ink/30 backdrop-blur-[2px]" @click.self="catalogOpen = false">
+        <div v-if="catalogOpen" class="fixed inset-0 z-[90] flex justify-end bg-ink/30 backdrop-blur-[2px]" @click.self="catalogOpen = false">
             <aside class="flex h-full w-full max-w-[430px] flex-col border-l border-line bg-surface shadow-[-24px_0_70px_rgba(16,13,24,.16)]">
                 <header class="relative overflow-hidden bg-ink px-5 pb-5 pt-5 text-canvas">
                     <div class="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-primary-400/25 blur-2xl"></div>

@@ -7,6 +7,7 @@ import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import NavigationTrail from '@/Components/Navigation/NavigationTrail.vue';
 import DashboardWidgetGrid from '@/Components/Dashboard/DashboardWidgetGrid.vue';
+import { defaultWidgetLayout, normalizeWidgetLayout } from '@/Utils/dashboardWidgets';
 import { PlusIcon, Squares2X2Icon, SparklesIcon } from '@heroicons/vue/24/outline';
 import { useAssistant } from '@/Composables/useAssistant';
 
@@ -30,30 +31,7 @@ const firstName = computed(() => (page.props.auth?.user?.name || '').split(' ')[
 const todayLabel = new Date().toLocaleDateString(localeTag(), { weekday: 'long', day: 'numeric', month: 'long' });
 const focusTasks = computed(() => (props.todayTasks?.length ? props.todayTasks : props.pendingTasks ?? []));
 
-const defaultLayout = [
-    { id: 'clients', w: 1, h: 1 },
-    { id: 'active_tasks', w: 1, h: 1 },
-    { id: 'revenue', w: 1, h: 1 },
-    { id: 'templates', w: 1, h: 1 },
-    { id: 'focus', w: 2, h: 2 },
-    { id: 'activity', w: 2, h: 2 },
-    { id: 'deadlines', w: 2, h: 1 },
-    { id: 'quick_links', w: 2, h: 1 },
-    { id: 'activity_calendar', w: 2, h: 2 },
-];
-const allowed = new Set(defaultLayout.map((item) => item.id));
-function normalize(value) {
-    if (!Array.isArray(value)) return defaultLayout;
-    const seen = new Set();
-    const result = [];
-    value.forEach((row) => {
-        if (!row || !allowed.has(row.id) || seen.has(row.id)) return;
-        seen.add(row.id);
-        result.push({ id: row.id, w: Math.min(4, Math.max(1, Number(row.w) || 1)), h: Math.min(4, Math.max(1, Number(row.h) || 1)) });
-    });
-    return result;
-}
-const layout = ref(normalize(page.props.auth?.user?.dashboard_layout));
+const layout = ref(normalizeWidgetLayout(page.props.auth?.user?.dashboard_layout));
 let saveTimer = null;
 function save(next) {
     layout.value = next;
@@ -69,7 +47,7 @@ watch(layout, (next) => {
     }, 500);
 }, { deep: true });
 function reset() {
-    save(defaultLayout.map((item) => ({ ...item })));
+    save(defaultWidgetLayout.map((item) => ({ ...item })));
 }
 </script>
 

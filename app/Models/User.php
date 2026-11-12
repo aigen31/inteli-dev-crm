@@ -33,6 +33,7 @@ class User extends Authenticatable
         'features',
         'sidebar_preferences',
         'dashboard_layout',
+        'widget_zone_layout',
     ];
 
     protected $hidden = [
@@ -49,6 +50,7 @@ class User extends Authenticatable
             'features' => 'array',
             'sidebar_preferences' => 'array',
             'dashboard_layout' => 'array',
+            'widget_zone_layout' => 'array',
             'is_active' => 'boolean',
         ];
     }

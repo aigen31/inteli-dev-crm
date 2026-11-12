@@ -45,6 +45,7 @@ class HandleInertiaRequests extends Middleware
                     'initials' => $this->initials($user->name),
                     'sidebar_preferences' => $user->sidebar_preferences,
                     'dashboard_layout' => $user->dashboard_layout,
+                    'widget_zone_layout' => $user->widget_zone_layout,
                 ] : null,
             ],
             'flash' => [
