@@ -70,6 +70,10 @@ watch(() => props.selectedTasks, (tasks) => {
     form.task_ids = tasks.map((task) => task.id);
 }, { immediate: true, deep: true });
 
+function onToggle(field) {
+    if (!enabled[field.key]) values[field.key] = '';
+}
+
 function selectField(field) {
     enabled[field.key] = !enabled[field.key];
     if (!enabled[field.key]) values[field.key] = '';
@@ -131,7 +135,7 @@ function reset() {
                                     <div class="mt-2 space-y-1.5">
                                         <div v-for="field in group.fields" :key="field.key" :class="['rounded-[12px] border px-2.5 py-2 transition', enabled[field.key] ? 'border-primary-200 bg-primary-50/40' : 'border-transparent']">
                                             <div class="flex items-center gap-2">
-                                                <input :id="`bulk-${field.key}`" v-model="enabled[field.key]" type="checkbox" class="h-3.5 w-3.5 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="selectField(field)" />
+                                                <input :id="`bulk-${field.key}`" v-model="enabled[field.key]" type="checkbox" class="h-3.5 w-3.5 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="onToggle(field)" />
                                                 <label :for="`bulk-${field.key}`" class="min-w-0 flex-1 cursor-pointer text-[10px] font-semibold text-ink-soft">{{ field.label }}</label>
                                                 <span v-if="enabled[field.key]" class="font-mono text-[8px] uppercase tracking-[0.08em] text-primary-600">изменить</span>
                                             </div>
