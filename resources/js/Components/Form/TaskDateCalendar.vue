@@ -12,6 +12,7 @@ const props = defineProps({
     taskId: { type: String, default: null },
     error: { type: String, default: null },
     placeholder: { type: String, default: 'Выберите дату' },
+    ariaLabel: { type: String, default: null },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -154,7 +155,7 @@ onBeforeUnmount(() => {
                 error ? 'border-danger focus:border-danger focus:ring-danger/15' : 'border-line focus:border-primary-400 focus:ring-primary-500/10',
             ]"
             :aria-expanded="open"
-            :aria-label="`${label}: ${display}`"
+            :aria-label="ariaLabel || `${label}: ${display}`"
             @click="toggle"
         >
             <CalendarDaysIcon class="h-4 w-4 shrink-0 text-muted" />
