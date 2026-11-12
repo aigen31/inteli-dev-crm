@@ -53,7 +53,7 @@ function sendReport() {
         <div class="mb-5 flex flex-wrap items-center gap-2.5">
             <Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge>
             <Badge :status="task.priority" type="priority">{{ taskPriorityLabels[task.priority] }}</Badge>
-            <span class="text-[11px] text-muted">{{ task.deadline ? `срок ${formatDate(task.deadline)}` : 'срок не задан' }}</span>
+            <span class="text-[11px] text-muted">{{ task.starts_at ? `старт ${formatDate(task.starts_at)} · ` : '' }}{{ task.deadline ? `срок ${formatDate(task.deadline)}` : 'срок не задан' }}</span>
             <span v-if="task.project" class="rounded-full border border-line bg-white/60 px-2.5 py-1 font-mono text-[9px] text-muted">{{ task.project.key }}{{ task.number ? '-' + task.number : '' }}</span>
         </div>
 
@@ -136,6 +136,7 @@ function sendReport() {
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Клиент</dt><dd class="text-right text-ink">{{ task.client?.name || '—' }}</dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Проект</dt><dd class="text-right text-ink">{{ task.project?.name || 'Без проекта' }}</dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Приоритет</dt><dd class="text-ink">{{ taskPriorityLabels[task.priority] }}</dd></div>
+                        <div class="flex items-center justify-between gap-3"><dt class="text-muted">Старт</dt><dd class="font-mono text-[11px] text-ink">{{ formatDate(task.starts_at) }}</dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Дедлайн</dt><dd class="font-mono text-[11px] text-ink">{{ formatDate(task.deadline) }}</dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Создана</dt><dd class="font-mono text-[10px] text-ink">{{ formatDateTime(task.created_at) }}</dd></div>
                     </dl>

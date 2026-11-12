@@ -41,6 +41,7 @@ class Task extends Model
         'estimated_minutes',
         'budget',
         'deadline',
+        'starts_at',
         'completed_at',
     ];
 
@@ -57,6 +58,7 @@ class Task extends Model
             'budget' => 'decimal:2',
             'number' => 'integer',
             'deadline' => 'date',
+            'starts_at' => 'date',
             'completed_at' => 'datetime',
         ];
     }

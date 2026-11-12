@@ -5,6 +5,7 @@ import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
+import TaskDateCalendar from '@/Components/Form/TaskDateCalendar.vue';
 import StructuredForm from '@/Components/FormTemplates/StructuredForm.vue';
 import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
@@ -16,6 +17,7 @@ const props = defineProps({
     projects: { type: Array, default: () => [] },
     assignees: { type: Array, default: () => [] },
     priorities: { type: Array, default: () => [] },
+    calendarTasks: { type: Array, default: () => [] },
 });
 
 const preferred = props.forms.find((form) => form.key === 'task-description-images') || props.forms[0];
@@ -27,6 +29,7 @@ const form = useForm({
     assignee_id: '',
     title: preferred?.name || '',
     priority: 'medium',
+    starts_at: '',
     deadline: '',
     budget: '',
     form_data: emptyFormData(preferred),
@@ -116,7 +119,8 @@ function submit() {
                         <SelectInput v-model="form.project_id" label="Проект *" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Выберите проект" required :error="form.errors.project_id" />
                         <SelectInput v-model="form.assignee_id" label="Исполнитель" :options="assignees.map((a) => ({ value: a.id, label: a.name }))" placeholder="Не назначен" :error="form.errors.assignee_id" />
                         <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" :error="form.errors.priority" />
-                        <TextInput v-model="form.deadline" label="Срок" type="date" :error="form.errors.deadline" />
+                        <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :tasks="calendarTasks" :error="form.errors.starts_at" />
+                        <TaskDateCalendar v-model="form.deadline" label="Дедлайн" :tasks="calendarTasks" :error="form.errors.deadline" />
                         <TextInput v-model="form.budget" label="Бюджет, ₽" type="number" step="0.01" min="0" placeholder="Необязательно" :error="form.errors.budget" />
                         <div class="sm:col-span-2"><TextInput v-model="form.title" label="Название задачи" :error="form.errors.title" placeholder="Название из формы" /></div>
                     </div>

@@ -56,6 +56,7 @@ class FormTemplateService
             'source' => $source,
             'priority' => $data['priority'] ?? TaskPriority::Medium,
             'deadline' => $data['deadline'] ?? null,
+            'starts_at' => $data['starts_at'] ?? null,
             'form_template_id' => $template->id,
             'form_data' => $formData,
         ], $creator);
@@ -106,7 +107,8 @@ class FormTemplateService
             'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
-            'deadline' => ['nullable', 'date', 'after_or_equal:today'],
+            'starts_at' => ['nullable', 'date'],
+            'deadline' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'form_data' => ['required', 'array'],
         ];
 

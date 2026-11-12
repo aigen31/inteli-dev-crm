@@ -67,7 +67,8 @@ class StoreTaskRequest extends FormRequest
             'estimated_minutes' => ['nullable', 'integer', 'min:5', 'max:10000'],
             'budget' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
             'assignee_id' => ['nullable', 'uuid', 'exists:users,id'],
-            'deadline' => ['nullable', 'date', 'after:today'],
+            'starts_at' => ['nullable', 'date'],
+            'deadline' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'custom_fields' => ['nullable', 'array'],
             'consent' => ['accepted'],
         ];
