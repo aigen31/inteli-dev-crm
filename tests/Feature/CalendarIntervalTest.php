@@ -97,3 +97,24 @@ test('activity calendar summarises workload for admins only', function (): void 
         ->getJson(route('calendar.activity', ['month' => '2026-11']))
         ->assertForbidden();
 });
+
+test('the task calendar keeps every task in the workload count', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = User::factory()->client()->create();
+    $executor = User::factory()->executor()->create();
+    foreach (range(1, 2) as $index) {
+        Task::factory()->create([
+            'client_id' => $client->id,
+            'created_by' => $admin->id,
+            'assignee_id' => $executor->id,
+            'starts_at' => '2026-11-16',
+            'deadline' => '2026-11-18',
+        ]);
+    }
+
+    $this->actingAs($admin)
+        ->getJson(route('calendar.intervals', ['assignee_id' => $executor->id]))
+        ->assertOk()
+        ->assertJsonCount(2, 'intervals')
+        ->assertJsonMissingPath('intervals.0.title');
+});
