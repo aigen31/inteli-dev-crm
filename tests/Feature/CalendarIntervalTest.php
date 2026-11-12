@@ -68,6 +68,7 @@ test('tasks on a calendar date are visible only when the user can open them', fu
         ->assertOk()
         ->assertJsonCount(1, 'tasks')
         ->assertJsonPath('tasks.0.title', 'Visible client task')
+        ->assertJsonPath('tasks.0.url', route('client.tasks.show', $own->id))
         ->assertJsonMissingPath('tasks.0.project');
 });
 

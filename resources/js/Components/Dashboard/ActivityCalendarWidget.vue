@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import axios from 'axios';
+import { Link } from '@inertiajs/vue3';
 import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { taskStatusLabels } from '@/Utils/constants.js';
 
@@ -109,10 +110,10 @@ onMounted(load);
             <div class="flex items-center justify-between gap-2"><p class="text-[9px] font-bold text-ink">{{ formatDay(selectedDay) }}</p><button type="button" class="rounded p-0.5 text-faint hover:text-ink" aria-label="Закрыть" @click="closeTasks"><XMarkIcon class="h-3 w-3" /></button></div>
             <p v-if="tasksLoading" class="mt-1 text-[8px] text-muted">Загружаю…</p>
             <div v-else-if="selectedTasks.length" class="mt-1 max-h-[86px] space-y-1 overflow-y-auto">
-                <div v-for="task in selectedTasks" :key="task.id" class="rounded-[6px] bg-surface-2/60 px-1.5 py-1">
+                <Link v-for="task in selectedTasks" :key="task.id" :href="task.url" class="block rounded-[6px] bg-surface-2/60 px-1.5 py-1 transition hover:bg-primary-soft/60">
                     <p class="truncate text-[8px] font-semibold text-ink">{{ task.title }}</p>
                     <p class="text-[7px] text-muted">{{ taskStatusLabels[task.status] || task.status }}</p>
-                </div>
+                </Link>
             </div>
             <p v-else class="mt-1 text-[8px] text-muted">На эту дату задач нет.</p>
         </div>

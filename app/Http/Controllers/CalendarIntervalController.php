@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -92,10 +94,24 @@ class CalendarIntervalController extends Controller
                 'status' => $task->status->value,
                 'starts_at' => $task->starts_at?->toDateString(),
                 'deadline' => $task->deadline?->toDateString(),
+                'url' => $this->taskUrl($user, $task),
             ])
             ->values();
 
         return response()->json(['tasks' => $tasks]);
+    }
+
+    private function taskUrl(User $user, Task $task): string
+    {
+        if ($user->isAdmin()) {
+            return route('admin.tasks.show', $task->id);
+        }
+
+        if ($user->role === UserRole::Executor) {
+            return route('executor.tasks.show', $task->id);
+        }
+
+        return route('client.tasks.show', $task->id);
     }
 
     public function activity(Request $request): JsonResponse

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
+import { Link } from '@inertiajs/vue3';
 import { CalendarDaysIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { validationMessage } from '@/Utils/validation';
 import { taskStatusLabels } from '@/Utils/constants.js';
@@ -211,10 +212,10 @@ onBeforeUnmount(() => {
                                 </div>
                                 <p v-if="tasksLoading" class="mt-1 text-[9px] text-muted">Загружаю…</p>
                                 <div v-else-if="dateTasks.length" class="mt-1.5 space-y-1">
-                                    <div v-for="task in dateTasks" :key="task.id" class="rounded-[8px] bg-surface-2/60 px-2 py-1.5">
+                                    <Link v-for="task in dateTasks" :key="task.id" :href="task.url" class="block rounded-[8px] bg-surface-2/60 px-2 py-1.5 transition hover:bg-primary-soft/60">
                                         <p class="truncate text-[9px] font-semibold text-ink">{{ task.title }}</p>
                                         <p class="mt-0.5 text-[8px] text-muted">{{ taskStatusLabels[task.status] || task.status }}</p>
-                                    </div>
+                                    </Link>
                                 </div>
                                 <p v-else class="mt-1 text-[9px] text-muted">Нет доступных задач на эту дату.</p>
                                 <button type="button" class="mt-2 w-full rounded-[8px] bg-primary-soft px-2 py-1.5 text-[9px] font-semibold text-primary-800" @click="closeTaskPopover">Готово</button>
