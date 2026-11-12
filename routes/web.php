@@ -109,6 +109,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['is_active', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
+        Route::get('/widget-zone/data', [Admin\WidgetZoneController::class, 'data'])->name('widget-zone.data');
+        Route::patch('/widget-zone/layout', [Admin\WidgetZoneController::class, 'updateLayout'])->name('widget-zone.layout');
+
         // Team
         Route::get('/team', [Admin\TeamController::class, 'index'])->name('team.index');
         Route::get('/team/create', [Admin\TeamController::class, 'create'])->name('team.create');
