@@ -63,6 +63,7 @@ const cells = computed(() => {
         return {
             date,
             key: dateKey(date),
+            col: index % 7,
             day: date.getDate(),
             current: date.getMonth() === view.value.getMonth(),
             today: dateKey(date) === dateKey(new Date()),
@@ -194,7 +195,7 @@ onBeforeUnmount(() => {
                                 {{ cell.day }}
                                 <span v-if="cell.busy" :class="['absolute bottom-1 h-1 w-1 rounded-full', cell.selected ? 'bg-white/80' : 'bg-warning']"></span>
                             </button>
-                            <div v-if="taskPopover === cell.key" class="absolute bottom-full left-1/2 z-[90] mb-2 w-[230px] -translate-x-1/2 rounded-[14px] border border-line bg-surface p-2.5 text-left shadow-[0_16px_40px_rgba(16,13,24,.22)]">
+                            <div v-if="taskPopover === cell.key" :class="[cell.col < 2 ? 'left-0' : cell.col > 4 ? 'right-0' : 'left-1/2 -translate-x-1/2', 'absolute bottom-full z-[90] mb-2 w-[230px] rounded-[14px] border border-line bg-surface p-2.5 text-left shadow-[0_16px_40px_rgba(16,13,24,.22)]']">
                                 <div class="flex items-center justify-between gap-2">
                                     <p class="text-[10px] font-bold text-ink">{{ formatDayLabel(cell.key) }}</p>
                                     <button type="button" class="rounded p-1 text-faint hover:bg-ink/[0.06] hover:text-ink" aria-label="Закрыть задачи" @click="closeTaskPopover"><XMarkIcon class="h-3 w-3" /></button>
