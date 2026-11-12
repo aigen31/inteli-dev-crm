@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class CalendarIntervalController extends Controller
 {
@@ -56,6 +57,7 @@ class CalendarIntervalController extends Controller
 
         $user = $request->user();
         $assigneeId = $data['assignee_id'] ?? null;
+        $all = $request->boolean('all') && $user->isAdmin();
 
         if (! empty($data['task_id'])) {
             $context = Task::query()->visibleTo($user)->findOrFail($data['task_id']);
@@ -64,14 +66,14 @@ class CalendarIntervalController extends Controller
             abort(403);
         }
 
-        if ($assigneeId === null) {
+        if ($assigneeId === null && ! $all) {
             return response()->json(['tasks' => []]);
         }
 
         $date = $data['date'];
         $tasks = Task::query()
             ->visibleTo($user)
-            ->where('assignee_id', $assigneeId)
+            ->when(! $all, fn ($query) => $query->where('assignee_id', $assigneeId))
             ->where(function ($query) use ($date): void {
                 $query->where(function ($query) use ($date): void {
                     $query->whereNotNull('starts_at')->whereNotNull('deadline')
@@ -94,5 +96,39 @@ class CalendarIntervalController extends Controller
             ->values();
 
         return response()->json(['tasks' => $tasks]);
+    }
+
+    public function activity(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $data = $request->validate([
+            'month' => ['required', 'date_format:Y-m'],
+        ]);
+
+        $start = Carbon::createFromFormat('Y-m-d', $data['month'].'-01')->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+        $counts = [];
+
+        $tasks = Task::query()
+            ->where(fn ($query) => $query->whereNotNull('starts_at')->orWhereNotNull('deadline'))
+            ->get(['starts_at', 'deadline']);
+
+        foreach ($tasks as $task) {
+            $from = $task->starts_at?->copy() ?? $task->deadline?->copy();
+            $to = $task->deadline?->copy() ?? $task->starts_at?->copy();
+            if ($from === null || $to === null) {
+                continue;
+            }
+            $cursor = $from->lt($start) ? $start->copy() : $from->copy();
+            $last = $to->gt($end) ? $end->copy() : $to->copy();
+            while ($cursor->lte($last)) {
+                $key = $cursor->toDateString();
+                $counts[$key] = ($counts[$key] ?? 0) + 1;
+                $cursor->addDay();
+            }
+        }
+
+        return response()->json(['month' => $data['month'], 'days' => $counts]);
     }
 }

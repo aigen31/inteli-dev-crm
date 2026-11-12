@@ -12,7 +12,7 @@ class DashboardLayoutController extends Controller
 {
     public function update(Request $request): JsonResponse
     {
-        $allowed = ['clients', 'active_tasks', 'revenue', 'templates', 'focus', 'activity', 'deadlines', 'quick_links'];
+        $allowed = ['clients', 'active_tasks', 'revenue', 'templates', 'focus', 'activity', 'deadlines', 'quick_links', 'activity_calendar'];
 
         $data = $request->validate([
             'widgets' => ['required', 'array', 'max:20'],

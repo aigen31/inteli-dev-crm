@@ -68,6 +68,7 @@ const cells = computed(() => {
             current: date.getMonth() === view.value.getMonth(),
             today: dateKey(date) === dateKey(new Date()),
             selected: dateKey(date) === normalize(props.modelValue),
+            load: busyFor(dateKey(date)).length,
             busy: busyFor(dateKey(date)).length > 0,
         };
     });
@@ -83,6 +84,13 @@ function parseDate(value) {
 function startOfMonth(date) { return new Date(date.getFullYear(), date.getMonth(), 1); }
 function dateKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 function busyFor(key) { return intervals.value.filter((item) => item.start <= key && key <= item.end); }
+function tone(load) {
+    if (!load) return {};
+    if (load === 1) return { backgroundColor: '#E8F3EC', color: '#2F8F62' };
+    if (load === 2) return { backgroundColor: '#FBF0D9', color: '#B7791F' };
+    if (load === 3) return { backgroundColor: '#F6D8C4', color: '#A96120' };
+    return { backgroundColor: '#F2C7C1', color: '#A33A33' };
+}
 async function loadDateTasks(key) {
     tasksLoading.value = true;
     dateTasks.value = [];
@@ -185,11 +193,12 @@ onBeforeUnmount(() => {
                                     'relative flex h-9 w-full items-center justify-center rounded-[10px] text-[11px] transition',
                                     !cell.current && 'text-faint/55',
                                     cell.selected && 'bg-primary-600 font-semibold text-white',
-                                    !cell.selected && cell.busy && 'bg-[#FBF0E6] font-semibold text-warning',
+                                    !cell.selected && cell.busy && 'font-semibold',
                                     !cell.selected && !cell.busy && 'text-ink-soft hover:bg-primary-soft/60',
                                     cell.today && !cell.selected && 'ring-1 ring-inset ring-primary-300',
                                 ]"
-                                :aria-label="`${cell.day}${cell.busy ? ', есть занятые задачи' : ''}`"
+                                :aria-label="`${cell.day}${cell.busy ? ', задач: ' + cell.load : ''}`"
+                                :style="!cell.selected ? tone(cell.load) : {}"
                                 @click="choose(cell)"
                             >
                                 {{ cell.day }}
@@ -212,10 +221,13 @@ onBeforeUnmount(() => {
                             </div>
                         </div>
                     </div>
-                    <div class="mt-3 flex items-center gap-3 border-t border-line/60 pt-2 text-[8px] text-faint">
-                        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-[3px] bg-[#FBF0E6]"></span>занято</span>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-line/60 pt-2 text-[8px] text-faint">
+                        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-[3px]" style="background:#E8F3EC"></span>спокойно</span>
+                        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-[3px]" style="background:#FBF0D9"></span>2</span>
+                        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-[3px]" style="background:#F6D8C4"></span>3</span>
+                        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-[3px]" style="background:#F2C7C1"></span>4+</span>
                         <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-[3px] bg-primary-600"></span>выбрано</span>
-                        <span class="ml-auto">можно выбрать любую дату</span>
+                        <span class="ml-auto">любую дату</span>
                     </div>
                 </div>
             </div>

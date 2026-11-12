@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import ActivityCalendarWidget from '@/Components/Dashboard/ActivityCalendarWidget.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import { taskStatusLabels } from '@/Utils/constants.js';
@@ -34,6 +35,7 @@ const catalog = [
     { id: 'activity', title: 'Движение', description: 'Последние изменения задач', icon: ClockIcon, w: 2, h: 2 },
     { id: 'deadlines', title: 'Дедлайны', description: 'Ближайшие сроки', icon: ClockIcon, w: 2, h: 1 },
     { id: 'quick_links', title: 'Быстрые ссылки', description: 'Клиенты, проекты и шаблоны', icon: UserGroupIcon, w: 2, h: 1 },
+    { id: 'activity_calendar', title: 'Календарь активности', description: 'Нагрузка по задачам', icon: ClockIcon, w: 2, h: 2 },
 ];
 const meta = (id) => catalog.find((item) => item.id === id) || catalog[0];
 const activeIds = computed(() => props.layout.map((item) => item.id));
@@ -151,6 +153,7 @@ function toggleSize(id) { sizeMenu.value = sizeMenu.value === id ? null : id; }
                         </div>
                         <p v-else class="mt-3 text-[10px] text-muted">Ближайших дедлайнов нет.</p>
                     </div>
+                    <ActivityCalendarWidget v-else-if="widget.id === 'activity_calendar'" :compact="short(widget)" />
                     <div v-else-if="widget.id === 'quick_links'" class="flex h-full flex-col justify-center gap-1.5">
                         <Link :href="route('admin.clients.index')" class="flex items-center gap-2 rounded-[9px] px-2 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:bg-primary-soft/40"><UserGroupIcon class="h-3.5 w-3.5 text-primary-500" />Клиенты и заявки <ArrowUpRightIcon class="ml-auto h-3 w-3 text-faint" /></Link>
                         <Link :href="route('admin.projects.index')" class="flex items-center gap-2 rounded-[9px] px-2 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:bg-primary-soft/40"><Squares2X2Icon class="h-3.5 w-3.5 text-sky" />Проекты <ArrowUpRightIcon class="ml-auto h-3 w-3 text-faint" /></Link>
