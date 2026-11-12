@@ -24,7 +24,7 @@ const props = defineProps({
     clients: Array,
     projects: Array,
     assignees: Array,
-    calendarTasks: { type: Array, default: () => [] },
+    assigneeId: { type: String, default: null },
     types: Array,
     priorities: Array,
     statuses: Array,
@@ -149,7 +149,7 @@ function submit() {
                     :clients="clients"
                     :projects="projects"
                     :assignees="assignees"
-                    :calendar-tasks="calendarTasks"
+                    :assignee-id="form.assignee_id || null"
                     :types="types"
                     :priorities="priorities"
                     :statuses="statuses"

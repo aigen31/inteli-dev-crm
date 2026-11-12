@@ -1,12 +1,14 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import axios from 'axios';
 import { CalendarDaysIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { validationMessage } from '@/Utils/validation';
 
 const props = defineProps({
     modelValue: { type: String, default: '' },
     label: { type: String, default: 'Дата' },
-    tasks: { type: Array, default: () => [] },
+    assigneeId: { type: String, default: null },
+    taskId: { type: String, default: null },
     error: { type: String, default: null },
     placeholder: { type: String, default: 'Выберите дату' },
 });
@@ -17,12 +19,29 @@ const open = ref(false);
 const view = ref(startOfMonth(parseDate(props.modelValue) || new Date()));
 
 const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-const intervals = computed(() => props.tasks.map((task) => {
-    const start = (task.starts_at || task.deadline || '').slice(0, 10);
-    const end = (task.deadline || task.starts_at || '').slice(0, 10);
-    if (!start || !end) return null;
-    return { start, end: end < start ? start : end, title: task.title || 'Задача' };
-}).filter(Boolean));
+const intervals = ref([]);
+const loading = ref(false);
+
+async function loadIntervals() {
+    if (!props.assigneeId && !props.taskId) {
+        intervals.value = [];
+        return;
+    }
+
+    loading.value = true;
+    try {
+        const params = props.taskId ? { task_id: props.taskId } : { assignee_id: props.assigneeId };
+        const { data } = await axios.get(route('calendar.intervals'), { params });
+        intervals.value = (data.intervals || []).map((item) => ({
+            start: item.start?.slice(0, 10),
+            end: item.end?.slice(0, 10),
+        })).filter((item) => item.start && item.end);
+    } catch {
+        intervals.value = [];
+    } finally {
+        loading.value = false;
+    }
+}
 const monthStartKey = computed(() => dateKey(new Date(view.value.getFullYear(), view.value.getMonth(), 1)));
 const monthEndKey = computed(() => dateKey(new Date(view.value.getFullYear(), view.value.getMonth() + 1, 0)));
 const monthIntervals = computed(() => intervals.value.filter((item) => item.start <= monthEndKey.value && item.end >= monthStartKey.value));
@@ -75,7 +94,12 @@ function onKeydown(event) { if (event.key === 'Escape') open.value = false; }
 function toggle() {
     if (!open.value) view.value = startOfMonth(parseDate(normalize(props.modelValue)) || new Date());
     open.value = !open.value;
+    if (open.value) loadIntervals();
 }
+
+watch([() => props.assigneeId, () => props.taskId], () => {
+    loadIntervals();
+});
 
 watch(() => props.modelValue, (value) => {
     const date = parseDate(normalize(value));
@@ -83,6 +107,7 @@ watch(() => props.modelValue, (value) => {
 });
 
 onMounted(() => {
+    loadIntervals();
     document.addEventListener('click', onOutside);
     document.addEventListener('keydown', onKeydown);
 });
@@ -150,13 +175,13 @@ onBeforeUnmount(() => {
                     </div>
                     <div v-if="monthIntervals.length" class="mt-3 max-h-[128px] space-y-1 overflow-y-auto">
                         <p class="font-mono text-[8px] uppercase tracking-[0.1em] text-faint">Занятые интервалы</p>
-                        <div v-for="item in monthIntervals" :key="item.title + item.start + item.end" class="flex items-center gap-2 rounded-[9px] bg-surface-2/55 px-2 py-1.5">
+                        <div v-for="item in monthIntervals" :key="item.start + item.end" class="flex items-center gap-2 rounded-[9px] bg-surface-2/55 px-2 py-1.5">
                             <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-warning"></span>
                             <span class="shrink-0 font-mono text-[8px] text-ink-soft">{{ formatRange(item) }}</span>
-                            <span class="min-w-0 truncate text-[9px] text-muted">{{ item.title }}</span>
+                            <span class="ml-auto text-[8px] text-faint">{{ loading ? 'обновляю…' : '' }}</span>
                         </div>
                     </div>
-                    <p v-else class="mt-3 rounded-[9px] bg-surface-2/45 px-2 py-1.5 text-[9px] text-muted">В этом месяце занятых интервалов нет.</p>
+                    <p v-else class="mt-3 rounded-[9px] bg-surface-2/45 px-2 py-1.5 text-[9px] text-muted">Нет занятых интервалов для выбранного исполнителя.</p>
                 </div>
             </div>
         </transition>
