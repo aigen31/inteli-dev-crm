@@ -286,6 +286,35 @@ class CrmMcpService
                 'summary' => ['type' => 'string'],
                 'test_url' => ['type' => 'string'],
             ], ['items']),
+            $this->tool('update_report', 'Edit a client report. Omit a field to keep its current value; pass items to replace the group list. Existing screenshots survive when an item id is kept. This is a write action, not a read.', [
+                'report' => ['type' => 'string', 'description' => 'Report UUID.'],
+                'title' => ['type' => 'string'],
+                'task_id' => ['type' => ['string', 'null'], 'description' => 'Task UUID; null detaches the report from its task.'],
+                'recipient_id' => ['type' => 'string'],
+                'recipient_email' => ['type' => 'string'],
+                'items' => [
+                    'type' => 'array',
+                    'description' => 'Full replacement list. Omit to keep current groups.',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'id' => ['type' => 'string', 'description' => 'Existing item UUID; omit for a new group.'],
+                            'description' => ['type' => 'string'],
+                            'summary' => ['type' => 'string', 'description' => 'Alias for description.'],
+                            'link' => ['type' => 'string'],
+                            'url' => ['type' => 'string', 'description' => 'Alias for link.'],
+                            'test_url' => ['type' => 'string', 'description' => 'Alias for link.'],
+                            'screenshot_base64' => ['type' => 'string'],
+                            'screenshot_mime' => ['type' => 'string', 'enum' => ['image/png', 'image/jpeg', 'image/webp', 'image/gif']],
+                            'screenshot_name' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ], ['report']),
+            $this->tool('delete_report', 'Delete a client report and its groups. Destructive: requires confirm=true.', [
+                'report' => ['type' => 'string', 'description' => 'Report UUID.'],
+                'confirm' => ['type' => 'boolean', 'description' => 'Must be true.'],
+            ], ['report']),
             $this->tool('crm_operation', 'Other CRM writes: client.update/deactivate; project.update/archive/member.*; task.update/checklist/comment; invoice.cancel/refund; task_template.*; form_template.toggle; custom_field.*; settings.get. Set confirm=true for destructive/money operations.', [
                 'operation' => ['type' => 'string', 'enum' => [
                     'client.update', 'client.deactivate',
@@ -347,6 +376,8 @@ class CrmMcpService
             'mark_invoice_paid' => $this->markPaid($arguments),
             'create_project_invite' => $this->storeInvite($arguments),
             'create_report', 'create_task_report' => $this->storeReport($arguments),
+            'update_report' => $this->updateReport($arguments),
+            'delete_report' => $this->deleteReport($arguments),
             'crm_operation' => $this->operation($arguments, $request),
             default => throw new \InvalidArgumentException('Unknown tool: '.$name),
         };
@@ -611,6 +642,121 @@ class CrmMcpService
     {
         $report = TaskReport::query()->with(['author:id,name', 'recipient:id,name,email', 'task:id,title', 'items.screenshot'])->findOrFail((string) ($arguments['report'] ?? ''));
 
+        return $this->reportDetails($report);
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateReport(array $arguments): array
+    {
+        $report = TaskReport::query()
+            ->with(['author:id,name', 'recipient:id,name,email', 'task:id,title', 'items.screenshot'])
+            ->findOrFail((string) ($arguments['report'] ?? ''));
+
+        $items = array_key_exists('items', $arguments)
+            ? $this->normalizeReportItems(is_array($arguments['items']) ? $arguments['items'] : [])
+            : $report->items->map(fn ($item): array => [
+                'id' => $item->id,
+                'summary' => $item->content,
+                'test_url' => $item->test_url,
+            ])->all();
+
+        if ($items === []) {
+            throw ValidationException::withMessages(['items' => 'Передайте хотя бы одну группу отчёта.']);
+        }
+
+        $updated = $this->reports->update($report, request()->user(), [
+            'task_id' => array_key_exists('task_id', $arguments)
+                ? (filled($arguments['task_id']) ? $arguments['task_id'] : null)
+                : $report->task_id,
+            'title' => array_key_exists('title', $arguments) ? $arguments['title'] : $report->title,
+            'recipient_id' => $this->reportRecipientId($report, $arguments),
+            'items' => $items,
+        ]);
+
+        return [
+            ...$this->reportDetails($updated),
+            'updated' => true,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function deleteReport(array $arguments): array
+    {
+        if (($arguments['confirm'] ?? false) !== true) {
+            throw ValidationException::withMessages(['confirm' => 'Удаление отчёта требует confirm=true.']);
+        }
+
+        $report = TaskReport::query()->findOrFail((string) ($arguments['report'] ?? ''));
+        $payload = [
+            'id' => $report->id,
+            'title' => $report->title,
+            'display_title' => $report->title ?: 'Отчёт от '.$report->sent_at?->format('d.m.Y'),
+        ];
+
+        $this->reports->delete($report);
+
+        return [
+            ...$payload,
+            'deleted' => true,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     */
+    private function reportRecipientId(TaskReport $report, array $arguments): string
+    {
+        if (filled($arguments['recipient_id'] ?? null)) {
+            return (string) $arguments['recipient_id'];
+        }
+
+        if (filled($arguments['recipient_email'] ?? null)) {
+            $id = User::query()
+                ->where('is_active', true)
+                ->where('email', (string) $arguments['recipient_email'])
+                ->value('id');
+
+            if ($id === null) {
+                throw ValidationException::withMessages(['recipient_email' => 'Активный получатель с таким email не найден.']);
+            }
+
+            return (string) $id;
+        }
+
+        if (filled($report->recipient_id)) {
+            return (string) $report->recipient_id;
+        }
+
+        throw ValidationException::withMessages(['recipient_id' => 'Укажите получателя отчёта.']);
+    }
+
+    /**
+     * @param  list<mixed>  $items
+     * @return list<array<string, mixed>>
+     */
+    private function normalizeReportItems(array $items): array
+    {
+        return array_values(array_map(fn (mixed $item): array => [
+            'id' => is_array($item) && filled($item['id'] ?? null) ? $item['id'] : null,
+            'summary' => is_array($item) ? ($item['description'] ?? $item['summary'] ?? '') : '',
+            'test_url' => is_array($item) ? ($item['link'] ?? $item['url'] ?? $item['test_url'] ?? null) : null,
+            'screenshot_base64' => is_array($item) ? ($item['screenshot_base64'] ?? null) : null,
+            'screenshot_mime' => is_array($item) ? ($item['screenshot_mime'] ?? null) : null,
+            'screenshot_name' => is_array($item) ? ($item['screenshot_name'] ?? null) : null,
+        ], $items));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function reportDetails(TaskReport $report): array
+    {
         return [
             ...$this->reportSummary($report),
             'author' => $report->author?->only(['id', 'name']),

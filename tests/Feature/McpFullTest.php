@@ -46,8 +46,10 @@ test('MCP exposes the core CRM surface with annotations', function (): void {
     ])->assertOk();
 
     $tools = collect($response->json('result.tools'));
-    expect($tools->pluck('name'))->toContain('create_report', 'create_task', 'create_client', 'create_invoice', 'crm_operation', 'list_projects', 'get_report', 'update_client', 'create_task_template', 'apply_task_template', 'list_custom_fields', 'set_custom_field_values')
+    expect($tools->pluck('name'))->toContain('create_report', 'update_report', 'delete_report', 'create_task', 'create_client', 'create_invoice', 'crm_operation', 'list_projects', 'get_report', 'update_client', 'create_task_template', 'apply_task_template', 'list_custom_fields', 'set_custom_field_values')
         ->and($tools->firstWhere('name', 'create_report')['annotations']['readOnlyHint'])->toBeFalse()
+        ->and($tools->firstWhere('name', 'update_report')['annotations']['readOnlyHint'])->toBeFalse()
+        ->and($tools->firstWhere('name', 'delete_report')['annotations']['destructiveHint'])->toBeTrue()
         ->and($tools->firstWhere('name', 'list_tasks')['annotations']['readOnlyHint'])->toBeTrue();
 });
 
@@ -71,6 +73,47 @@ test('MCP creates a report using description and link template', function (): vo
     expect($report->items)->toHaveCount(2);
     expect($report->items[0]->content)->toBe('Починил форму заявки.');
     expect($report->items[0]->test_url)->toBe('https://example.com/form');
+});
+
+test('MCP updates a report and deletes it only with confirmation', function (): void {
+    $created = mcpCall($this, 'create_report', [
+        'title' => 'Черновик отчёта',
+        'recipient_email' => $this->client->email,
+        'items' => [
+            ['description' => 'Первая версия.', 'link' => 'https://example.com/old'],
+        ],
+    ]);
+    expect($created['isError'])->toBeFalse();
+    $id = $created['structuredContent']['id'];
+
+    $updated = mcpCall($this, 'update_report', [
+        'report' => $id,
+        'title' => 'Обновлённый отчёт',
+        'recipient_email' => $this->client->email,
+        'items' => [
+            ['description' => 'Новая версия.', 'link' => 'https://example.com/new'],
+            ['description' => 'Вторая группа.'],
+        ],
+    ]);
+
+    expect($updated['isError'])->toBeFalse()
+        ->and($updated['structuredContent']['updated'])->toBeTrue()
+        ->and($updated['structuredContent']['items'])->toHaveCount(2)
+        ->and($updated['structuredContent']['items'][0]['description'])->toBe('Новая версия.');
+
+    $report = TaskReport::query()->findOrFail($id);
+    expect($report->title)->toBe('Обновлённый отчёт')
+        ->and($report->items)->toHaveCount(2)
+        ->and($report->items[0]->test_url)->toBe('https://example.com/new');
+
+    $denied = mcpCall($this, 'delete_report', ['report' => $id]);
+    expect($denied['isError'])->toBeTrue();
+    expect(TaskReport::query()->find($id))->not->toBeNull();
+
+    $deleted = mcpCall($this, 'delete_report', ['report' => $id, 'confirm' => true]);
+    expect($deleted['isError'])->toBeFalse()
+        ->and($deleted['structuredContent']['deleted'])->toBeTrue();
+    expect(TaskReport::query()->find($id))->toBeNull();
 });
 
 test('MCP creates clients only with explicit consent and logs it', function (): void {
