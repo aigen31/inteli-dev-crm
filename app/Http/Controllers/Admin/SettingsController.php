@@ -61,9 +61,9 @@ class SettingsController extends Controller
             'apiTokens' => $tokens,
             'aiActions' => $actions,
             'mcp' => [
-                'api_url' => rtrim((string) config('app.url'), '/').'/api/v1',
-                'command' => 'node mcp/src/server.mjs',
-                'docs' => 'docs/api/README.md',
+                'api_url' => rtrim((string) config('app.url'), '/').'/api/mcp',
+                'auth' => 'Authorization: Bearer <MCP_TOKEN>',
+                'docs' => 'docs/mcp.md',
             ],
         ]);
     }

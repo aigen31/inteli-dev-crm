@@ -219,7 +219,7 @@ async function copy(value) {
 
 const copiedMcp = ref(false);
 async function copyMcp() {
-    await copy(`CRM_API_URL=${props.mcp?.api_url || ''}\nCRM_API_TOKEN=<ваш токен>\nnode mcp/src/server.mjs`);
+    await copy(`POST ${props.mcp?.api_url || ''}\n${props.mcp?.auth || 'Authorization: Bearer <MCP_TOKEN>'}`);
     copiedMcp.value = true;
     window.setTimeout(() => (copiedMcp.value = false), 1600);
 }
@@ -412,11 +412,10 @@ async function copyMcp() {
 
                         <Card title="MCP-сервер">
                             <p class="text-[12px] leading-relaxed text-ink-soft">
-                                Локальный MCP-сервер даёт ИИ-клиенту доступ к клиентам, задачам, шаблонам, счетам и полям.
+                                HTTP MCP-сервер даёт ИИ-клиенту доступ к клиентам, проектам, задачам, отчётам, счетам и полям.
                             </p>
-                            <pre class="mt-3 overflow-x-auto rounded-2xl bg-ink p-4 font-mono text-[10px] leading-relaxed text-canvas">CRM_API_URL={{ mcp?.api_url }}
-CRM_API_TOKEN=&lt;токен&gt;
-node mcp/src/server.mjs</pre>
+                            <pre class="mt-3 overflow-x-auto rounded-2xl bg-ink p-4 font-mono text-[10px] leading-relaxed text-canvas">POST {{ mcp?.api_url }}
+{{ mcp?.auth || 'Authorization: Bearer <MCP_TOKEN>' }}</pre>
                             <div class="mt-3 flex flex-wrap gap-2">
                                 <Button size="sm" variant="secondary" @click="copyMcp">
                                     <CheckIcon v-if="copiedMcp" class="h-4 w-4" />
