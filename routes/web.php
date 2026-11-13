@@ -240,6 +240,8 @@ Route::middleware(['auth', 'is_active'])->group(function () {
     Route::patch('/dashboard-layout', [DashboardLayoutController::class, 'update'])->name('dashboard.layout');
     Route::get('/reports/{report}', [ReportController::class, 'show'])->whereUuid('report')->name('reports.show');
     Route::get('/reports/{report}/screenshot', [ReportController::class, 'screenshot'])->whereUuid('report')->name('reports.screenshot');
+    Route::get('/reports/{report}/export/xlsx', [ReportController::class, 'exportExcel'])->whereUuid('report')->name('reports.export.xlsx');
+    Route::get('/reports/{report}/export/pdf', [ReportController::class, 'exportPdf'])->whereUuid('report')->name('reports.export.pdf');
 });
 
 // Legal pages are public: they are linked from the login screen and the site.
