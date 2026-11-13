@@ -8,12 +8,15 @@ use App\Models\FileAttachment;
 use App\Models\Task;
 use App\Models\TaskReport;
 use App\Models\User;
+use App\Services\Reports\ReportExportService;
 use App\Services\ReportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
@@ -154,6 +157,20 @@ class ReportController extends Controller
         return $request->user()->isAdmin()
             ? Inertia::render('Admin/Reports/Show', ['report' => $payload])
             : Inertia::render('Client/Reports/Show', ['report' => $payload]);
+    }
+
+    public function exportExcel(Request $request, TaskReport $report, ReportExportService $exports): BinaryFileResponse
+    {
+        $this->authorize('view', $report);
+
+        return $exports->excel($report);
+    }
+
+    public function exportPdf(Request $request, TaskReport $report, ReportExportService $exports): HttpResponse
+    {
+        $this->authorize('view', $report);
+
+        return $exports->pdf($report);
     }
 
     public function screenshot(Request $request, TaskReport $report): StreamedResponse
