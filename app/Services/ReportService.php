@@ -9,6 +9,7 @@ use App\Models\TaskReport;
 use App\Models\User;
 use App\Notifications\ReportDelivered;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -108,6 +109,80 @@ class ReportService
             'task:id,title,project_id',
             'items.screenshot',
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function update(TaskReport $report, User $author, array $data): TaskReport
+    {
+        $validated = Validator::make($data, [
+            'task_id' => ['nullable', 'uuid', 'exists:tasks,id'],
+            'title' => ['nullable', 'string', 'max:160'],
+            'recipient_id' => ['required', 'uuid', 'exists:users,id'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.id' => ['nullable', 'uuid'],
+            'items.*.summary' => ['required', 'string', 'min:3', 'max:5000'],
+            'items.*.test_url' => ['nullable', 'url', 'max:500'],
+            'items.*.screenshot' => ['nullable', 'image', 'max:10240'],
+        ])->validate();
+
+        $recipient = User::query()->where('is_active', true)->findOrFail($validated['recipient_id']);
+        $existing = $report->items()->get()->keyBy('id');
+        $keptIds = [];
+
+        DB::transaction(function () use ($report, $author, $validated, $recipient, $existing, &$keptIds): void {
+            $items = array_values($validated['items']);
+            $firstScreenshot = null;
+
+            foreach ($items as $position => $item) {
+                $current = filled($item['id'] ?? null) ? $existing->get($item['id']) : null;
+                $screenshotId = $current?->screenshot_id;
+
+                if (($item['screenshot'] ?? null) instanceof UploadedFile) {
+                    $screenshotId = $this->files->upload($item['screenshot'], $author)->id;
+                }
+
+                $payload = [
+                    'position' => $position,
+                    'content' => trim((string) $item['summary']),
+                    'test_url' => $item['test_url'] ?? null,
+                    'screenshot_id' => $screenshotId,
+                ];
+
+                if ($current !== null) {
+                    $current->update($payload);
+                    $keptIds[] = $current->id;
+                } else {
+                    $created = $report->items()->create($payload);
+                    $keptIds[] = $created->id;
+                }
+
+                $firstScreenshot ??= $screenshotId;
+            }
+
+            $report->items()->whereNotIn('id', $keptIds)->delete();
+            $first = $items[0];
+
+            $report->update([
+                'task_id' => $validated['task_id'] ?? null,
+                'recipient_id' => $recipient->id,
+                'title' => filled($validated['title'] ?? null) ? trim((string) $validated['title']) : null,
+                'content' => trim((string) $first['summary']),
+                'test_url' => $first['test_url'] ?? null,
+                'screenshot_id' => $firstScreenshot,
+            ]);
+        });
+
+        return $report->refresh()->load(['author:id,name', 'recipient:id,name,email', 'task:id,title,project_id', 'items.screenshot']);
+    }
+
+    public function delete(TaskReport $report): void
+    {
+        DB::transaction(function () use ($report): void {
+            $report->items()->delete();
+            $report->delete();
+        });
     }
 
     /**

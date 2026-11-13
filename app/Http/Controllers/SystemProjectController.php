@@ -30,8 +30,10 @@ class SystemProjectController extends Controller
         $status = in_array($status, $this->projects->statusValues($definition), true) ? $status : '';
         $sort = $request->query('sort') === 'new' ? 'new' : 'top';
         $search = trim((string) $request->query('q', ''));
+        $archived = $request->boolean('archived') && $user->isAdmin();
 
         $items = FeedbackItem::query()
+            ->when($archived, fn ($query) => $query->whereNotNull('archived_at'), fn ($query) => $query->whereNull('archived_at'))
             ->where('type', $definition['type'])
             ->with('user:id,name')
             ->withCount('votes')
@@ -67,6 +69,7 @@ class SystemProjectController extends Controller
                 'status' => $status,
                 'sort' => $sort,
                 'q' => $search,
+                'archived' => $archived,
             ],
             'statusCounts' => collect($definition['statuses'])->mapWithKeys(
                 fn (array $status): array => [$status['value'] => (int) ($counts[$status['value']] ?? 0)],
@@ -181,6 +184,76 @@ class SystemProjectController extends Controller
         return back()->with('success', 'Статус обновлён.');
     }
 
+    public function update(Request $request, string $project, FeedbackItem $item): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $definition = $this->definition($project);
+        abort_unless($item->type === $definition['type'], 404);
+
+        $categoryValues = array_column($definition['categories'], 'value');
+        $severityValues = array_column($definition['severities'], 'value');
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'min:5', 'max:160'],
+            'description' => ['required', 'string', 'min:20', 'max:5000'],
+            'category' => $definition['type'] === SystemProjectService::FEEDBACK ? ['required', Rule::in($categoryValues)] : ['nullable'],
+            'severity' => $definition['type'] === SystemProjectService::BUGS ? ['required', Rule::in($severityValues)] : ['nullable'],
+            'steps' => $definition['type'] === SystemProjectService::BUGS ? ['required', 'string', 'min:10', 'max:5000'] : ['nullable', 'string', 'max:5000'],
+            'expected' => $definition['type'] === SystemProjectService::BUGS ? ['required', 'string', 'min:5', 'max:5000'] : ['nullable', 'string', 'max:5000'],
+            'actual' => $definition['type'] === SystemProjectService::BUGS ? ['required', 'string', 'min:5', 'max:5000'] : ['nullable', 'string', 'max:5000'],
+            'environment' => ['nullable', 'string', 'max:160'],
+        ]);
+
+        $item->update([
+            'title' => trim($data['title']),
+            'description' => trim($data['description']),
+            'category' => $definition['type'] === SystemProjectService::FEEDBACK ? $data['category'] : null,
+            'severity' => $definition['type'] === SystemProjectService::BUGS ? $data['severity'] : null,
+            'steps' => $definition['type'] === SystemProjectService::BUGS ? trim($data['steps']) : null,
+            'expected' => $definition['type'] === SystemProjectService::BUGS ? trim($data['expected']) : null,
+            'actual' => $definition['type'] === SystemProjectService::BUGS ? trim($data['actual']) : null,
+            'environment' => filled($data['environment'] ?? null) ? trim($data['environment']) : null,
+        ]);
+
+        return back()->with('success', 'Запись обновлена.');
+    }
+
+    public function archive(Request $request, string $project, FeedbackItem $item): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $definition = $this->definition($project);
+        abort_unless($item->type === $definition['type'], 404);
+
+        $item->update(['archived_at' => now()]);
+
+        return back()->with('success', 'Запись перемещена в архив.');
+    }
+
+    public function restore(Request $request, string $project, FeedbackItem $item): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $definition = $this->definition($project);
+        abort_unless($item->type === $definition['type'], 404);
+
+        $item->update(['archived_at' => null]);
+
+        return back()->with('success', 'Запись восстановлена из архива.');
+    }
+
+    public function reject(Request $request, string $project, FeedbackItem $item): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $definition = $this->definition($project);
+        abort_unless($item->type === $definition['type'], 404);
+
+        $item->update([
+            'status' => 'declined',
+            'resolved_at' => now(),
+        ]);
+
+        return back()->with('success', $definition['type'] === SystemProjectService::BUGS ? 'Баг отклонён.' : 'Идея отклонена.');
+    }
+
     /**
      * @param  array<string, mixed>  $project
      * @return array<string, mixed>
@@ -210,6 +283,7 @@ class SystemProjectController extends Controller
             'author' => $item->user ? ['id' => $item->user->id, 'name' => $item->user->name] : null,
             'created_at' => $item->created_at?->toIso8601String(),
             'resolved_at' => $item->resolved_at?->toIso8601String(),
+            'archived_at' => $item->archived_at?->toIso8601String(),
         ];
     }
 

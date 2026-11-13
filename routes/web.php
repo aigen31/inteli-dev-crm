@@ -85,6 +85,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/{project}', [SystemProjectController::class, 'store'])->whereIn('project', ['feedback', 'bugs'])->name('store');
         Route::post('/{project}/{item}/vote', [SystemProjectController::class, 'vote'])->whereIn('project', ['feedback', 'bugs'])->name('vote');
         Route::patch('/{project}/{item}/status', [SystemProjectController::class, 'updateStatus'])->whereIn('project', ['feedback', 'bugs'])->name('status');
+        Route::patch('/{project}/{item}', [SystemProjectController::class, 'update'])->whereIn('project', ['feedback', 'bugs'])->name('update');
+        Route::patch('/{project}/{item}/archive', [SystemProjectController::class, 'archive'])->whereIn('project', ['feedback', 'bugs'])->name('archive');
+        Route::patch('/{project}/{item}/restore', [SystemProjectController::class, 'restore'])->whereIn('project', ['feedback', 'bugs'])->name('restore');
+        Route::patch('/{project}/{item}/reject', [SystemProjectController::class, 'reject'])->whereIn('project', ['feedback', 'bugs'])->name('reject');
     });
 
     // Secret, opt-in interface features.
@@ -156,6 +160,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
         Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+        Route::get('/reports/{report}/edit', [ReportController::class, 'edit'])->whereUuid('report')->name('reports.edit');
+        Route::patch('/reports/{report}', [ReportController::class, 'update'])->whereUuid('report')->name('reports.update');
+        Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->whereUuid('report')->name('reports.destroy');
 
         // Projects
         Route::get('/projects', [Admin\ProjectController::class, 'index'])->name('projects.index');
