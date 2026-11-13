@@ -12,14 +12,18 @@ import TextArea from '@/Components/Form/TextArea.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import { formatDate } from '@/Utils/formatters.js';
 import {
+    ArchiveBoxIcon,
     ArrowLeftIcon,
+    ArrowUturnLeftIcon,
     ArrowUpIcon,
     BugAntIcon,
     CheckCircleIcon,
     ChatBubbleLeftRightIcon,
     LightBulbIcon,
+    PencilSquareIcon,
     PlusIcon,
     SparklesIcon,
+    NoSymbolIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
 
@@ -40,6 +44,19 @@ const isBug = computed(() => props.project.type === 'bugs');
 const showForm = ref(false);
 const voting = ref(null);
 const formSearch = ref(props.filters?.q || '');
+const editingItem = ref(null);
+const editOpen = ref(false);
+
+const editForm = useForm({
+    title: '',
+    description: '',
+    category: '',
+    severity: '',
+    steps: '',
+    expected: '',
+    actual: '',
+    environment: '',
+});
 
 const form = useForm({
     title: '',
@@ -108,6 +125,42 @@ async function vote(item) {
     } finally {
         voting.value = null;
     }
+}
+
+function openEdit(item) {
+    editingItem.value = item;
+    editForm.clearErrors();
+    editForm.title = item.title;
+    editForm.description = item.description;
+    editForm.category = item.category?.value || '';
+    editForm.severity = item.severity?.value || '';
+    editForm.steps = item.steps || '';
+    editForm.expected = item.expected || '';
+    editForm.actual = item.actual || '';
+    editForm.environment = item.environment || '';
+    editOpen.value = true;
+}
+
+function submitEdit() {
+    if (!editingItem.value) return;
+    editForm.patch(route('system-projects.update', { project: props.project.key, item: editingItem.value.id }), {
+        preserveScroll: true,
+        onSuccess: () => { editOpen.value = false; editingItem.value = null; },
+    });
+}
+
+function archiveItem(item) {
+    if (!window.confirm(isBug.value ? 'Переместить баг в архив?' : 'Переместить идею в архив?')) return;
+    router.patch(route('system-projects.archive', { project: props.project.key, item: item.id }), {}, { preserveScroll: true });
+}
+
+function restoreItem(item) {
+    router.patch(route('system-projects.restore', { project: props.project.key, item: item.id }), {}, { preserveScroll: true });
+}
+
+function rejectItem(item) {
+    if (!window.confirm(isBug.value ? 'Отклонить баг?' : 'Отклонить идею?')) return;
+    router.patch(route('system-projects.reject', { project: props.project.key, item: item.id }), {}, { preserveScroll: true });
 }
 
 function updateStatus(item, event) {
@@ -187,6 +240,7 @@ function updateStatus(item, event) {
                         <button type="button" :class="['rounded-full px-2.5 py-1 text-[9px] font-semibold', filters.sort !== 'new' ? 'bg-ink text-canvas' : 'text-muted']" @click="filter({ sort: 'top' })">Топ</button>
                         <button type="button" :class="['rounded-full px-2.5 py-1 text-[9px] font-semibold', filters.sort === 'new' ? 'bg-ink text-canvas' : 'text-muted']" @click="filter({ sort: 'new' })">Новые</button>
                     </span>
+                    <button v-if="canManage" type="button" :class="['inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[9px] font-semibold transition', filters.archived ? 'border-ink bg-ink text-canvas' : 'border-line bg-white/50 text-muted hover:text-ink']" @click="filter({ archived: !filters.archived })"><ArchiveBoxIcon class="h-3 w-3" />{{ filters.archived ? 'К активным' : 'Архив' }}</button>
                 </div>
 
                 <form class="relative mb-4" @submit.prevent="search">
@@ -240,10 +294,18 @@ function updateStatus(item, event) {
                                     <span>{{ item.author?.name || 'Пользователь' }}</span>
                                     <span class="text-faint">·</span>
                                     <span class="inline-flex items-center gap-1"><ChatBubbleLeftRightIcon class="h-3 w-3" /> поддержали {{ item.votes }}</span>
-                                    <div v-if="canManage" class="ml-auto">
-                                        <select :value="item.status" class="h-8 rounded-[9px] border border-line bg-white/70 px-2 text-[10px] font-semibold text-ink outline-none focus:border-primary-300" @change="updateStatus(item, $event)">
-                                            <option v-for="status in project.statuses" :key="status.value" :value="status.value">{{ status.label }}</option>
-                                        </select>
+                                    <div v-if="canManage" class="ml-auto flex flex-wrap items-center gap-1.5">
+                                        <template v-if="filters.archived">
+                                            <button type="button" class="inline-flex items-center gap-1 rounded-[8px] border border-line bg-white/70 px-2 py-1 text-[9px] font-semibold text-muted transition hover:text-ink" @click="restoreItem(item)"><ArrowUturnLeftIcon class="h-3 w-3" />Восстановить</button>
+                                        </template>
+                                        <template v-else>
+                                            <button type="button" class="rounded-[8px] p-1.5 text-muted transition hover:bg-primary-soft hover:text-primary-700" aria-label="Редактировать" title="Редактировать" @click="openEdit(item)"><PencilSquareIcon class="h-3.5 w-3.5" /></button>
+                                            <button type="button" class="rounded-[8px] p-1.5 text-muted transition hover:bg-surface-2 hover:text-ink" aria-label="В архив" title="В архив" @click="archiveItem(item)"><ArchiveBoxIcon class="h-3.5 w-3.5" /></button>
+                                            <button type="button" class="rounded-[8px] p-1.5 text-muted transition hover:bg-danger/10 hover:text-danger-ink" aria-label="Отклонить" title="Отклонить" @click="rejectItem(item)"><NoSymbolIcon class="h-3.5 w-3.5" /></button>
+                                            <select :value="item.status" class="h-8 rounded-[9px] border border-line bg-white/70 px-2 text-[10px] font-semibold text-ink outline-none focus:border-primary-300" @change="updateStatus(item, $event)">
+                                                <option v-for="status in project.statuses" :key="status.value" :value="status.value">{{ status.label }}</option>
+                                            </select>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
@@ -316,5 +378,34 @@ function updateStatus(item, event) {
             <CheckCircleIcon class="h-4 w-4 text-sage" />
             <span>{{ project.name }} — общий проект для всех пользователей CRM</span>
         </div>
+
+        <Teleport to="body">
+            <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="editOpen" class="fixed inset-0 z-[95] flex items-center justify-center overflow-y-auto bg-ink/45 p-3 backdrop-blur-[3px] sm:p-6" @click.self="editOpen = false">
+                    <section class="my-auto flex max-h-[90vh] w-full max-w-[620px] flex-col overflow-hidden rounded-[26px] border border-line bg-surface shadow-[0_30px_90px_rgba(20,16,30,.28)]" role="dialog" aria-modal="true" aria-label="Редактировать запись">
+                        <header class="shrink-0 border-b border-line/70 px-5 py-4 sm:px-6 sm:py-5">
+                            <p class="eyebrow">{{ isBug ? 'Редактирование бага' : 'Редактирование идеи' }}</p>
+                            <div class="mt-1 flex items-start justify-between gap-3"><h2 class="font-display text-[22px] font-medium tracking-[-0.04em] text-ink">Настроить запись</h2><button type="button" class="rounded-full border border-line bg-white/60 p-2 text-muted hover:text-ink" aria-label="Закрыть" @click="editOpen = false"><XMarkIcon class="h-4 w-4" /></button></div>
+                        </header>
+                        <form class="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5" @submit.prevent="submitEdit">
+                            <TextInput v-model="editForm.title" label="Коротко" :error="editForm.errors.title" required />
+                            <TextArea v-model="editForm.description" label="Суть" :rows="4" :error="editForm.errors.description" required />
+                            <SelectInput v-if="!isBug" v-model="editForm.category" label="Категория" :options="project.categories.map((c) => ({ value: c.value, label: c.label }))" :error="editForm.errors.category" />
+                            <SelectInput v-if="isBug" v-model="editForm.severity" label="Критичность" :options="project.severities.map((s) => ({ value: s.value, label: s.label }))" :error="editForm.errors.severity" />
+                            <template v-if="isBug">
+                                <TextArea v-model="editForm.steps" label="Как повторить" :rows="3" :error="editForm.errors.steps" required />
+                                <TextArea v-model="editForm.expected" label="Что ожидали" :rows="2" :error="editForm.errors.expected" required />
+                                <TextArea v-model="editForm.actual" label="Что получили" :rows="2" :error="editForm.errors.actual" required />
+                                <TextInput v-model="editForm.environment" label="Окружение" :error="editForm.errors.environment" />
+                            </template>
+                            <div class="flex items-center justify-end gap-2 pt-1">
+                                <button type="button" class="rounded-[10px] px-3 py-2 text-[10px] font-semibold text-muted hover:text-ink" @click="editOpen = false">Отмена</button>
+                                <Button type="submit" :disabled="editForm.processing">{{ editForm.processing ? 'Сохраняю…' : 'Сохранить' }}</Button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+            </Transition>
+        </Teleport>
     </component>
 </template>

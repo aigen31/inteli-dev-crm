@@ -13,13 +13,27 @@ const props = defineProps({
     tasks: Array,
     recipients: Array,
     preselectedTask: String,
+    report: { type: Object, default: null },
 });
 
+const isEditing = !!props.report;
+
+const initialItems = props.report?.items?.length
+    ? props.report.items.map((item) => ({
+        id: item.id,
+        summary: item.summary,
+        test_url: item.test_url || '',
+        screenshot: null,
+        has_screenshot: item.has_screenshot,
+        screenshot_url: item.screenshot_url,
+    }))
+    : [{ summary: '', test_url: '', screenshot: null }];
+
 const form = useForm({
-    title: '',
-    task_id: props.preselectedTask || '',
-    recipient_id: '',
-    items: [{ summary: '', test_url: '', screenshot: null }],
+    title: props.report?.title || '',
+    task_id: props.report?.task?.id || props.preselectedTask || '',
+    recipient_id: props.report?.recipient?.id || '',
+    items: initialItems,
 });
 
 const taskOptions = computed(() => props.tasks.map((task) => ({
@@ -33,7 +47,7 @@ const recipientOptions = computed(() => props.recipients.map((user) => ({
 })));
 
 function addItem() {
-    form.items.push({ summary: '', test_url: '', screenshot: null });
+    form.items.push({ id: null, summary: '', test_url: '', screenshot: null });
 }
 
 function removeItem(index) {
@@ -46,21 +60,25 @@ function setScreenshot(index, event) {
 }
 
 function submit() {
+    if (isEditing) {
+        form.patch(route('admin.reports.update', props.report.id), { forceFormData: true });
+        return;
+    }
     form.post(route('admin.reports.store'), { forceFormData: true });
 }
 </script>
 
 <template>
-    <AdminLayout title="Новый отчёт">
+    <AdminLayout :title="isEditing ? 'Редактировать отчёт' : 'Новый отчёт'">
         <template #actions>
             <Link :href="route('admin.reports.index')"><Button variant="ghost" size="sm"><ArrowLeftIcon class="h-4 w-4" />Назад</Button></Link>
-            <Button size="sm" :disabled="form.processing" @click="submit">Отправить</Button>
+            <Button size="sm" :disabled="form.processing" @click="submit">{{ isEditing ? 'Сохранить' : 'Отправить' }}</Button>
         </template>
 
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.3fr_.7fr]">
             <section class="space-y-4">
                 <div class="surface-card p-5 sm:p-6">
-                    <p class="eyebrow">Отчёт</p>
+                    <p class="eyebrow">{{ isEditing ? 'Редактирование' : 'Отчёт' }}</p>
                     <div class="mt-4">
                         <TextInput
                             v-model="form.title"
@@ -111,10 +129,14 @@ function submit() {
                         />
                     </div>
 
-                    <div class="mt-3">
+                    <div class="mt-3 space-y-2">
+                        <div v-if="item.has_screenshot && !item.screenshot" class="flex items-center gap-2 rounded-[12px] border border-line/70 bg-surface-2/40 p-2">
+                            <a :href="item.screenshot_url" target="_blank" rel="noopener" class="block h-12 w-16 overflow-hidden rounded-[8px] border border-line bg-white"><img :src="item.screenshot_url" alt="Текущий скриншот" class="h-full w-full object-cover" /></a>
+                            <div class="min-w-0"><p class="text-[10px] font-semibold text-ink">Текущий скриншот</p><p class="text-[9px] text-muted">Загрузите новый, если нужно заменить.</p></div>
+                        </div>
                         <label class="flex cursor-pointer items-center gap-2 rounded-[14px] border border-dashed border-line-strong bg-white/50 px-4 py-3 text-[11px] text-muted hover:border-primary-300">
                             <PaperClipIcon class="h-4 w-4" />
-                            {{ item.screenshot ? item.screenshot.name : 'Прикрепить скриншот (необязательно)' }}
+                            {{ item.screenshot ? item.screenshot.name : (item.has_screenshot ? 'Заменить скриншот' : 'Прикрепить скриншот (необязательно)') }}
                             <input type="file" accept="image/*" class="hidden" @change="setScreenshot(index, $event)" />
                         </label>
                         <p v-if="form.errors[`items.${index}.screenshot`]" class="mt-1 text-[10px] text-danger-ink">{{ validationMessage(form.errors[`items.${index}.screenshot`]) }}</p>

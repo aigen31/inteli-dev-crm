@@ -180,3 +180,27 @@ test('the MCP endpoint rejects a wrong token', function (): void {
         'method' => 'tools/list',
     ])->assertUnauthorized();
 });
+
+test('an author can edit and delete a report', function (): void {
+    $this->actingAs($this->admin)->post(route('admin.reports.store'), [
+        'recipient_id' => $this->recipient->id,
+        'title' => 'Старый заголовок',
+        'items' => [['summary' => 'Первая версия отчёта.']],
+    ])->assertRedirect();
+
+    $report = TaskReport::query()->firstOrFail();
+    $item = $report->items()->firstOrFail();
+
+    $this->actingAs($this->admin)->patch(route('admin.reports.update', $report), [
+        'recipient_id' => $this->recipient->id,
+        'title' => 'Новый заголовок',
+        'items' => [['id' => $item->id, 'summary' => 'Обновлённая версия отчёта.']],
+    ])->assertRedirect(route('reports.show', $report));
+
+    expect($report->fresh()->title)->toBe('Новый заголовок')
+        ->and($report->fresh()->items->first()->content)->toBe('Обновлённая версия отчёта.');
+
+    $this->actingAs($this->admin)->delete(route('admin.reports.destroy', $report))->assertRedirect(route('admin.reports.index'));
+
+    expect(TaskReport::query()->count())->toBe(0);
+});

@@ -25,6 +25,16 @@ class TaskReportPolicy
             && $report->task->client_id === $user->id;
     }
 
+    public function update(User $user, TaskReport $report): bool
+    {
+        return $user->isAdmin() || $report->author_id === $user->id;
+    }
+
+    public function delete(User $user, TaskReport $report): bool
+    {
+        return $user->isAdmin() || $report->author_id === $user->id;
+    }
+
     public function create(User $user, ?Task $task = null): bool
     {
         if ($user->isAdmin()) {

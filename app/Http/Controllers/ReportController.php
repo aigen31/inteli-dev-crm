@@ -92,6 +92,53 @@ class ReportController extends Controller
             ->with('success', 'Отчёт отправлен получателю.');
     }
 
+    public function edit(Request $request, TaskReport $report): Response
+    {
+        $this->authorize('update', $report);
+
+        $report->load(['items.screenshot', 'task:id,title,project_id', 'recipient:id,name,email']);
+        $payload = $this->payload($report);
+
+        return Inertia::render('Admin/Reports/Create', [
+            'report' => $payload,
+            'tasks' => Task::query()->with('project:id,key,name')->latest()->limit(200)->get(['id', 'title', 'project_id', 'number'])->map(fn (Task $task): array => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'reference' => $task->project ? $task->project->key.'-'.$task->number : null,
+            ]),
+            'recipients' => User::query()->where('is_active', true)->orderBy('role')->orderBy('name')->get(['id', 'name', 'email', 'role']),
+            'preselectedTask' => null,
+        ]);
+    }
+
+    public function update(Request $request, TaskReport $report): RedirectResponse
+    {
+        $this->authorize('update', $report);
+
+        $data = $request->validate([
+            'task_id' => ['nullable', 'uuid', 'exists:tasks,id'],
+            'recipient_id' => ['required', 'uuid', 'exists:users,id'],
+            'title' => ['nullable', 'string', 'max:160'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.id' => ['nullable', 'uuid'],
+            'items.*.summary' => ['required', 'string', 'min:3', 'max:5000'],
+            'items.*.test_url' => ['nullable', 'url', 'max:500'],
+            'items.*.screenshot' => ['nullable', 'image', 'max:10240'],
+        ]);
+
+        app(ReportService::class)->update($report, $request->user(), $data);
+
+        return redirect()->route('reports.show', $report)->with('success', 'Отчёт обновлён.');
+    }
+
+    public function destroy(Request $request, TaskReport $report): RedirectResponse
+    {
+        $this->authorize('delete', $report);
+        app(ReportService::class)->delete($report);
+
+        return redirect()->route('admin.reports.index')->with('success', 'Отчёт удалён.');
+    }
+
     public function show(Request $request, TaskReport $report): Response
     {
         $this->authorize('view', $report);

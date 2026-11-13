@@ -27,12 +27,14 @@ class FeedbackItem extends Model
         'status',
         'admin_note',
         'resolved_at',
+        'archived_at',
     ];
 
     protected function casts(): array
     {
         return [
             'resolved_at' => 'datetime',
+            'archived_at' => 'datetime',
         ];
     }
 

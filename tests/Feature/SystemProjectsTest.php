@@ -107,3 +107,37 @@ test('only an admin can advance a service item status', function (): void {
     expect($item->fresh()->status)->toBe('fixed')
         ->and($item->fresh()->resolved_at)->not->toBeNull();
 });
+
+test('an admin can edit archive restore and reject feedback and bugs', function (): void {
+    $admin = User::factory()->admin()->create();
+    $item = FeedbackItem::query()->create([
+        'user_id' => $admin->id,
+        'type' => 'feedback',
+        'title' => 'Старое название идеи',
+        'description' => 'Достаточно длинное описание идеи для проверки редактирования.',
+        'category' => 'idea',
+        'status' => 'open',
+    ]);
+
+    $this->actingAs($admin)->patch(route('system-projects.update', ['project' => 'feedback', 'item' => $item]), [
+        'title' => 'Новое название идеи',
+        'description' => 'Обновлённое описание идеи, достаточно длинное.',
+        'category' => 'improvement',
+    ])->assertRedirect();
+
+    expect($item->fresh()->title)->toBe('Новое название идеи')
+        ->and($item->fresh()->category)->toBe('improvement');
+
+    $this->actingAs($admin)->patch(route('system-projects.archive', ['project' => 'feedback', 'item' => $item]))->assertRedirect();
+    expect($item->fresh()->archived_at)->not->toBeNull();
+
+    $this->actingAs($admin)->get(route('system-projects.show', ['project' => 'feedback']))
+        ->assertInertia(fn (Assert $page) => $page->has('items.data', 0));
+
+    $this->actingAs($admin)->patch(route('system-projects.restore', ['project' => 'feedback', 'item' => $item]))->assertRedirect();
+    expect($item->fresh()->archived_at)->toBeNull();
+
+    $this->actingAs($admin)->patch(route('system-projects.reject', ['project' => 'feedback', 'item' => $item]))->assertRedirect();
+    expect($item->fresh()->status)->toBe('declined')
+        ->and($item->fresh()->resolved_at)->not->toBeNull();
+});
