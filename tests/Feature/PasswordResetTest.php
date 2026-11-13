@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 
@@ -41,9 +42,12 @@ test('the generated link changes the password once', function (): void {
         'email' => $client->email,
         'password' => 'new-password-123',
         'password_confirmation' => 'new-password-123',
-    ])->assertRedirect(route('login'));
+    ])->assertRedirect(route('client.dashboard'));
 
-    expect(Hash::check('new-password-123', $client->fresh()->password))->toBeTrue();
+    expect(Hash::check('new-password-123', $client->fresh()->password))->toBeTrue()
+        ->and(Auth::check())->toBeTrue();
+
+    Auth::logout();
 
     $this->post(route('password.reset.store'), [
         'token' => $token,
@@ -51,4 +55,9 @@ test('the generated link changes the password once', function (): void {
         'password' => 'another-password-123',
         'password_confirmation' => 'another-password-123',
     ])->assertSessionHasErrors('email');
+
+    $this->post(route('login'), [
+        'email' => strtoupper($client->email),
+        'password' => 'new-password-123',
+    ])->assertRedirect(route('client.dashboard'));
 });
