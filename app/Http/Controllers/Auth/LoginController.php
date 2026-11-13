@@ -6,8 +6,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,15 +22,16 @@ class LoginController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        $credentials = $request->only('email', 'password');
+        $email = strtolower(trim((string) $request->input('email')));
+        $user = User::query()->whereRaw('lower(email) = ?', [$email])->first();
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! $user || ! Hash::check((string) $request->input('password'), $user->password)) {
             return back()->withErrors([
                 'email' => 'Неверный email или пароль.',
             ])->onlyInput('email');
         }
 
-        $user = Auth::user();
+        Auth::login($user, $request->boolean('remember'));
 
         if (! $user->is_active) {
             Auth::logout();
