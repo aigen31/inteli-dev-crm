@@ -125,6 +125,9 @@ class ReportService
             'items.*.summary' => ['required', 'string', 'min:3', 'max:5000'],
             'items.*.test_url' => ['nullable', 'url', 'max:500'],
             'items.*.screenshot' => ['nullable', 'image', 'max:10240'],
+            'items.*.screenshot_base64' => ['nullable', 'string'],
+            'items.*.screenshot_mime' => ['nullable', 'string', 'in:image/png,image/jpeg,image/webp,image/gif'],
+            'items.*.screenshot_name' => ['nullable', 'string', 'max:255'],
         ])->validate();
 
         $recipient = User::query()->where('is_active', true)->findOrFail($validated['recipient_id']);
@@ -141,6 +144,8 @@ class ReportService
 
                 if (($item['screenshot'] ?? null) instanceof UploadedFile) {
                     $screenshotId = $this->files->upload($item['screenshot'], $author)->id;
+                } elseif (filled($item['screenshot_base64'] ?? null)) {
+                    $screenshotId = $this->storeBase64($item, $author)->id;
                 }
 
                 $payload = [
