@@ -204,3 +204,29 @@ test('an author can edit and delete a report', function (): void {
 
     expect(TaskReport::query()->count())->toBe(0);
 });
+
+test('a report can be exported as xlsx and pdf', function (): void {
+    $report = TaskReport::query()->create([
+        'author_id' => $this->admin->id,
+        'recipient_id' => $this->recipient->id,
+        'title' => 'Экспорт отчёта',
+        'content' => 'Краткое описание отчёта.',
+        'sent_at' => now(),
+    ]);
+    $report->items()->create([
+        'position' => 0,
+        'content' => 'Проверили основную форму.',
+        'test_url' => 'https://example.com/check',
+    ]);
+
+    $xlsx = $this->actingAs($this->admin)->get(route('reports.export.xlsx', $report));
+    $xlsx->assertOk()->assertDownload();
+    expect(file_get_contents($xlsx->baseResponse->getFile()->getPathname()))->toStartWith('PK');
+
+    $pdf = $this->actingAs($this->admin)->get(route('reports.export.pdf', $report));
+    $pdf->assertOk();
+    expect($pdf->getContent())->toStartWith('%PDF');
+
+    $this->actingAs($this->recipient)->get(route('reports.export.pdf', $report))->assertOk();
+    $this->actingAs($this->other)->get(route('reports.export.pdf', $report))->assertForbidden();
+});
