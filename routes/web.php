@@ -139,6 +139,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/forms', [Admin\FormTemplateController::class, 'index'])->name('forms.index');
         Route::patch('/forms/{formTemplate}/toggle', [Admin\FormTemplateController::class, 'toggle'])->name('forms.toggle');
 
+        // Briefs
+        Route::get('/briefs', [Admin\BriefController::class, 'index'])->name('briefs.index');
+        Route::get('/briefs/create', [Admin\BriefController::class, 'create'])->name('briefs.create');
+        Route::post('/briefs', [Admin\BriefController::class, 'store'])->name('briefs.store');
+        Route::get('/briefs/{brief}', [Admin\BriefController::class, 'show'])->whereUuid('brief')->name('briefs.show');
+        Route::patch('/briefs/{brief}', [Admin\BriefController::class, 'update'])->whereUuid('brief')->name('briefs.update');
+        Route::post('/briefs/{brief}/reopen', [Admin\BriefController::class, 'reopen'])->whereUuid('brief')->name('briefs.reopen');
+        Route::post('/briefs/{brief}/archive', [Admin\BriefController::class, 'archive'])->whereUuid('brief')->name('briefs.archive');
+        Route::get('/briefs/{brief}/export/{format}', [Admin\BriefController::class, 'export'])
+            ->whereUuid('brief')
+            ->whereIn('format', ['json', 'md', 'pdf'])
+            ->name('briefs.export');
+
         // Task templates
 
         // Tasks
@@ -214,6 +227,11 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/projects', [Client\ProjectController::class, 'index'])->name('client.projects.index');
         Route::get('/projects/{project}', [Client\ProjectController::class, 'show'])->name('client.projects.show');
+
+        Route::get('/briefs', [Client\BriefController::class, 'index'])->name('client.briefs.index');
+        Route::get('/briefs/{brief}', [Client\BriefController::class, 'show'])->whereUuid('brief')->name('client.briefs.show');
+        Route::patch('/briefs/{brief}', [Client\BriefController::class, 'save'])->whereUuid('brief')->name('client.briefs.save');
+        Route::post('/briefs/{brief}/submit', [Client\BriefController::class, 'submit'])->whereUuid('brief')->name('client.briefs.submit');
 
         Route::get('/tasks', [Client\TaskController::class, 'index'])->name('client.tasks.index');
         Route::get('/tasks/create', [Client\TaskController::class, 'create'])->name('client.tasks.create');

@@ -54,12 +54,15 @@ docker compose exec app php artisan db:seed --force
 | Поднять окружение, env, миграции, тесты | [setup.md](docs/agents/setup.md) |
 | Слои, роли, статусы, оплаты, границы домена | [architecture.md](docs/agents/architecture.md) |
 | Формы заявок: поля, обязательные, repeat-группы | [form-templates.md](docs/agents/form-templates.md) |
+| Брифы клиента: шаблоны, мастер, отправка, экспорт | [briefs.md](docs/agents/briefs.md) |
 | Классические сценарии, WYSIWYG, чек-листы, ИИ-генерация | [project-management.md](docs/agents/project-management.md) |
 | Пользовательские поля, типы, значения, API | [custom-fields.md](docs/agents/custom-fields.md) |
 | Кики: сессии, изображения, документы, планы задач, память проекта | [ai.md](docs/agents/ai.md) |
 | REST API v1, токены, примеры | [api.md](docs/agents/api.md) · [docs/api](docs/api/README.md) |
 | MCP-сервер и подключение ИИ-клиентов | [mcp.md](docs/agents/mcp.md) · [mcp/README.md](mcp/README.md) |
 | Работа ИИ-агента с CRM через MCP | [.agents/skills/inteli-dev-crm/SKILL.md](.agents/skills/inteli-dev-crm/SKILL.md) |
+| Аудит MCP, API и инструментов Кики | [.agents/skills/inteli-dev-tool-surface-audit/SKILL.md](.agents/skills/inteli-dev-tool-surface-audit/SKILL.md) |
+| Перепроверка локализаций CRM | [.agents/skills/inteli-dev-crm-localization-audit/SKILL.md](.agents/skills/inteli-dev-crm-localization-audit/SKILL.md) |
 | Vue/Inertia, дизайн-система, лейауты, сборка | [frontend.md](docs/agents/frontend.md) |
 | Pest, Pint, MCP-тесты, чем закрывать изменение | [testing.md](docs/agents/testing.md) |
 | Прод-деплой, образы, публикация ассетов | [deployment.md](docs/agents/deployment.md) |

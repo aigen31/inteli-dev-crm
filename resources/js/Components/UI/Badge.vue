@@ -34,7 +34,14 @@ const paymentColors = {
     transfer: { bg: 'bg-sky/15', text: 'text-[#3d718f]', dot: 'bg-sky' },
 };
 
-const colorMap = { task: taskColors, invoice: invoiceColors, priority: priorityColors, payment: paymentColors };
+const briefColors = {
+    draft: { bg: 'bg-ink/[0.06]', text: 'text-muted', dot: 'bg-faint' },
+    in_progress: { bg: 'bg-sky/15', text: 'text-[#3d718f]', dot: 'bg-sky' },
+    submitted: { bg: 'bg-primary-500/10', text: 'text-primary-700', dot: 'bg-primary-500' },
+    archived: { bg: 'bg-ink/[0.06]', text: 'text-muted', dot: 'bg-faint' },
+};
+
+const colorMap = { task: taskColors, invoice: invoiceColors, priority: priorityColors, payment: paymentColors, brief: briefColors };
 const colors = computed(
     () =>
         colorMap[props.type]?.[props.status] ?? {

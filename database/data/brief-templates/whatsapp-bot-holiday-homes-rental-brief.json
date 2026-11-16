@@ -1,0 +1,164 @@
+{
+  "slug": "whatsapp-bot-holiday-homes-rental-brief",
+  "title": "WhatsApp-бот Holiday Homes Rental",
+  "description": "Бриф на разработку WhatsApp-бота для Holiday Homes Rental: шаблонные касания, инструкция по заезду и shared inbox",
+  "icon": "message-circle",
+  "estimated_minutes": 4,
+  "version": 1,
+  "sections": [
+    {
+      "key": "touches",
+      "title": "Шаблонные касания",
+      "description": "Сколько сообщений отправляем на бронь, что попадает в инструкцию по заезду и когда уходит приветствие",
+      "fields": [
+        {
+          "key": "touch_count",
+          "type": "single_choice",
+          "label": "W-01. Сколько сообщений на бронь для вас приемлемо",
+          "help": "Рекомендуем 7 касаний (utility): confirm -> pre-arrival -> checkin -> welcome -> midstay -> checkout -> review",
+          "required": true,
+          "options": [
+            {
+              "value": "seven",
+              "label": "7 касаний: полная цепочка",
+              "description": "confirm -> pre-arrival -> checkin -> welcome -> midstay -> checkout -> review"
+            },
+            {
+              "value": "six",
+              "label": "6 касаний: объединить pre-arrival и checkin",
+              "description": "Экономия около 600 долларов в месяц, но гость теряет часть информации при объединении"
+            },
+            {"value": "other", "label": "Другое количество", "description": "Опишу словами"}
+          ],
+          "allow_other": true
+        },
+        {
+          "key": "touch_count_other",
+          "type": "number",
+          "label": "Сколько касаний на бронь",
+          "help": "Считаем сообщения, которые бот отправляет гостю от подтверждения до запроса отзыва",
+          "show_if": {"field": "touch_count", "op": "eq", "value": "other"},
+          "required": true,
+          "validation": {"min": 3, "max": 14, "integer": true, "unit": "касаний"}
+        },
+        {
+          "key": "touch_merge_details",
+          "type": "textarea",
+          "label": "Что объединяем в pre-arrival и checkin",
+          "help": "Оставьте пустым, если объединяем целиком и переносим оба блока в одно сообщение",
+          "show_if": {"field": "touch_count", "op": "eq", "value": "six"},
+          "validation": {"max_length": 1000, "rows": 3}
+        },
+        {
+          "key": "checkin_instructions",
+          "type": "multi_choice",
+          "label": "W-02. Какие данные включать в инструкцию по заезду (checkin_instructions)",
+          "help": "Стандартный набор: код двери, парковка, WiFi, адрес, emergency contact",
+          "required": true,
+          "options": [
+            {"value": "door_code", "label": "Код двери"},
+            {"value": "parking", "label": "Парковка"},
+            {"value": "wifi", "label": "WiFi"},
+            {"value": "address", "label": "Адрес"},
+            {"value": "emergency_contact", "label": "Экстренный контакт"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6},
+          "allow_other": true
+        },
+        {
+          "key": "checkin_instructions_other",
+          "type": "textarea",
+          "label": "Что добавить в инструкцию по заезду",
+          "help": "Что специфичного для ваших объектов: правила бассейна, пропуск на территорию, доступ к парковке, инструкция для позднего заезда",
+          "show_if": {"field": "checkin_instructions", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "welcome_timing",
+          "type": "single_choice",
+          "label": "W-03. Когда отправлять welcome_message",
+          "help": "Рекомендуем вариант A: гость получает сообщение сразу после регистрации заселения",
+          "required": true,
+          "options": [
+            {
+              "value": "on_checkin",
+              "label": "Вариант A: при фактическом заезде",
+              "description": "Триггер PMS checkin"
+            },
+            {
+              "value": "morning_of_checkin",
+              "label": "Вариант B: утром в день заезда",
+              "description": "Раньше по времени, но до подтверждения заселения"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "inbox",
+      "title": "Операционка (shared inbox)",
+      "description": "В какие часы оператор отвечает в общем ящике",
+      "fields": [
+        {
+          "key": "operator_hours_mode",
+          "type": "single_choice",
+          "label": "W-04. Рабочие часы оператора",
+          "help": "Влияет на SLA времени ответа: ночью и в выходные отвечает дежурный или автоответ",
+          "required": true,
+          "options": [
+            {"value": "around_clock", "label": "Круглосуточно"},
+            {"value": "business_hours", "label": "Только рабочие часы"},
+            {"value": "split", "label": "Рабочие и нерабочие часы с разным SLA"}
+          ]
+        },
+        {
+          "key": "operator_hours_details",
+          "type": "textarea",
+          "label": "График и часовой пояс оператора",
+          "help": "Например: 09:00-21:00 по Дубаю, ночью отвечает дежурный; выходные — сокращённый день",
+          "show_if": {
+            "any": [
+              {"field": "operator_hours_mode", "op": "eq", "value": "business_hours"},
+              {"field": "operator_hours_mode", "op": "eq", "value": "split"}
+            ]
+          },
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 4}
+        }
+      ]
+    },
+    {
+      "key": "language",
+      "title": "Язык и международная коммуникация",
+      "description": "Какой язык первый на Phase 1",
+      "fields": [
+        {
+          "key": "language_priority",
+          "type": "single_choice",
+          "label": "W-05. Приоритет языков: en или ru на Phase 1",
+          "help": "Если основной трафик из Европы и ОАЭ — приоритет en. Если из России и СНГ — приоритет ru",
+          "required": true,
+          "options": [
+            {
+              "value": "en",
+              "label": "Английский первым",
+              "description": "Основной трафик из Европы и ОАЭ"
+            },
+            {
+              "value": "ru",
+              "label": "Русский первым",
+              "description": "Основной трафик из России и СНГ"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "submit": {
+    "notify_admin": true,
+    "success_message": "Спасибо! Бриф на WhatsApp-бота для Holiday Homes Rental отправлен. Вернусь с прототипом сценариев и сметой в течение 24 часов.",
+    "pdf_template": "default"
+  }
+}

@@ -29,7 +29,9 @@ Claude Desktop / Cursor — `mcp/README.md` содержит готовый JSON
 
 ## Инструменты
 
-20 инструментов: `crm_overview`, `list_clients`, `get_client`, `create_client`, `update_client`, `list_tasks`, `get_task`, `create_task`, `update_task_status`, `list_task_templates`, `apply_task_template`, `create_task_template`, `list_invoices`, `get_invoice`, `create_invoice`, `mark_invoice_paid`, `list_custom_fields`, `get_custom_field_values`, `set_custom_field_values`, `ask_assistant`.
+38 инструментов: crm_overview, list_clients, get_client, list_projects, get_project, list_tasks, get_task, list_invoices, get_invoice, list_reports, get_report, list_users, list_forms, list_briefs, get_brief, create_brief, reopen_brief, archive_brief, list_brief_templates, list_task_templates, update_client, create_task_template, apply_task_template, list_custom_fields, get_custom_field_values, set_custom_field_values, create_client, create_project, create_task, update_task_status, create_invoice, mark_invoice_paid, create_project_invite, create_report, create_task_report, update_report, delete_report, crm_operation.
+
+Брифы клиента: `list_briefs`, `get_brief`, `create_brief`, `reopen_brief`, `archive_brief`, `list_brief_templates`. Создание и архив доступны только MCP/UI; Кики видит брифы только на чтение.
 
 Ресурсы: `crm://overview`, `crm://clients`, `crm://tasks`, `crm://task-templates`, `crm://invoices`, `crm://custom-fields`.
 

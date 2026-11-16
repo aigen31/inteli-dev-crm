@@ -229,3 +229,47 @@ test('Kiki resolves project keys and skips unavailable status transitions in bul
         ->and((float) $this->task->budget)->toBe(900.0)
         ->and($this->task->status->value)->toBe('pending_review');
 });
+
+test('Kiki creates and reads a report through the AI toolbox', function (): void {
+    $toolbox = app(CrmToolbox::class);
+
+    $result = $toolbox->execute('create_report', $this->admin, [
+        'title' => 'Отчёт из Кики',
+        'recipient_id' => $this->client->id,
+        'task_id' => $this->task->id,
+        'items' => [
+            ['description' => 'Сделал форму.', 'link' => 'https://example.com/form'],
+            ['description' => 'Проверил уведомления.'],
+        ],
+    ]);
+
+    expect($result['url'])->toContain('/reports/');
+    expect($result['items_count'])->toBe(2);
+
+    $report = $toolbox->execute('get_report', $this->admin, ['report_id' => $result['id']]);
+    expect($report['items'][0]['description'])->toBe('Сделал форму.');
+    expect($report['items'][0]['link'])->toBe('https://example.com/form');
+});
+
+test('Kiki exposes project, client, invoice and custom-field parity tools', function (): void {
+    $toolbox = app(CrmToolbox::class);
+    $names = collect($toolbox->definitions($this->admin))->pluck('function.name');
+
+    foreach (['create_project', 'get_project', 'create_project_invite', 'update_project', 'archive_project', 'add_project_member', 'update_project_member', 'remove_project_member', 'update_client', 'get_invoice', 'list_users', 'get_custom_field_values', 'create_report', 'list_reports', 'get_report'] as $tool) {
+        expect($names)->toContain($tool);
+    }
+
+    $project = $toolbox->execute('create_project', $this->admin, ['name' => 'Kiki project', 'key' => 'KIKI']);
+    expect($project['key'])->toBe('KIKI');
+
+    $loaded = $toolbox->execute('get_project', $this->admin, ['project_id' => 'KIKI']);
+    expect($loaded['name'])->toBe('Kiki project');
+
+    $invite = $toolbox->execute('create_project_invite', $this->admin, ['project_id' => 'KIKI', 'role' => 'viewer']);
+    expect($invite['url'])->toContain('/invite/');
+
+    $updated = $toolbox->execute('update_client', $this->admin, ['client_id' => $this->client->id, 'phone' => '+7 999 111-22-33']);
+    expect($updated['client']['phone'])->toBe('+7 999 111-22-33');
+
+    expect($toolbox->execute('list_users', $this->admin, [])['users'])->not->toBeEmpty();
+});
