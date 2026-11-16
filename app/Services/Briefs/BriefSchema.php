@@ -14,6 +14,86 @@ namespace App\Services\Briefs;
 class BriefSchema
 {
     /**
+     * Типы полей, которые понимает мастер и серверная валидация.
+     *
+     * @var list<string>
+     */
+    public const FIELD_TYPES = [
+        'text',
+        'textarea',
+        'number',
+        'scale',
+        'date',
+        'url',
+        'email',
+        'phone',
+        'single_choice',
+        'multi_choice',
+        'contact_block',
+        'file',
+    ];
+
+    /**
+     * Проверяет схему, которую собрал ИИ или человек до сохранения.
+     *
+     * @param  array<string, mixed>  $schema
+     * @return list<string> человекочитаемые ошибки; пусто — схема валидна
+     */
+    public static function validateDefinition(array $schema): array
+    {
+        $normalized = self::normalize($schema);
+        $errors = [];
+
+        if ($normalized['sections'] === []) {
+            return ['Нужна хотя бы одна секция с полями.'];
+        }
+
+        $seenSections = [];
+        $seenFields = [];
+
+        foreach ($normalized['sections'] as $sectionIndex => $section) {
+            $sectionKey = (string) $section['key'];
+
+            if (in_array($sectionKey, $seenSections, true)) {
+                $errors[] = "Секция «{$sectionKey}» повторяется.";
+            }
+
+            $seenSections[] = $sectionKey;
+
+            if ($section['fields'] === []) {
+                $errors[] = "В секции «{$section['title']}» нет полей.";
+            }
+
+            foreach ($section['fields'] as $fieldIndex => $field) {
+                $key = (string) $field['key'];
+                $path = 'секция '.($sectionIndex + 1).', поле '.($fieldIndex + 1)." ({$key})";
+
+                if (! in_array((string) $field['type'], self::FIELD_TYPES, true)) {
+                    $errors[] = "{$path}: неизвестный тип «{$field['type']}». Допустимо: ".implode(', ', self::FIELD_TYPES).'.';
+                }
+
+                if (in_array($key, $seenFields, true)) {
+                    $errors[] = "{$path}: ключ поля повторяется.";
+                }
+
+                $seenFields[] = $key;
+
+                if (in_array($field['type'], ['single_choice', 'multi_choice'], true) && $field['options'] === []) {
+                    $errors[] = "{$path}: нужен хотя бы один вариант в options.";
+                }
+
+                foreach (['single_choice', 'multi_choice', 'scale'] as $choiceType) {
+                    if ($field['type'] === $choiceType && isset($field['show_if']) && ! is_array($field['show_if'])) {
+                        $errors[] = "{$path}: show_if должен быть объектом.";
+                    }
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
      * Приводит схему к предсказуемому виду.
      *
      * @param  array<string, mixed>  $schema

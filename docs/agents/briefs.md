@@ -52,10 +52,27 @@ npm run build
 
 Смоук: `/admin/briefs` → создать бриф → открыть в кабинете клиента → заполнить, отправить → карточка админа, экспорт PDF.
 
+## Шаблоны: кто чем управляет
+
+| Действие | Где | Кто |
+|---|---|---|
+| Посмотреть каталог | `/admin/briefs/templates` | админ |
+| Создать шаблон | чат с Кики, `create_brief_template` | Кики (админ) |
+| Изменить шаблон | чат с Кики, `update_brief_template` (подтверждение) | Кики (админ) |
+| Удалить шаблон | `/admin/briefs/templates` или `delete_brief_template` (подтверждение) | админ / Кики |
+| Список для внешних агентов | MCP `list_brief_templates` | MCP (read-only) |
+
+Редактора схемы в админке нет намеренно: правила видимости и валидации живут в `BriefSchema`, и второй UI
+неизбежно разошёлся бы с движком. Кики собирает схему по описанию, `BriefSchema::validateDefinition()`
+проверяет типы, пустые секции и обязательные `options`, а версия растёт автоматически.
+
+Удалить шаблон можно только пока по нему нет брифов: `briefs.brief_template_id` — внешний ключ, а отправленные
+брифы хранят снимок схемы. Используемый шаблон сначала архивируют вместе с брифами.
+
 ## Инструменты для агентов
 
 - CRM MCP: `list_briefs`, `get_brief`, `create_brief`, `reopen_brief`, `archive_brief` (confirm=true), `list_brief_templates`.
-- Кики: `list_briefs`, `get_brief` (видимость по `Brief::scopeVisibleTo`).
+- Кики: `list_briefs`, `get_brief` (видимость по `Brief::scopeVisibleTo`), `list_brief_templates`, `create_brief` (клиент и проект выводятся из `task_id`, подтверждение в чате), `create_brief_template`, `update_brief_template`, `delete_brief_template` (правка и удаление — с подтверждением).
 - Отправка брифа и экспорт PDF/JSON/Markdown остаются в UI: файлы и подпись клиента не отдаются агентам.
 
 PDF собирается Dompdf из `resources/views/briefs/pdf.blade.php`; шрифт — DejaVu Sans (кириллица).

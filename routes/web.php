@@ -141,6 +141,8 @@ Route::middleware('auth')->group(function () {
 
         // Briefs
         Route::get('/briefs', [Admin\BriefController::class, 'index'])->name('briefs.index');
+        Route::get('/briefs/templates', [Admin\BriefTemplateController::class, 'index'])->name('briefs.templates');
+        Route::delete('/briefs/templates/{briefTemplate}', [Admin\BriefTemplateController::class, 'destroy'])->name('briefs.templates.destroy');
         Route::get('/briefs/create', [Admin\BriefController::class, 'create'])->name('briefs.create');
         Route::post('/briefs', [Admin\BriefController::class, 'store'])->name('briefs.store');
         Route::get('/briefs/{brief}', [Admin\BriefController::class, 'show'])->whereUuid('brief')->name('briefs.show');

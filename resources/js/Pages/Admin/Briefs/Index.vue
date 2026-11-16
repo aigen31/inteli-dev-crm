@@ -37,9 +37,14 @@ function applySearch() {
 <template>
     <AdminLayout title="Брифы">
         <template #actions>
-            <Link :href="route('admin.briefs.create')">
-                <Button><PlusIcon class="h-4 w-4" />Создать бриф</Button>
-            </Link>
+            <div class="flex items-center gap-2">
+                <Link :href="route('admin.briefs.templates')">
+                    <Button variant="secondary" size="sm"><ClipboardDocumentListIcon class="h-4 w-4" />Шаблоны</Button>
+                </Link>
+                <Link :href="route('admin.briefs.create')">
+                    <Button><PlusIcon class="h-4 w-4" />Создать бриф</Button>
+                </Link>
+            </div>
         </template>
 
         <div class="mb-5">

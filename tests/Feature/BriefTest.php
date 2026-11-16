@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 use App\Enums\BriefStatus;
 use App\Enums\TaskSource;
+use App\Models\AiAction;
+use App\Models\AiConversation;
 use App\Models\Brief;
 use App\Models\BriefTemplate;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Ai\CrmHelpService;
 use App\Services\Ai\CrmToolbox;
 use App\Services\Briefs\BriefSchema;
 use App\Services\Briefs\BriefService;
@@ -336,4 +339,278 @@ test('Kiki toolbox exposes briefs for the client', function (): void {
 
     $card = $toolbox->execute('get_brief', $this->client, ['brief_id' => $this->brief->id]);
     expect($card['title'])->toBe('Бриф — тест');
+});
+
+test('Kiki creates a brief template from a spoken description', function (): void {
+    $toolbox = app(CrmToolbox::class);
+
+    $result = $toolbox->execute('create_brief_template', $this->admin, [
+        'title' => 'Аудит рекламы',
+        'summary' => 'Собираем доступы и цели по рекламным кабинетам',
+        'sections' => [
+            [
+                'title' => 'Доступы',
+                'fields' => [
+                    ['label' => 'Кабинеты', 'type' => 'multi_choice', 'options' => [
+                        ['value' => 'yandex', 'label' => 'Яндекс Директ'],
+                        ['value' => 'vk', 'label' => 'VK Реклама'],
+                    ]],
+                    ['label' => 'Бюджет в месяц', 'type' => 'number', 'required' => true],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($result['slug'])->toBe('audit-reklamy')
+        ->and($result['version'])->toBe(1)
+        ->and($result['sections'])->toBe(1)
+        ->and($result['fields'])->toBe(2);
+
+    $template = BriefTemplate::query()->where('slug', 'audit-reklamy')->firstOrFail();
+
+    expect($template->schema['sections'][0]['fields'][0]['key'])->toBe('kabinety')
+        ->and($template->schema['sections'][0]['fields'][1]['required'])->toBeTrue();
+});
+
+test('Kiki rejects a template with an unknown field type', function (): void {
+    $toolbox = app(CrmToolbox::class);
+
+    expect(fn () => $toolbox->execute('create_brief_template', $this->admin, [
+        'title' => 'Кривой шаблон',
+        'sections' => [[
+            'title' => 'Секция',
+            'fields' => [['label' => 'Что-то', 'type' => 'wizard']],
+        ]],
+    ]))->toThrow(ValidationException::class);
+
+    expect(BriefTemplate::query()->where('title', 'Кривой шаблон')->exists())->toBeFalse();
+});
+
+test('Kiki updates a template and bumps the schema version', function (): void {
+    $toolbox = app(CrmToolbox::class);
+
+    $result = $toolbox->execute('update_brief_template', $this->admin, [
+        'template' => 'test-brief',
+        'title' => 'Тестовый бриф v2',
+        'sections' => [[
+            'title' => 'Новая секция',
+            'fields' => [['label' => 'Новое поле', 'type' => 'text', 'required' => true]],
+        ]],
+    ]);
+
+    expect($result['version'])->toBe(2)
+        ->and($result['sections'])->toBe(1);
+
+    $template = $this->template->refresh();
+
+    expect($template->title)->toBe('Тестовый бриф v2')
+        ->and($template->schema_hash)->not->toBe(BriefSchema::hash(briefSchema()));
+});
+
+test('Kiki deletes an unused template and refuses a used one', function (): void {
+    $toolbox = app(CrmToolbox::class);
+
+    $unused = BriefTemplate::query()->create([
+        'slug' => 'spare',
+        'title' => 'Запасной',
+        'schema' => BriefSchema::normalize(briefSchema()),
+        'schema_hash' => BriefSchema::hash(briefSchema()),
+        'version' => 1,
+        'is_active' => true,
+        'sort_order' => 50,
+    ]);
+
+    $toolbox->execute('delete_brief_template', $this->admin, ['template' => 'spare']);
+    expect(BriefTemplate::query()->find($unused->id))->toBeNull();
+
+    expect(fn () => $toolbox->execute('delete_brief_template', $this->admin, ['template' => 'test-brief']))
+        ->toThrow(ValidationException::class);
+
+    expect(BriefTemplate::query()->where('slug', 'test-brief')->exists())->toBeTrue();
+});
+
+test('brief template writes require confirmation except creation', function (): void {
+    $toolbox = app(CrmToolbox::class);
+
+    expect($toolbox->requiresConfirmation('create_brief_template'))->toBeFalse()
+        ->and($toolbox->requiresConfirmation('update_brief_template'))->toBeTrue()
+        ->and($toolbox->requiresConfirmation('delete_brief_template'))->toBeTrue();
+});
+
+test('admin removes an unused template from the panel and cannot remove a used one', function (): void {
+    $unused = BriefTemplate::query()->create([
+        'slug' => 'panel-spare',
+        'title' => 'Панельный',
+        'schema' => BriefSchema::normalize(briefSchema()),
+        'schema_hash' => BriefSchema::hash(briefSchema()),
+        'version' => 1,
+        'is_active' => true,
+        'sort_order' => 60,
+    ]);
+
+    $this->actingAs($this->admin)
+        ->get(route('admin.briefs.templates'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Admin/Briefs/Templates')->has('templates', 2));
+
+    $this->actingAs($this->admin)
+        ->delete(route('admin.briefs.templates.destroy', $unused))
+        ->assertRedirect();
+
+    expect(BriefTemplate::query()->find($unused->id))->toBeNull();
+
+    $this->actingAs($this->admin)
+        ->delete(route('admin.briefs.templates.destroy', $this->template))
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
+    expect(BriefTemplate::query()->where('slug', 'test-brief')->exists())->toBeTrue();
+});
+
+test('a client cannot touch the template library', function (): void {
+    $this->actingAs($this->client)
+        ->get(route('admin.briefs.templates'))
+        ->assertForbidden();
+
+    $this->actingAs($this->client)
+        ->delete(route('admin.briefs.templates.destroy', $this->template))
+        ->assertForbidden();
+});
+
+test('Kiki proposes deleting a template and the confirmation removes it', function (): void {
+    config([
+        'ai.kernel_provider_token' => 'test-provider-token',
+        'ai.kernel_channel' => 'crm',
+    ]);
+
+    $template = BriefTemplate::query()->create([
+        'slug' => 'chat-spare',
+        'title' => 'Чат-запасной',
+        'schema' => BriefSchema::normalize(briefSchema()),
+        'schema_hash' => BriefSchema::hash(briefSchema()),
+        'version' => 1,
+        'is_active' => true,
+        'sort_order' => 70,
+    ]);
+
+    $conversation = AiConversation::query()->create([
+        'user_id' => $this->admin->id,
+        'title' => 'Шаблоны',
+        'last_message_at' => now(),
+    ]);
+
+    $headers = ['Authorization' => 'Bearer test-provider-token', 'X-Kernel-Channel' => 'crm'];
+
+    $proposal = $this->withHeaders($headers)
+        ->postJson('/api/internal/assistant/tools/delete_brief_template', [
+            'conversation_id' => $conversation->id,
+            'actor' => ['id' => $this->admin->id, 'role' => 'admin'],
+            'arguments' => ['template' => 'chat-spare'],
+        ])
+        ->assertOk()
+        ->assertJsonPath('result.status', 'awaiting_confirmation')
+        ->assertJsonPath('pending_action.tool_name', 'delete_brief_template');
+
+    $action = AiAction::query()->findOrFail($proposal->json('pending_action.id'));
+
+    $this->actingAs($this->admin)
+        ->postJson(route('assistant.confirm', $action))
+        ->assertOk();
+
+    expect(BriefTemplate::query()->find($template->id))->toBeNull()
+        ->and($action->refresh()->status->value)->toBe('executed');
+});
+
+test('Kiki creates a brief for a task and resolves client and project from it', function (): void {
+    $task = Task::query()->create([
+        'client_id' => $this->client->id,
+        'project_id' => $this->project->id,
+        'created_by' => $this->admin->id,
+        'title' => 'Корейский проект',
+        'description' => 'Нужен сайт и бриф по вводным',
+        'status' => 'queued',
+        'priority' => 'medium',
+        'type' => 'one_time',
+    ]);
+
+    $toolbox = app(CrmToolbox::class);
+
+    $templates = $toolbox->execute('list_brief_templates', $this->admin, []);
+    expect(collect($templates['templates'])->pluck('slug'))->toContain('test-brief');
+
+    $result = $toolbox->execute('create_brief', $this->admin, [
+        'template' => 'test-brief',
+        'task_id' => $task->id,
+        'title' => 'Бриф корейского проекта',
+    ]);
+
+    expect($result['title'])->toBe('Бриф корейского проекта')
+        ->and($result['client'])->toBe($this->client->name)
+        ->and($result['project'])->toBe('BRF');
+
+    $brief = Brief::query()->findOrFail($result['id']);
+
+    expect($brief->client_id)->toBe($this->client->id)
+        ->and($brief->project_id)->toBe($this->project->id);
+});
+
+test('create_brief is confirmed and hidden from clients', function (): void {
+    $toolbox = app(CrmToolbox::class);
+
+    expect($toolbox->requiresConfirmation('create_brief'))->toBeTrue();
+
+    $clientTools = array_column(array_column($toolbox->definitions($this->client), 'function'), 'name');
+    expect($clientTools)->not->toContain('create_brief')->not->toContain('list_brief_templates');
+
+    $adminTools = array_column(array_column($toolbox->definitions($this->admin), 'function'), 'name');
+    expect($adminTools)->toContain('create_brief', 'list_brief_templates');
+});
+
+test('the CRM help map knows the briefs section', function (): void {
+    $help = app(CrmHelpService::class);
+    $catalog = collect($help->catalog());
+
+    $adminBriefs = $catalog->firstWhere('id', 'admin.briefs.index');
+    $clientBriefs = $catalog->firstWhere('id', 'client.briefs.index');
+    $templates = $catalog->firstWhere('id', 'admin.briefs.templates');
+
+    expect($adminBriefs)->not->toBeNull()
+        ->and($adminBriefs['path'])->toBe('/admin/briefs')
+        ->and($clientBriefs['path'])->toBe('/briefs')
+        ->and($templates['path'])->toBe('/admin/briefs/templates')
+        ->and($templates['roles'])->toContain('admin');
+});
+
+test('Kiki proposes creating a brief and confirms it into the client portal', function (): void {
+    config([
+        'ai.kernel_provider_token' => 'test-provider-token',
+        'ai.kernel_channel' => 'crm',
+    ]);
+
+    $conversation = AiConversation::query()->create([
+        'user_id' => $this->admin->id,
+        'title' => 'Бриф',
+        'last_message_at' => now(),
+    ]);
+
+    $proposal = $this->withHeaders(['Authorization' => 'Bearer test-provider-token', 'X-Kernel-Channel' => 'crm'])
+        ->postJson('/api/internal/assistant/tools/create_brief', [
+            'conversation_id' => $conversation->id,
+            'actor' => ['id' => $this->admin->id, 'role' => 'admin'],
+            'arguments' => [
+                'template' => 'test-brief',
+                'client_id' => $this->client->id,
+                'title' => 'Бриф из чата',
+            ],
+        ])
+        ->assertOk()
+        ->assertJsonPath('result.status', 'awaiting_confirmation');
+
+    $action = AiAction::query()->findOrFail($proposal->json('pending_action.id'));
+
+    $this->actingAs($this->admin)
+        ->postJson(route('assistant.confirm', $action))
+        ->assertOk();
+
+    expect(Brief::query()->where('title', 'Бриф из чата')->exists())->toBeTrue();
 });
