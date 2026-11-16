@@ -634,3 +634,73 @@ test('create_brief accepts a template slug and rejects unknown identifiers clean
         'client_id' => 'not-a-uuid',
     ]))->toThrow(ValidationException::class);
 });
+
+test('admin renames a brief and the title reaches the client view', function (): void {
+    $this->actingAs($this->admin)
+        ->patch(route('admin.briefs.update', $this->brief), ['title' => '  Новое название брифа  '])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($this->brief->refresh()->title)->toBe('Новое название брифа');
+
+    $this->actingAs($this->client)
+        ->get(route('client.briefs.show', $this->brief))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('brief.title', 'Новое название брифа'));
+});
+
+test('an empty title is rejected and the old one survives', function (): void {
+    $this->actingAs($this->admin)
+        ->patch(route('admin.briefs.update', $this->brief), ['title' => '   '])
+        ->assertSessionHasErrors('title');
+
+    expect($this->brief->refresh()->title)->toBe('Бриф — тест');
+});
+
+test('a title longer than 200 characters is rejected', function (): void {
+    $this->actingAs($this->admin)
+        ->patch(route('admin.briefs.update', $this->brief), ['title' => str_repeat('я', 201)])
+        ->assertSessionHasErrors('title');
+});
+
+test('a client cannot rename a brief', function (): void {
+    $this->actingAs($this->client)
+        ->patch(route('admin.briefs.update', $this->brief), ['title' => 'Взлом'])
+        ->assertForbidden();
+
+    expect($this->brief->refresh()->title)->not->toBe('Взлом');
+});
+
+test('Kiki renames a brief and clients cannot call the tool', function (): void {
+    $toolbox = app(CrmToolbox::class);
+
+    $result = $toolbox->execute('update_brief', $this->admin, [
+        'brief_id' => $this->brief->id,
+        'title' => 'Бриф из чата',
+    ]);
+
+    expect($result['title'])->toBe('Бриф из чата')
+        ->and($this->brief->refresh()->title)->toBe('Бриф из чата');
+
+    expect(fn () => $toolbox->execute('update_brief', $this->client, [
+        'brief_id' => $this->brief->id,
+        'title' => 'Взлом',
+    ]))->toThrow(ValidationException::class);
+});
+
+test('MCP renames a brief', function (): void {
+    $this->withHeaders([
+        'Authorization' => 'Bearer '.config('mcp.token'),
+        'Content-Type' => 'application/json',
+    ])->postJson('/api/mcp', [
+        'jsonrpc' => '2.0',
+        'id' => 1,
+        'method' => 'tools/call',
+        'params' => [
+            'name' => 'update_brief',
+            'arguments' => ['brief' => $this->brief->id, 'title' => 'Из MCP'],
+        ],
+    ])->assertOk();
+
+    expect($this->brief->refresh()->title)->toBe('Из MCP');
+});

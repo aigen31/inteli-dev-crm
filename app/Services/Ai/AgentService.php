@@ -788,6 +788,7 @@ class AgentService
             'propose_task_plan' => 'План задач создан',
             'create_task_template' => 'Шаблон создан',
             'create_brief' => 'Бриф создан',
+            'update_brief' => 'Бриф переименован',
             'create_brief_template' => 'Шаблон брифа создан',
             'update_brief_template' => 'Шаблон брифа обновлён',
             'delete_brief_template' => 'Шаблон брифа удалён',
