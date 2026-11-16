@@ -228,6 +228,14 @@ html[data-theme="dark"] option { background: #15121d; color: #f5f1fb; }
 html[data-theme="dark"] button {
     color: #f1ecf9;
 }
+
+/*
+ * «Пилюли» с bg-ink + text-canvas (активные вкладки, сегменты): в тёмной теме
+ * ink светлый, canvas тёмный, и общее правило выше делало текст невидимым.
+ */
+html[data-theme="dark"] button.text-canvas {
+    color: var(--color-canvas) !important;
+}
 html[data-theme="dark"] button.bg-primary-500,
 html[data-theme="dark"] button.bg-primary-600,
 html[data-theme="dark"] .bg-primary-500,
