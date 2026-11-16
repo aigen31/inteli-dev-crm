@@ -127,6 +127,27 @@ class BriefService
     }
 
     /**
+     * Переименование брифа. Заголовок видят клиент, публичная ссылка и экспорт,
+     * поэтому пустая строка и перебор по длине отсекаются здесь, а не в UI.
+     */
+    public function rename(Brief $brief, string $title): Brief
+    {
+        $title = trim($title);
+
+        if ($title === '') {
+            throw ValidationException::withMessages(['title' => 'Заголовок не может быть пустым.']);
+        }
+
+        if (mb_strlen($title) > 200) {
+            throw ValidationException::withMessages(['title' => 'Заголовок длиннее 200 символов.']);
+        }
+
+        $brief->fill(['title' => $title])->save();
+
+        return $brief->refresh();
+    }
+
+    /**
      * Вернуть клиенту на доработку (только админ).
      */
     public function reopen(Brief $brief, User $admin): Brief

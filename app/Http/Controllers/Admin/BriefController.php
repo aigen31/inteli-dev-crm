@@ -150,10 +150,16 @@ class BriefController extends Controller
     {
         $data = $request->validate([
             'admin_note' => ['nullable', 'string', 'max:4000'],
-            'title' => ['nullable', 'string', 'max:200'],
+            'title' => ['sometimes', 'required', 'string', 'max:200'],
         ]);
 
-        $brief->fill(array_filter($data, static fn (mixed $value): bool => $value !== null))->save();
+        if (array_key_exists('title', $data)) {
+            $this->briefs->rename($brief, (string) $data['title']);
+        }
+
+        if (array_key_exists('admin_note', $data)) {
+            $brief->fill(['admin_note' => $data['admin_note']])->save();
+        }
 
         return back()->with('success', 'Бриф обновлён.');
     }

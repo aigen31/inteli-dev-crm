@@ -4,7 +4,7 @@
 
 ## Что умеет
 
-- **38 инструментов** (актуальный список сервера `CrmMcpService`): crm_overview, list_clients, get_client, list_projects, get_project, list_tasks, get_task, list_invoices, get_invoice, list_reports, get_report, list_users, list_forms, list_briefs, get_brief, create_brief, reopen_brief, archive_brief, list_brief_templates, list_task_templates, update_client, create_task_template, apply_task_template, list_custom_fields, get_custom_field_values, set_custom_field_values, create_client, create_project, create_task, update_task_status, create_invoice, mark_invoice_paid, create_project_invite, create_report, create_task_report, update_report, delete_report, crm_operation.
+- **39 инструментов** (актуальный список сервера `CrmMcpService`): crm_overview, list_clients, get_client, list_projects, get_project, list_tasks, get_task, list_invoices, get_invoice, list_reports, get_report, list_users, list_forms, list_briefs, get_brief, create_brief, reopen_brief, archive_brief, update_brief, list_brief_templates, list_task_templates, update_client, create_task_template, apply_task_template, list_custom_fields, get_custom_field_values, set_custom_field_values, create_client, create_project, create_task, update_task_status, create_invoice, mark_invoice_paid, create_project_invite, create_report, create_task_report, update_report, delete_report, crm_operation.
 - **Брифы**: `list_briefs`, `get_brief`, `create_brief`, `reopen_brief`, `archive_brief` (с `confirm: true`), `list_brief_templates`.
 - **Ресурсы** `crm://overview`, `crm://clients`, `crm://tasks`, `crm://task-templates`, `crm://invoices`, `crm://custom-fields`.
 - **Промпты** `daily_brief` и `client_brief`.

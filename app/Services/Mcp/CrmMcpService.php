@@ -158,6 +158,10 @@ class CrmMcpService
                 'project_id' => ['type' => 'string'],
                 'title' => ['type' => 'string'],
             ], ['template']),
+            $this->tool('update_brief', 'Rename a brief. The title is what the client, the public link and the PDF see.', [
+                'brief' => ['type' => 'string', 'description' => 'Brief UUID.'],
+                'title' => ['type' => 'string', 'description' => 'New title, up to 200 characters.'],
+            ], ['brief', 'title']),
             $this->tool('reopen_brief', 'Send a submitted brief back to the client for revision.', [
                 'brief' => ['type' => 'string', 'description' => 'Brief UUID.'],
             ], ['brief']),
@@ -394,6 +398,7 @@ class CrmMcpService
             'list_briefs' => $this->listBriefs($arguments),
             'get_brief' => $this->getBrief($arguments),
             'create_brief' => $this->storeBrief($arguments),
+            'update_brief' => $this->updateBrief($arguments),
             'reopen_brief' => $this->reopenBrief($arguments),
             'archive_brief' => $this->archiveBrief($arguments),
             'list_brief_templates' => $this->listBriefTemplates(),
@@ -781,6 +786,18 @@ class CrmMcpService
      * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateBrief(array $arguments): array
+    {
+        $brief = $this->findBrief((string) ($arguments['brief'] ?? ''));
+        $title = trim((string) ($arguments['title'] ?? ''));
+
+        return $this->briefSummary($this->briefs->rename($brief, $title));
+    }
+
     private function archiveBrief(array $arguments): array
     {
         if (! ($arguments['confirm'] ?? false)) {

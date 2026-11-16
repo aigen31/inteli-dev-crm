@@ -158,6 +158,7 @@ class CrmToolbox
             'apply_template' => 'создать задачу из шаблона',
             'set_custom_field' => 'изменить поле «'.($arguments['key'] ?? '').'»',
             'create_brief' => 'создать бриф «'.($arguments['title'] ?? $arguments['template'] ?? '').'»',
+            'update_brief' => 'переименовать бриф в «'.($arguments['title'] ?? '').'»',
             'create_brief_template' => 'создать шаблон брифа «'.($arguments['title'] ?? '').'»',
             'update_brief_template' => 'изменить шаблон брифа «'.($arguments['title'] ?? $arguments['template'] ?? '').'»',
             'delete_brief_template' => 'удалить шаблон брифа «'.($arguments['template'] ?? '').'»',
@@ -211,6 +212,7 @@ class CrmToolbox
             'crm_help' => $this->crmHelp($user, $arguments),
             'create_report' => $this->createReport($user, $arguments),
             'list_brief_templates' => $this->listBriefTemplates($user),
+            'update_brief' => $this->updateBrief($user, $arguments),
             'create_brief' => $this->createBrief($user, $arguments),
             'research' => $this->research($user, $arguments),
             'research_status' => $this->researchStatus($user, $arguments),
@@ -754,6 +756,16 @@ class CrmToolbox
                 ],
                 'required' => ['brief_id'],
                 'roles' => ['admin', 'client'],
+                'confirm' => false,
+            ],
+            'update_brief' => [
+                'description' => 'Переименовать бриф: заголовок видят клиент, публичная ссылка и PDF. Используй, когда название пришло из задачи или уточнилось по ходу.',
+                'properties' => [
+                    'brief_id' => ['type' => 'string', 'description' => 'UUID брифа.'],
+                    'title' => ['type' => 'string', 'description' => 'Новый заголовок, до 200 символов.'],
+                ],
+                'required' => ['brief_id', 'title'],
+                'roles' => ['admin'],
                 'confirm' => false,
             ],
             'list_brief_templates' => [
@@ -2821,6 +2833,36 @@ class CrmToolbox
         }
 
         return $this->kernel->researchStatus($runId);
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateBrief(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $data = Validator::make($arguments, [
+            'brief_id' => ['required', 'uuid'],
+            'title' => ['required', 'string', 'max:200'],
+        ])->validate();
+
+        $brief = Brief::query()->visibleTo($user)->find((string) $data['brief_id']);
+
+        if ($brief === null) {
+            throw ValidationException::withMessages(['brief_id' => 'Бриф не найден.']);
+        }
+
+        $brief = $this->briefService->rename($brief, (string) $data['title']);
+
+        return [
+            'id' => $brief->id,
+            'title' => $brief->title,
+            'status' => $brief->status?->value,
+            'status_label' => $brief->status?->label(),
+            'url' => route('admin.briefs.show', $brief),
+        ];
     }
 
     private function listBriefTemplates(User $user): array

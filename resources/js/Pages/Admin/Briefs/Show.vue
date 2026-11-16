@@ -89,6 +89,17 @@ const filled = computed(() => {
     return { answered, total };
 });
 
+const titleDirty = computed(() => form.title.trim() !== props.brief.title && form.title.trim().length > 0);
+
+function saveTitle() {
+    if (! titleDirty.value) return;
+
+    form.patch(route('admin.briefs.update', props.brief.id), {
+        preserveScroll: true,
+        only: ['brief'],
+    });
+}
+
 function saveNote() {
     form.patch(route('admin.briefs.update', props.brief.id), { preserveScroll: true });
 }
@@ -127,6 +138,19 @@ function reopen() {
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="min-w-0">
                             <p class="eyebrow">{{ brief.template?.title || 'Шаблон удалён' }}</p>
+                            <div class="mt-1 flex items-center gap-2">
+                                <input
+                                    v-model="form.title"
+                                    type="text"
+                                    maxlength="200"
+                                    aria-label="Заголовок брифа"
+                                    class="min-w-0 flex-1 rounded-[10px] border border-transparent bg-transparent px-2 py-1 text-[18px] font-medium tracking-[-0.02em] text-ink transition hover:border-line focus:border-primary-500/60 focus:bg-white/70 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                                    @keyup.enter="saveTitle"
+                                />
+                                <Button v-if="titleDirty" size="sm" variant="secondary" :disabled="form.processing" @click="saveTitle">
+                                    Сохранить
+                                </Button>
+                            </div>
                             <p class="mt-2 text-[11px] text-muted">
                                 <template v-if="brief.client">Клиент: <strong class="text-ink">{{ brief.client.name }}</strong> · </template>
                                 <template v-if="brief.project">{{ brief.project.key }} · {{ brief.project.name }} · </template>

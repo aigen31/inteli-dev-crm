@@ -53,6 +53,7 @@ class AssistantToolController extends Controller
         'mark_invoice_paid',
         'set_custom_field',
         'create_brief',
+        'update_brief',
         'create_brief_template',
         'update_brief_template',
         'delete_brief_template',
