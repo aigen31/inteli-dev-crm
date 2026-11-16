@@ -16,6 +16,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NavigationHistoryController;
+use App\Http\Controllers\PublicBriefController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SecretFeatureController;
 use App\Http\Controllers\SidebarPreferenceController;
@@ -36,6 +37,17 @@ Route::get('/locale/{locale}', LocaleController::class)->name('locale.update');
 // Password reset from an admin-created link.
 Route::get('/reset-password/{token}', [Auth\PasswordResetController::class, 'show'])->name('password.reset');
 Route::post('/reset-password', [Auth\PasswordResetController::class, 'store'])->middleware('throttle:10,1')->name('password.reset.store');
+
+// Public brief link: no account, token in the URL.
+Route::group([
+    'prefix' => '/b/{token}',
+    'where' => ['token' => '[A-Za-z0-9]{32,96}'],
+    'middleware' => ['public-brief-locale', 'brief-link-headers', 'throttle:brief-link'],
+], function () {
+    Route::get('/', [PublicBriefController::class, 'show'])->name('public.briefs.show');
+    Route::patch('/', [PublicBriefController::class, 'save'])->middleware('throttle:brief-save')->name('public.briefs.save');
+    Route::post('/submit', [PublicBriefController::class, 'submit'])->middleware('throttle:brief-submit')->name('public.briefs.submit');
+});
 
 // Authenticated
 Route::middleware('auth')->group(function () {
@@ -147,6 +159,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/briefs', [Admin\BriefController::class, 'store'])->name('briefs.store');
         Route::get('/briefs/{brief}', [Admin\BriefController::class, 'show'])->whereUuid('brief')->name('briefs.show');
         Route::patch('/briefs/{brief}', [Admin\BriefController::class, 'update'])->whereUuid('brief')->name('briefs.update');
+        Route::post('/briefs/{brief}/links', [Admin\BriefLinkController::class, 'store'])->whereUuid('brief')->name('briefs.links.store');
+        Route::delete('/briefs/{brief}/links/{link}', [Admin\BriefLinkController::class, 'destroy'])
+            ->whereUuid('brief')
+            ->whereUuid('link')
+            ->name('briefs.links.destroy');
         Route::post('/briefs/{brief}/reopen', [Admin\BriefController::class, 'reopen'])->whereUuid('brief')->name('briefs.reopen');
         Route::post('/briefs/{brief}/archive', [Admin\BriefController::class, 'archive'])->whereUuid('brief')->name('briefs.archive');
         Route::get('/briefs/{brief}/export/{format}', [Admin\BriefController::class, 'export'])

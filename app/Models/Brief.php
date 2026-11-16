@@ -64,6 +64,11 @@ class Brief extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function links(): HasMany
+    {
+        return $this->hasMany(BriefLink::class);
+    }
+
     public function revisions(): HasMany
     {
         return $this->hasMany(BriefRevision::class)->orderByDesc('version');

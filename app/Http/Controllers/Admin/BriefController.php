@@ -130,6 +130,7 @@ class BriefController extends Controller
             ],
             'sections' => $this->formatter->sections($brief),
             'progress' => BriefSchema::progress($brief->schema(), $brief->answers()),
+            'links' => $brief->links()->latest()->get()->map(fn ($link) => $link->toAdminArray()),
             'revisions' => $brief->revisions->map(fn ($revision): array => [
                 'id' => $revision->id,
                 'version' => $revision->version,

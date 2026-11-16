@@ -2,11 +2,13 @@
 
 use App\Http\Middleware\AuthenticateApiToken;
 use App\Http\Middleware\AuthenticateKernel;
+use App\Http\Middleware\BriefLinkHeaders;
 use App\Http\Middleware\EnsureApiAbility;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsExecutor;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\PublicBriefLocale;
 use App\Http\Middleware\RecordNavigationVisit;
 use App\Http\Middleware\VerifyYooKassaWebhook;
 use Illuminate\Foundation\Application;
@@ -43,6 +45,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.token' => AuthenticateApiToken::class,
             'kernel.token' => AuthenticateKernel::class,
             'api.ability' => EnsureApiAbility::class,
+            'brief-link-headers' => BriefLinkHeaders::class,
+            'public-brief-locale' => PublicBriefLocale::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

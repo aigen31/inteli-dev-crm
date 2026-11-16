@@ -1,16 +1,19 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import BriefAnswers from '@/Components/Briefs/BriefAnswers.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
+import Modal from '@/Components/UI/Modal.vue';
 import { formatDateTime } from '@/Utils/formatters.js';
 import {
     ArrowDownTrayIcon,
     ArrowLeftIcon,
     ArrowPathIcon,
+    ClipboardDocumentIcon,
     DocumentTextIcon,
+    LinkIcon,
     PencilSquareIcon,
 } from '@heroicons/vue/24/outline';
 
@@ -19,8 +22,53 @@ const props = defineProps({
     sections: Array,
     progress: Number,
     revisions: Array,
+    links: { type: Array, default: () => [] },
     can: Object,
 });
+
+const linkOpen = ref(false);
+const linkDays = ref(7);
+const creatingLink = ref(false);
+const createdUrl = ref(null);
+const linkError = ref(null);
+const copied = ref(false);
+
+async function createLink() {
+    creatingLink.value = true;
+    linkError.value = null;
+    copied.value = false;
+
+    try {
+        const { data } = await window.axios.post(route('admin.briefs.links.store', props.brief.id), { days: linkDays.value });
+        createdUrl.value = data.url;
+    } catch (error) {
+        linkError.value = error?.response?.data?.message || 'Не удалось создать ссылку.';
+    } finally {
+        creatingLink.value = false;
+    }
+}
+
+async function copyLink() {
+    if (! createdUrl.value) return;
+
+    try {
+        await navigator.clipboard.writeText(createdUrl.value);
+        copied.value = true;
+    } catch {
+        copied.value = false;
+    }
+}
+
+function revokeLink(id) {
+    router.delete(route('admin.briefs.links.destroy', [props.brief.id, id]), { preserveScroll: true });
+}
+
+function closeLinkModal() {
+    linkOpen.value = false;
+    createdUrl.value = null;
+    linkError.value = null;
+    copied.value = false;
+}
 
 const form = useForm({
     title: props.brief.title,
@@ -118,6 +166,35 @@ function reopen() {
                     </Button>
                 </section>
 
+                <section v-if="brief.status !== 'archived'" class="surface-card p-5">
+                    <p class="eyebrow">Ссылка для заполнения</p>
+                    <p class="mt-2 text-[11px] leading-relaxed text-muted">
+                        Человек без аккаунта заполнит бриф по ссылке. Ссылка одноразовая, живёт до выбранного срока.
+                    </p>
+
+                    <div v-if="links.length" class="mt-3 space-y-2">
+                        <div v-for="link in links" :key="link.id" class="flex items-center justify-between gap-2 rounded-[10px] bg-surface-2 px-3 py-2">
+                            <span class="min-w-0 font-mono text-[9px] leading-relaxed text-muted">
+                                <template v-if="link.is_active">до {{ formatDateTime(link.expires_at) }}</template>
+                                <template v-else-if="link.used_at">использована</template>
+                                <template v-else>отозвана</template>
+                                <template v-if="link.last_used_at"><span class="block text-faint">открыта {{ formatDateTime(link.last_used_at) }}</span></template>
+                            </span>
+                            <button
+                                v-if="link.is_active"
+                                type="button"
+                                class="shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] text-danger hover:underline"
+                                @click="revokeLink(link.id)"
+                            >Отозвать</button>
+                        </div>
+                    </div>
+
+                    <Button size="sm" class="mt-3 w-full" :disabled="brief.status === 'submitted'" @click="linkOpen = true">
+                        <LinkIcon class="h-4 w-4" />Выпустить ссылку
+                    </Button>
+                    <p v-if="brief.status === 'submitted'" class="mt-2 text-[10px] text-faint">Бриф отправлен — новая ссылка не нужна.</p>
+                </section>
+
                 <section class="surface-card p-5">
                     <p class="eyebrow">Действия</p>
                     <div class="mt-3 space-y-2">
@@ -160,5 +237,46 @@ function reopen() {
                 </section>
             </aside>
         </div>
+
+        <Modal :show="linkOpen" max-width="md" @close="closeLinkModal">
+            <div class="p-6">
+                <p class="eyebrow">Публичная ссылка</p>
+                <h3 class="mt-1 text-[18px] font-medium tracking-[-0.02em] text-ink">Заполнение без аккаунта</h3>
+                <p class="mt-2 text-[12px] leading-relaxed text-muted">
+                    Ссылка открывает только этот бриф. Она перестанет работать после отправки или по истечении срока.
+                </p>
+
+                <label class="mt-4 block">
+                    <span class="font-mono text-[9px] uppercase tracking-[0.16em] text-faint">Срок действия</span>
+                    <select v-model.number="linkDays" class="mt-1 w-full rounded-[12px] border border-line bg-white/70 px-3 py-2 text-[12px] text-ink focus:border-primary-500/60 focus:outline-none">
+                        <option :value="1">1 день</option>
+                        <option :value="3">3 дня</option>
+                        <option :value="7">7 дней</option>
+                        <option :value="14">14 дней</option>
+                        <option :value="30">30 дней</option>
+                    </select>
+                </label>
+
+                <div v-if="createdUrl" class="mt-4">
+                    <p class="font-mono text-[9px] uppercase tracking-[0.16em] text-faint">Ссылка (показывается один раз)</p>
+                    <div class="mt-1 flex items-center gap-2 rounded-[12px] bg-surface-2 px-3 py-2">
+                        <input :value="createdUrl" readonly class="min-w-0 flex-1 bg-transparent font-mono text-[10px] text-ink focus:outline-none" @focus="$event.target.select()" />
+                        <button type="button" class="shrink-0 text-muted hover:text-ink" :title="copied ? 'Скопировано' : 'Скопировать'" @click="copyLink">
+                            <ClipboardDocumentIcon class="h-4 w-4" />
+                        </button>
+                    </div>
+                    <p class="mt-1 text-[10px] text-faint">Скопируйте сейчас: в базе хранится только хэш токена.</p>
+                </div>
+
+                <p v-if="linkError" class="mt-3 text-[11px] text-danger">{{ linkError }}</p>
+
+                <div class="mt-5 flex justify-end gap-2">
+                    <Button variant="ghost" size="sm" @click="closeLinkModal">Закрыть</Button>
+                    <Button size="sm" :disabled="creatingLink" @click="createLink">
+                        {{ creatingLink ? 'Создаю…' : (createdUrl ? 'Ещё одну' : 'Создать ссылку') }}
+                    </Button>
+                </div>
+            </div>
+        </Modal>
     </AdminLayout>
 </template>

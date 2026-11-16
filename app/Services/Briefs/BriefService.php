@@ -6,6 +6,7 @@ namespace App\Services\Briefs;
 
 use App\Enums\BriefStatus;
 use App\Models\Brief;
+use App\Models\BriefLink;
 use App\Models\BriefTemplate;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +81,7 @@ class BriefService
     /**
      * Отправка брифа: снимок схемы, ревизия, задача на разбор.
      */
-    public function submit(Brief $brief, User $user): Brief
+    public function submit(Brief $brief, ?User $actor = null): Brief
     {
         if (! $brief->isEditable()) {
             throw ValidationException::withMessages([
@@ -98,7 +99,7 @@ class BriefService
             );
         }
 
-        DB::transaction(function () use ($brief, $answers, $schema, $user): void {
+        DB::transaction(function () use ($brief, $answers, $schema, $actor): void {
             $brief->fill([
                 'data' => $answers,
                 'schema_snapshot' => $schema,
@@ -113,11 +114,14 @@ class BriefService
                 'version' => $version,
                 'data' => $answers,
                 'schema' => $schema,
-                'created_by' => $user->id,
-                'reason' => 'submitted',
+                'created_by' => $actor?->id,
+                'reason' => $actor === null ? 'submitted_public' : 'submitted',
             ]);
 
-            $this->tasks->createFor($brief->fresh(['template', 'client', 'project']) ?? $brief, $user);
+            $this->tasks->createFor($brief->fresh(['template', 'client', 'project']) ?? $brief, $actor ?? $brief->creator);
+
+            // Ссылка одноразовая: после отправки все активные ссылки гаснут.
+            $brief->links()->whereNull('used_at')->whereNull('revoked_at')->update(['used_at' => now()]);
         });
 
         return $brief->refresh();
@@ -152,6 +156,9 @@ class BriefService
             'status' => BriefStatus::Archived,
             'archived_at' => now(),
         ])->save();
+
+        // Архивный бриф не должен оставаться открытым по внешней ссылке.
+        $brief->links()->whereNull('used_at')->whereNull('revoked_at')->update(['revoked_at' => now()]);
 
         return $brief->refresh();
     }
