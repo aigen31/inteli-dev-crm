@@ -217,7 +217,7 @@ test('Kiki resolves project keys and skips unavailable status transitions in bul
                 'values' => [
                     'project_id' => 'BUD',
                     'budget' => 900,
-                    'status' => 'in_progress',
+                    'status' => 'pending_review',
                 ],
             ],
         ],

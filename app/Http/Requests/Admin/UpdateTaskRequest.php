@@ -59,6 +59,7 @@ class UpdateTaskRequest extends FormRequest
             'description' => ['sometimes', 'string', 'min:3'],
             'type' => ['sometimes', Rule::enum(TaskType::class)],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
+            'strict_control' => ['nullable', 'boolean'],
             'estimated_minutes' => ['nullable', 'integer', 'min:5', 'max:10000'],
             'budget' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
             'assignee_id' => ['nullable', 'uuid', 'exists:users,id'],

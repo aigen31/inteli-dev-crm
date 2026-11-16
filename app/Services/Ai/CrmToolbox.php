@@ -42,6 +42,7 @@ use App\Services\HtmlSanitizer;
 use App\Services\ProjectInviteService;
 use App\Services\ProjectService;
 use App\Services\ReportService;
+use App\Services\Tasks\TaskStrictControl;
 use App\Services\TaskTemplateService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +72,7 @@ class CrmToolbox
         private readonly ProjectInviteService $invites,
         private readonly BriefFormatter $briefs,
         private readonly BriefService $briefService,
+        private readonly TaskStrictControl $strictControl,
     ) {}
 
     /**
@@ -2034,7 +2036,7 @@ class CrmToolbox
         $warning = null;
 
         if ($status !== null) {
-            if (! $task->status->canTransitionTo($status) || ! $task->status->canBeChangedBy($user->role, $status)) {
+            if (! $this->strictControl->canChange($task, $user, $status)) {
                 $warning = ($task->reference() ?? $task->title).': статус не изменён — переход в «'.$status->label().'» недоступен.';
             } else {
                 try {

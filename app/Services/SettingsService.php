@@ -31,6 +31,19 @@ class SettingsService
         return $this->values ??= Setting::query()->pluck('value', 'key')->all();
     }
 
+    /**
+     * Строгий контроль задач: по умолчанию включён.
+     */
+    public function strictTaskControl(): bool
+    {
+        return $this->get('task_strict_control', '1') === '1';
+    }
+
+    public function putStrictTaskControl(bool $enabled): void
+    {
+        $this->put('task_strict_control', $enabled ? '1' : '0');
+    }
+
     public function get(string $key, ?string $default = null): ?string
     {
         $value = $this->all()[$key] ?? null;

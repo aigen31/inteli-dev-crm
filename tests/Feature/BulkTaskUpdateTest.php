@@ -71,7 +71,7 @@ test('bulk update applies fields even when a status transition is unavailable', 
     $this->actingAs($admin)->patch(route('admin.tasks.bulk-update'), [
         'task_ids' => [$task->id],
         'priority' => 'high',
-        'status' => 'completed',
+        'status' => 'pending_review',
     ])->assertRedirect();
 
     $task->refresh();

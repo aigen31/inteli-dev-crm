@@ -43,6 +43,7 @@ const form = useForm({
     type: 'one_time',
     status: 'pending_review',
     priority: 'medium',
+    strict_control: null,
     estimated_minutes: '',
     budget: '',
     assignee_id: '',

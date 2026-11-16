@@ -51,6 +51,7 @@ class CreateTaskAction
                 ? TaskStatus::PendingReview
                 : ($data['status'] ?? TaskStatus::PendingReview),
             'priority' => $data['priority'] ?? TaskPriority::Medium,
+            'strict_control' => $data['strict_control'] ?? null,
             'estimated_minutes' => $data['estimated_minutes'] ?? null,
             'budget' => $data['budget'] ?? null,
             'deadline' => $data['deadline'] ?? null,

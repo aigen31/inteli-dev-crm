@@ -55,6 +55,9 @@ class SettingsController extends Controller
                 'is_configured' => (bool) config('services.yookassa.shop_id'),
             ],
             'transfer' => $settings->transferFields(),
+            'taskControl' => [
+                'strict' => $settings->strictTaskControl(),
+            ],
             'customFields' => $fields,
             'customFieldEntities' => Options::customFieldEntities(),
             'customFieldTypes' => Options::customFieldTypes(),
@@ -66,6 +69,19 @@ class SettingsController extends Controller
                 'docs' => 'docs/mcp.md',
             ],
         ]);
+    }
+
+    public function updateTaskControl(Request $request, SettingsService $settings): RedirectResponse
+    {
+        $data = $request->validate([
+            'strict_control' => ['required', 'boolean'],
+        ]);
+
+        $settings->putStrictTaskControl((bool) $data['strict_control']);
+
+        return redirect()
+            ->route('admin.settings.edit', ['tab' => 'tasks'])
+            ->with('success', 'Настройка задач сохранена.');
     }
 
     public function update(Request $request, SettingsService $settings): RedirectResponse

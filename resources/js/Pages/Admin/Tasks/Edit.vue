@@ -29,6 +29,7 @@ const form = useForm({
     checklist: (props.task?.checklist || []).map((item) => ({ ...item })),
     type: props.task?.type || 'one_time',
     priority: props.task?.priority || 'medium',
+    strict_control: props.task?.strict_control ?? null,
     estimated_minutes: props.task?.estimated_minutes || '',
     budget: props.task?.budget || '',
     assignee_id: props.task?.assignee_id || '',
