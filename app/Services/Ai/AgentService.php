@@ -783,6 +783,7 @@ class AgentService
             'update_task' => 'Задача обновлена',
             'distribute_project_budget' => 'Бюджет распределён',
             'update_tasks' => 'Задачи обновлены',
+            'create_report' => 'Отчёт создан',
             'create_task_from_form' => 'Заявка собрана из формы',
             'propose_task_plan' => 'План задач создан',
             'create_task_template' => 'Шаблон создан',

@@ -1,0 +1,593 @@
+{
+  "slug": "ticket-system",
+  "title": "Тикет-система для поддержки",
+  "description": "Бриф на внедрение многоуровневой службы поддержки: текущая платформа, интеграции, AI-бот, SLA, эскалация и аналитика",
+  "icon": "life-buoy",
+  "estimated_minutes": 15,
+  "version": 1,
+  "sections": [
+    {
+      "key": "current",
+      "title": "Текущая поддержка и объём",
+      "description": "На чём работаем сейчас, сколько обращений и кто отвечает",
+      "fields": [
+        {
+          "key": "current_platform",
+          "type": "single_choice",
+          "label": "TS-01. На какой системе поддержка работает сейчас",
+          "help": "Если систем несколько, выберите основную и опишите вторую в уточнении",
+          "required": true,
+          "options": [
+            {"value": "omnidesk", "label": "Omnidesk"},
+            {"value": "freshdesk", "label": "FreshDesk"},
+            {
+              "value": "both",
+              "label": "Omnidesk сейчас, FreshDesk в планах",
+              "description": "Переход уже начат"
+            },
+            {"value": "other", "label": "Другая система", "description": "Опишу словами"}
+          ],
+          "allow_other": true
+        },
+        {
+          "key": "platform_other",
+          "type": "text",
+          "label": "Какая система используется",
+          "help": "Название сервиса и примерное число обращений в нём",
+          "show_if": {"field": "current_platform", "op": "eq", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "platform_decision",
+          "type": "single_choice",
+          "label": "TS-02. Что делаем с платформой",
+          "help": "Если не решили — выберите последний вариант, предложу сравнение по стоимости, SLA и срокам внедрения",
+          "required": true,
+          "options": [
+            {
+              "value": "migrate_freshdesk",
+              "label": "Перейти на FreshDesk",
+              "description": "Настройка и перенос с Omnidesk"
+            },
+            {
+              "value": "improve_omnidesk",
+              "label": "Доработать текущий Omnidesk",
+              "description": "Остаёмся, чиним процессы и настройки"
+            },
+            {
+              "value": "open_source",
+              "label": "Внедрить open source",
+              "description": "Zammad, Chatwoot, GLPI и аналоги"
+            },
+            {
+              "value": "custom",
+              "label": "Своя разработка",
+              "description": "Собственная система под процессы"
+            },
+            {
+              "value": "recommend",
+              "label": "Пока не решили — нужна рекомендация",
+              "description": "Сравню варианты и дам смету по каждому"
+            }
+          ]
+        },
+        {
+          "key": "tickets_per_month",
+          "type": "number",
+          "label": "TS-03. Сколько обращений в месяц",
+          "help": "Среднее за последние 3 месяца, все каналы вместе",
+          "required": true,
+          "validation": {"min": 10, "max": 1000000, "integer": true, "unit": "обращений"}
+        },
+        {
+          "key": "agents_count",
+          "type": "number",
+          "label": "TS-04. Сколько операторов работают с заявками",
+          "help": "Все, кто открывает и закрывает заявки: Support L1, L2 и другие отделы",
+          "required": true,
+          "validation": {"min": 1, "max": 1000, "integer": true, "unit": "человек"}
+        },
+        {
+          "key": "intake_channels",
+          "type": "multi_choice",
+          "label": "TS-05. Откуда приходят обращения",
+          "help": "Отметьте все каналы, которые должны попадать в тикет-систему",
+          "required": true,
+          "options": [
+            {"value": "email", "label": "Email"},
+            {"value": "telegram", "label": "Telegram"},
+            {"value": "teams", "label": "Microsoft Teams"},
+            {"value": "whatsapp", "label": "WhatsApp"},
+            {"value": "web_widget", "label": "Виджет на сайте"},
+            {"value": "phone", "label": "Телефон"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 7},
+          "allow_other": true
+        },
+        {
+          "key": "intake_channels_other",
+          "type": "textarea",
+          "label": "Какой ещё канал подключить",
+          "help": "Например: VK, Instagram, чат в приложении, форма на лендинге",
+          "show_if": {"field": "intake_channels", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 1000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "integrations",
+      "title": "Интеграции и AI",
+      "description": "Telegram, Teams, WhatsApp и что именно делает AI-бот",
+      "fields": [
+        {
+          "key": "telegram_integration",
+          "type": "single_choice",
+          "label": "TS-06. Интеграция с Telegram",
+          "help": "Полноценный чат означает, что заявку можно создать и ответить клиенту прямо в Telegram",
+          "required": true,
+          "options": [
+            {
+              "value": "full",
+              "label": "Полноценный чат: заявки и ответы в Telegram",
+              "description": "Клиент общается с поддержкой в мессенджере"
+            },
+            {
+              "value": "notifications",
+              "label": "Только уведомления о новых заявках",
+              "description": "Ответы по-прежнему в тикет-системе"
+            },
+            {"value": "no", "label": "Не нужна"}
+          ]
+        },
+        {
+          "key": "teams_integration",
+          "type": "single_choice",
+          "label": "TS-07. Интеграция с Microsoft Teams",
+          "help": "Важно для внутренних заявок: сотрудники пишут в Teams, а не в почту",
+          "required": true,
+          "options": [
+            {
+              "value": "full",
+              "label": "Заявки и ответы прямо в Teams",
+              "description": "Через бота или вкладку приложения"
+            },
+            {
+              "value": "notifications",
+              "label": "Только уведомления в канал Teams",
+              "description": "Например, алерты о просроченном SLA"
+            },
+            {"value": "no", "label": "Не нужна"}
+          ]
+        },
+        {
+          "key": "whatsapp_integration",
+          "type": "single_choice",
+          "label": "TS-08. Нужен ли WhatsApp",
+          "help": "WhatsApp требует BSP-провайдера и шаблонов сообщений — отдельная стоимость и срок",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, на старте"},
+            {
+              "value": "later",
+              "label": "Позже, во второй фазе",
+              "description": "Закладываем интеграцию в архитектуру, но не запускаем сразу"
+            },
+            {"value": "no", "label": "Не нужен"}
+          ]
+        },
+        {
+          "key": "whatsapp_details",
+          "type": "textarea",
+          "label": "Что должно работать в WhatsApp",
+          "help": "Например: только входящие обращения или ещё и исходящие уведомления клиентам",
+          "show_if": {"field": "whatsapp_integration", "op": "eq", "value": "yes"},
+          "required": true,
+          "validation": {"max_length": 1000, "rows": 3}
+        },
+        {
+          "key": "ai_mode",
+          "type": "single_choice",
+          "label": "TS-09. Как подключаем AI-бота",
+          "help": "Встроенный AI проще в поддержке, внешний сервис гибче по сценариям и языкам",
+          "required": true,
+          "options": [
+            {
+              "value": "builtin_ai",
+              "label": "Встроенный AI платформы",
+              "description": "Например, AI Agent в FreshDesk или Omnidesk"
+            },
+            {
+              "value": "external_service",
+              "label": "Отдельный сервис",
+              "description": "OpenAI, YandexGPT или свой бот поверх LLM API"
+            },
+            {"value": "no_ai", "label": "Пока без AI"}
+          ]
+        },
+        {
+          "key": "ai_capabilities",
+          "type": "multi_choice",
+          "label": "TS-10. Что AI-бот делает сам",
+          "help": "Отметьте только то, что готовы запустить в первой версии",
+          "show_if": {
+            "any": [
+              {"field": "ai_mode", "op": "eq", "value": "builtin_ai"},
+              {"field": "ai_mode", "op": "eq", "value": "external_service"}
+            ]
+          },
+          "required": true,
+          "options": [
+            {
+              "value": "first_line",
+              "label": "Отвечает на типовые вопросы",
+              "description": "Первая линия без участия человека"
+            },
+            {"value": "classify", "label": "Классифицирует и маршрутизирует заявки"},
+            {"value": "summarize", "label": "Суммирует переписку для оператора"},
+            {"value": "suggest", "label": "Подсказывает готовый ответ"},
+            {"value": "translate", "label": "Переводит сообщения"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6},
+          "allow_other": true
+        },
+        {
+          "key": "ai_capabilities_other",
+          "type": "textarea",
+          "label": "Что ещё должен делать AI-бот",
+          "help": "Опишите сценарий: например, проверять статус заявки или договора по номеру",
+          "show_if": {"field": "ai_capabilities", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 1500, "rows": 3}
+        },
+        {
+          "key": "ai_limits",
+          "type": "textarea",
+          "label": "TS-11. Что AI-бот не должен делать сам",
+          "help": "Например: не обещать возвраты и компенсации, не менять данные клиента, всё спорное передавать человеку",
+          "show_if": {
+            "any": [
+              {"field": "ai_mode", "op": "eq", "value": "builtin_ai"},
+              {"field": "ai_mode", "op": "eq", "value": "external_service"}
+            ]
+          },
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "process",
+      "title": "Процессы: SLA, эскалация, распределение",
+      "description": "Как заявка идёт от L1 до закрытия и что считается нарушением",
+      "fields": [
+        {
+          "key": "support_levels",
+          "type": "multi_choice",
+          "label": "TS-12. Какие уровни поддержки есть",
+          "help": "Отметьте все, между которыми нужно распределять заявки",
+          "required": true,
+          "options": [
+            {"value": "l1", "label": "Support L1: первые ответы и типовые вопросы"},
+            {"value": "l2", "label": "Support L2: технические и сложные вопросы"},
+            {"value": "l3", "label": "L3 или вендор: разработка и продукт"},
+            {
+              "value": "other_depts",
+              "label": "Другие отделы",
+              "description": "Продажи, биллинг, операционный отдел"
+            },
+            {"value": "management", "label": "Руководитель поддержки"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "routing_mode",
+          "type": "single_choice",
+          "label": "TS-13. Как распределять заявки между уровнями",
+          "help": "Автоматика экономит время диспетчера, ручная — точнее на старте",
+          "required": true,
+          "options": [
+            {
+              "value": "auto_topic",
+              "label": "Автоматически по теме или ключевым словам",
+              "description": "Правила: тема, канал, тип клиента"
+            },
+            {
+              "value": "auto_load",
+              "label": "Автоматически по загрузке операторов",
+              "description": "Round robin или наименее загруженный"
+            },
+            {"value": "manual", "label": "Вручную: диспетчер назначает"},
+            {
+              "value": "mixed",
+              "label": "Смешанно: автоматика с ручной правкой",
+              "description": "Система предлагает, диспетчер подтверждает"
+            }
+          ]
+        },
+        {
+          "key": "routing_rules",
+          "type": "textarea",
+          "label": "По каким правилам разводить заявки",
+          "help": "Например: billing -> биллинг, техническая ошибка -> L2, VIP-клиент -> старший оператор",
+          "show_if": {
+            "any": [
+              {"field": "routing_mode", "op": "eq", "value": "auto_topic"},
+              {"field": "routing_mode", "op": "eq", "value": "mixed"}
+            ]
+          },
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "first_response_sla",
+          "type": "number",
+          "label": "TS-14. SLA на первый ответ",
+          "help": "Через сколько оператор обязан ответить клиенту впервые",
+          "required": true,
+          "validation": {"min": 1, "max": 1440, "integer": true, "unit": "мин"}
+        },
+        {
+          "key": "resolution_sla",
+          "type": "number",
+          "label": "TS-15. SLA на решение заявки",
+          "help": "Верхняя граница до закрытия или до перевода на другой уровень",
+          "required": true,
+          "validation": {"min": 1, "max": 720, "integer": true, "unit": "ч"}
+        },
+        {
+          "key": "sla_scope",
+          "type": "single_choice",
+          "label": "TS-16. Одинаковый ли SLA для всех заявок",
+          "help": "Если разный — опишите различия в следующем поле",
+          "required": true,
+          "options": [
+            {"value": "uniform", "label": "Одинаковый для всех каналов и тем"},
+            {"value": "by_channel", "label": "Разный по каналам"},
+            {"value": "by_priority", "label": "Разный по приоритету заявки"}
+          ]
+        },
+        {
+          "key": "sla_details",
+          "type": "textarea",
+          "label": "TS-17. Как различаются SLA",
+          "help": "Например: критичные — 2 часа, обычные — 24 часа; Telegram — 15 минут, email — 4 часа",
+          "show_if": {
+            "all": [
+              {"field": "sla_scope", "op": "neq", "value": "uniform"},
+              {"field": "resolution_sla", "op": "answered"}
+            ]
+          },
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "escalation_rules",
+          "type": "multi_choice",
+          "label": "TS-18. Когда включается эскалация",
+          "required": true,
+          "options": [
+            {
+              "value": "sla_breach",
+              "label": "При нарушении SLA",
+              "description": "Ответственный и руководитель получают алерт"
+            },
+            {
+              "value": "no_response",
+              "label": "Если оператор молчит N минут",
+              "description": "Заявка уходит выше по цепочке"
+            },
+            {"value": "priority", "label": "Сразу по приоритету: VIP или критичная"},
+            {"value": "waiting_client", "label": "Если клиент ждёт дольше срока"},
+            {"value": "manual", "label": "Только вручную, по решению оператора"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "escalation_chain",
+          "type": "textarea",
+          "label": "TS-19. Кому и как эскалируется заявка",
+          "help": "Например: L1 -> L2 -> руководитель поддержки, через 30 минут без ответа",
+          "show_if": {
+            "any": [
+              {"field": "escalation_rules", "op": "contains", "value": "sla_breach"},
+              {"field": "escalation_rules", "op": "contains", "value": "no_response"}
+            ]
+          },
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "auto_replies",
+          "type": "multi_choice",
+          "label": "TS-20. Где нужны авто-ответы",
+          "required": true,
+          "options": [
+            {"value": "on_create", "label": "Подтверждение при создании заявки"},
+            {"value": "out_of_hours", "label": "В нерабочие часы"},
+            {"value": "by_status", "label": "При смене статуса"},
+            {"value": "by_keyword", "label": "На типовые вопросы по ключевым словам"},
+            {"value": "none", "label": "Авто-ответы не нужны"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "hints_sources",
+          "type": "multi_choice",
+          "label": "TS-21. Откуда оператор получает подсказки",
+          "help": "Подсказки сокращают время ответа на повторяющихся вопросах",
+          "required": true,
+          "options": [
+            {"value": "kb", "label": "Из базы знаний"},
+            {"value": "history", "label": "Из похожих закрытых заявок"},
+            {"value": "ai", "label": "AI генерирует ответ по переписке"},
+            {"value": "macros", "label": "Готовые шаблоны и макросы"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5},
+          "allow_other": true
+        },
+        {
+          "key": "hints_sources_other",
+          "type": "textarea",
+          "label": "Какой ещё источник подсказок",
+          "show_if": {"field": "hints_sources", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 1000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "analytics",
+      "title": "Отчёты и дашборды",
+      "description": "Какие цифры нужны руководителю и в каком виде",
+      "fields": [
+        {
+          "key": "required_reports",
+          "type": "multi_choice",
+          "label": "TS-22. Какие отчёты нужны",
+          "required": true,
+          "options": [
+            {"value": "sla_compliance", "label": "Соблюдение SLA"},
+            {"value": "response_time", "label": "Время первого ответа и решения"},
+            {"value": "agent_load", "label": "Загрузка операторов"},
+            {"value": "backlog", "label": "Очередь и просроченные заявки"},
+            {"value": "csat", "label": "Оценка качества (CSAT)"},
+            {"value": "volume", "label": "Объём и темы обращений"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 7},
+          "allow_other": true
+        },
+        {
+          "key": "required_reports_other",
+          "type": "textarea",
+          "label": "Какой ещё отчёт нужен",
+          "show_if": {"field": "required_reports", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 1000, "rows": 3}
+        },
+        {
+          "key": "dashboard_mode",
+          "type": "single_choice",
+          "label": "TS-23. Как часто смотреть цифры",
+          "help": "Онлайн-дашборд полезен руководителю и дежурному, отчёт — для планёрки",
+          "required": true,
+          "options": [
+            {
+              "value": "realtime",
+              "label": "Онлайн-дашборд в реальном времени",
+              "description": "Очередь, SLA, загрузка на одном экране"
+            },
+            {"value": "daily", "label": "Ежедневная сводка"},
+            {"value": "weekly", "label": "Отчёт раз в неделю"}
+          ]
+        },
+        {
+          "key": "analytics_export",
+          "type": "single_choice",
+          "label": "TS-24. Куда выгружать данные",
+          "required": true,
+          "options": [
+            {
+              "value": "bi",
+              "label": "В BI-систему",
+              "description": "Metabase, Power BI, Looker Studio"
+            },
+            {"value": "sheets", "label": "Excel или Google Sheets"},
+            {"value": "builtin", "label": "Только встроенные отчёты платформы"},
+            {"value": "api", "label": "API для своей аналитики"}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "delivery",
+      "title": "Миграция, сроки и подрядчик",
+      "description": "Что переносим, когда нужно запустить и какой опыт обязателен",
+      "fields": [
+        {
+          "key": "migration_scope",
+          "type": "single_choice",
+          "label": "TS-25. Что переносим из текущей системы",
+          "help": "История заявок нужна для обучения AI и для повторных обращений",
+          "required": true,
+          "options": [
+            {
+              "value": "full",
+              "label": "Всю историю: заявки, клиенты, переписка",
+              "description": "Самый долгий, но самый полный вариант"
+            },
+            {
+              "value": "active_only",
+              "label": "Только открытые заявки и клиентов",
+              "description": "История остаётся в старой системе в режиме чтения"
+            },
+            {"value": "none", "label": "Начинаем с чистого листа"}
+          ]
+        },
+        {
+          "key": "migration_details",
+          "type": "textarea",
+          "label": "Что важно не потерять при переносе",
+          "help": "Вложения, теги, внутренние комментарии, история SLA",
+          "show_if": {
+            "any": [
+              {"field": "migration_scope", "op": "eq", "value": "full"},
+              {"field": "migration_scope", "op": "eq", "value": "active_only"}
+            ]
+          },
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "experience_required",
+          "type": "multi_choice",
+          "label": "TS-26. Какой опыт подрядчика обязателен",
+          "help": "Компании не рассматриваются — только частные фрилансеры с подтверждённым опытом",
+          "required": true,
+          "options": [
+            {"value": "omnidesk", "label": "Проекты на Omnidesk"},
+            {"value": "freshdesk", "label": "Проекты на FreshDesk"},
+            {"value": "open_source", "label": "Внедрение Zammad, Chatwoot и аналогов"},
+            {"value": "ai_bots", "label": "AI-боты в поддержке"},
+            {"value": "telegram_teams", "label": "Интеграции с Telegram и Teams"},
+            {"value": "sla_projects", "label": "Проекты с SLA и эскалацией"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6}
+        },
+        {
+          "key": "deadline",
+          "type": "date",
+          "label": "TS-27. Когда система должна заработать",
+          "help": "Дата, к которой нужен рабочий процесс поддержки в новой системе",
+          "required": true,
+          "validation": {"not_past": true}
+        },
+        {
+          "key": "budget",
+          "type": "number",
+          "label": "TS-28. Бюджет на внедрение",
+          "help": "Разово, без подписок на саму платформу. Укажите в валюте, в которой считаете",
+          "required": true,
+          "validation": {"min": 0, "integer": true}
+        },
+        {
+          "key": "comments",
+          "type": "textarea",
+          "label": "Дополнительные пожелания",
+          "help": "Всё, что не вошло в вопросы: ограничения по вендорам, безопасность, внутренние регламенты",
+          "validation": {"max_length": 2000, "rows": 3}
+        }
+      ]
+    }
+  ],
+  "submit": {
+    "notify_admin": true,
+    "success_message": "Спасибо! Бриф на тикет-систему отправлен. Вернусь со сравнением платформ, схемой маршрутизации и сметой в течение 24 часов.",
+    "pdf_template": "default"
+  }
+}

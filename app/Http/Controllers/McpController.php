@@ -33,7 +33,7 @@ class McpController extends Controller
 
         if ($method === 'initialize') {
             return $this->result($id, [
-                'protocolVersion' => (string) ($params['protocolVersion'] ?? '2024-11-05'),
+                'protocolVersion' => (string) ($params['protocolVersion'] ?? '2025-06-18'),
                 'capabilities' => ['tools' => ['listChanged' => false]],
                 'serverInfo' => ['name' => 'inteli-dev-crm', 'version' => '1.1.0'],
                 'instructions' => 'CRM tools for the owner account. Use read tools first. Money and destructive actions require confirm=true. Reports use the description+link template.',

@@ -9,25 +9,36 @@ use App\Actions\Invoice\CreateInvoiceAction;
 use App\Actions\Invoice\MarkInvoiceAsPaidAction;
 use App\Actions\Task\ChangeTaskStatusAction;
 use App\Actions\Task\CreateTaskAction;
+use App\Enums\BriefStatus;
 use App\Enums\CustomFieldEntity;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\ProjectMemberRole;
+use App\Enums\ProjectStatus;
 use App\Enums\TaskPriority;
 use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Enums\UserRole;
 use App\Models\AiDocument;
+use App\Models\Brief;
 use App\Models\CustomField;
 use App\Models\FormTemplate;
 use App\Models\Invoice;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\Task;
+use App\Models\TaskReport;
+use App\Models\TaskReportItem;
 use App\Models\TaskTemplate;
 use App\Models\User;
+use App\Services\Briefs\BriefFormatter;
 use App\Services\CustomFieldService;
 use App\Services\FormTemplateService;
 use App\Services\HtmlSanitizer;
+use App\Services\ProjectInviteService;
+use App\Services\ProjectService;
+use App\Services\ReportService;
 use App\Services\TaskTemplateService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -52,6 +63,10 @@ class CrmToolbox
         private readonly CreateClientAction $createClient,
         private readonly CreateInvoiceAction $createInvoice,
         private readonly MarkInvoiceAsPaidAction $markInvoiceAsPaid,
+        private readonly ReportService $reports,
+        private readonly ProjectService $projects,
+        private readonly ProjectInviteService $invites,
+        private readonly BriefFormatter $briefs,
     ) {}
 
     /**
@@ -186,6 +201,23 @@ class CrmToolbox
             'set_custom_field' => $this->setCustomField($user, $arguments),
             'get_payment_link' => $this->paymentLink($user, $arguments),
             'crm_help' => $this->crmHelp($user, $arguments),
+            'create_report' => $this->createReport($user, $arguments),
+            'list_briefs' => $this->listBriefs($user, $arguments),
+            'get_brief' => $this->getBrief($user, $arguments),
+            'list_reports' => $this->listReports($user, $arguments),
+            'get_report' => $this->getReport($user, $arguments),
+            'create_project' => $this->createProject($user, $arguments),
+            'get_project' => $this->getProject($user, $arguments),
+            'create_project_invite' => $this->createProjectInvite($user, $arguments),
+            'update_project' => $this->updateProject($user, $arguments),
+            'archive_project' => $this->archiveProject($user, $arguments),
+            'add_project_member' => $this->addProjectMember($user, $arguments),
+            'update_project_member' => $this->updateProjectMember($user, $arguments),
+            'remove_project_member' => $this->removeProjectMember($user, $arguments),
+            'update_client' => $this->updateClient($user, $arguments),
+            'get_invoice' => $this->getInvoice($user, $arguments),
+            'list_users' => $this->listUsers($user, $arguments),
+            'get_custom_field_values' => $this->getCustomFieldValues($user, $arguments),
             default => throw ValidationException::withMessages(['tool' => "Инструмент «{$name}» не реализован."]),
         };
     }
@@ -529,6 +561,203 @@ class CrmToolbox
                     'value' => ['description' => 'Значение: строка, число, дата, массив или boolean.'],
                 ],
                 'required' => ['entity_type', 'entity_id', 'key', 'value'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'create_project' => [
+                'description' => 'Создать проект для клиента. Только администратор.',
+                'properties' => [
+                    'name' => ['type' => 'string'],
+                    'key' => ['type' => 'string'],
+                    'client_id' => ['type' => 'string'],
+                    'description' => ['type' => 'string'],
+                    'site_url' => ['type' => 'string'],
+                    'status' => ['type' => 'string', 'enum' => array_column(ProjectStatus::cases(), 'value')],
+                    'priority' => ['type' => 'string', 'enum' => array_column(TaskPriority::cases(), 'value')],
+                    'starts_at' => ['type' => 'string'],
+                    'due_at' => ['type' => 'string'],
+                    'instructions' => ['type' => 'string'],
+                ],
+                'required' => ['name'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'get_project' => [
+                'description' => 'Карточка проекта по UUID или ключу: клиент, участники, приглашения, задачи.',
+                'properties' => ['project_id' => ['type' => 'string']],
+                'required' => ['project_id'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'create_project_invite' => [
+                'description' => 'Одноразовая ссылка-приглашение в проект с ролью и сроком. Только администратор.',
+                'properties' => [
+                    'project_id' => ['type' => 'string'],
+                    'role' => ['type' => 'string', 'enum' => array_column(ProjectMemberRole::cases(), 'value')],
+                    'days' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 30],
+                    'email' => ['type' => 'string'],
+                ],
+                'required' => ['project_id', 'role'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'update_client' => [
+                'description' => 'Обновить имя, email, телефон или контакты клиента. Только администратор.',
+                'properties' => [
+                    'client_id' => ['type' => 'string', 'description' => 'UUID или email.'],
+                    'name' => ['type' => 'string'],
+                    'email' => ['type' => 'string'],
+                    'phone' => ['type' => 'string'],
+                    'messenger_contacts' => ['type' => 'object'],
+                ],
+                'required' => ['client_id'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'get_invoice' => [
+                'description' => 'Счёт по UUID: сумма, статус, клиент, задачи и ссылка.',
+                'properties' => ['invoice_id' => ['type' => 'string']],
+                'required' => ['invoice_id'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'list_users' => [
+                'description' => 'Активные пользователи CRM по роли — для выбора получателя отчёта.',
+                'properties' => ['role' => ['type' => 'string', 'enum' => ['admin', 'client']]],
+                'required' => [],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'get_custom_field_values' => [
+                'description' => 'Значения пользовательских полей клиента, задачи или счёта.',
+                'properties' => [
+                    'entity_type' => ['type' => 'string', 'enum' => ['client', 'task', 'invoice']],
+                    'entity_id' => ['type' => 'string'],
+                ],
+                'required' => ['entity_type', 'entity_id'],
+                'roles' => ['admin', 'client'],
+                'confirm' => false,
+            ],
+            'update_project' => [
+                'description' => 'Обновить проект: название, ключ, клиент, сайт, статус, сроки, инструкции. Только администратор.',
+                'properties' => [
+                    'project_id' => ['type' => 'string'],
+                    'name' => ['type' => 'string'],
+                    'key' => ['type' => 'string'],
+                    'client_id' => ['type' => 'string'],
+                    'description' => ['type' => 'string'],
+                    'site_url' => ['type' => 'string'],
+                    'status' => ['type' => 'string', 'enum' => array_column(ProjectStatus::cases(), 'value')],
+                    'priority' => ['type' => 'string', 'enum' => array_column(TaskPriority::cases(), 'value')],
+                    'starts_at' => ['type' => 'string'],
+                    'due_at' => ['type' => 'string'],
+                    'instructions' => ['type' => 'string'],
+                ],
+                'required' => ['project_id', 'name'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'archive_project' => [
+                'description' => 'Архивировать проект. Только администратор; требует подтверждения.',
+                'properties' => ['project_id' => ['type' => 'string']],
+                'required' => ['project_id'],
+                'roles' => ['admin'],
+                'confirm' => true,
+            ],
+            'add_project_member' => [
+                'description' => 'Добавить участника в проект с ролью. Только администратор.',
+                'properties' => [
+                    'project_id' => ['type' => 'string'],
+                    'user_id' => ['type' => 'string'],
+                    'role' => ['type' => 'string', 'enum' => array_column(ProjectMemberRole::cases(), 'value')],
+                ],
+                'required' => ['project_id', 'user_id', 'role'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'update_project_member' => [
+                'description' => 'Изменить роль участника проекта. Только администратор.',
+                'properties' => [
+                    'project_id' => ['type' => 'string'],
+                    'member_id' => ['type' => 'string'],
+                    'role' => ['type' => 'string', 'enum' => array_column(ProjectMemberRole::cases(), 'value')],
+                ],
+                'required' => ['project_id', 'member_id', 'role'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'remove_project_member' => [
+                'description' => 'Убрать участника из проекта. Только администратор.',
+                'properties' => [
+                    'project_id' => ['type' => 'string'],
+                    'member_id' => ['type' => 'string'],
+                ],
+                'required' => ['project_id', 'member_id'],
+                'roles' => ['admin'],
+                'confirm' => true,
+            ],
+            'create_report' => [
+                'description' => 'Создать отчёт клиенту в формате «описание + ссылка»: получатель, задача, повторяемые группы. Только администратор; требует подтверждения.',
+                'properties' => [
+                    'title' => ['type' => 'string', 'description' => 'Заголовок (необязательно).'],
+                    'recipient_id' => ['type' => 'string', 'description' => 'UUID получателя.'],
+                    'recipient_email' => ['type' => 'string', 'description' => 'Email получателя.'],
+                    'task_id' => ['type' => 'string', 'description' => 'UUID задачи (необязательно).'],
+                    'items' => [
+                        'type' => 'array',
+                        'description' => 'Группы: description + link, опционально скриншот.',
+                        'items' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'description' => ['type' => 'string'],
+                                'link' => ['type' => 'string'],
+                                'screenshot_base64' => ['type' => 'string'],
+                                'screenshot_mime' => ['type' => 'string'],
+                            ],
+                        ],
+                    ],
+                ],
+                'required' => ['items'],
+                'roles' => ['admin'],
+                'confirm' => true,
+            ],
+            'list_briefs' => [
+                'description' => 'Брифы клиентов: статус, прогресс, клиент, шаблон. Клиент видит только свои брифы и брифы своих проектов. Используй для вопросов «какие брифы ждут заполнения», «что нового от клиента».',
+                'properties' => [
+                    'status' => ['type' => 'string', 'description' => 'open | draft | submitted | archived | all. По умолчанию open.'],
+                    'client_id' => ['type' => 'string', 'description' => 'UUID клиента (необязательно).'],
+                    'limit' => ['type' => 'integer', 'description' => 'Сколько вернуть, 1–50. По умолчанию 20.'],
+                ],
+                'required' => [],
+                'roles' => ['admin', 'client'],
+                'confirm' => false,
+            ],
+            'get_brief' => [
+                'description' => 'Карточка брифа: шаблон, клиент, прогресс и ответы по секциям. Используй, когда нужно пересказать или проверить ответы клиента.',
+                'properties' => [
+                    'brief_id' => ['type' => 'string', 'description' => 'UUID брифа.'],
+                ],
+                'required' => ['brief_id'],
+                'roles' => ['admin', 'client'],
+                'confirm' => false,
+            ],
+            'list_reports' => [
+                'description' => 'Последние отчёты клиентам с ссылками. Только администратор.',
+                'properties' => [
+                    'recipient_id' => ['type' => 'string'],
+                    'task_id' => ['type' => 'string'],
+                    'limit' => ['type' => 'integer'],
+                ],
+                'required' => [],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'get_report' => [
+                'description' => 'Полный отчёт по UUID с группами и ссылками. Только администратор.',
+                'properties' => [
+                    'report_id' => ['type' => 'string'],
+                ],
+                'required' => ['report_id'],
                 'roles' => ['admin'],
                 'confirm' => false,
             ],
@@ -2024,6 +2253,470 @@ class CrmToolbox
      * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function createProject(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $data = Validator::make($arguments, [
+            'name' => ['required', 'string', 'min:2', 'max:255'],
+            'key' => ['nullable', 'string', 'max:12'],
+            'client_id' => ['nullable', 'uuid', 'exists:users,id'],
+            'description' => ['nullable', 'string', 'max:20000'],
+            'site_url' => ['nullable', 'url', 'max:500'],
+            'status' => ['sometimes', Rule::enum(ProjectStatus::class)],
+            'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
+            'starts_at' => ['nullable', 'date'],
+            'due_at' => ['nullable', 'date'],
+            'instructions' => ['nullable', 'string', 'max:20000'],
+        ])->validate();
+
+        $project = $this->projects->create($user, $data);
+
+        return $this->projectPayload($project);
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function getProject(User $user, array $arguments): array
+    {
+        $project = $this->resolveProject($user, (string) ($arguments['project_id'] ?? ''));
+        if ($project === null) {
+            throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+        }
+
+        $project->load(['client:id,name,email', 'members.user:id,name,email', 'invites.creator:id,name']);
+
+        return [
+            ...$this->projectPayload($project),
+            'members' => $project->members->map(fn ($member): array => [
+                'id' => $member->id,
+                'user' => $member->user?->only(['id', 'name', 'email']),
+                'role' => $member->role->value,
+            ])->all(),
+            'invites' => $project->invites->map(fn ($invite): array => [
+                'id' => $invite->id,
+                'role' => $invite->role->value,
+                'email' => $invite->email,
+                'status' => $invite->status(),
+                'expires_at' => $invite->expires_at->toIso8601String(),
+            ])->all(),
+            'tasks_count' => $project->tasks()->count(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function createProjectInvite(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $data = Validator::make($arguments, [
+            'project_id' => ['required', 'string'],
+            'role' => ['required', Rule::enum(ProjectMemberRole::class)],
+            'days' => ['sometimes', 'integer', 'min:1', 'max:30'],
+            'email' => ['nullable', 'email', 'max:255'],
+        ])->validate();
+
+        $project = $this->resolveProject($user, (string) $data['project_id']);
+        if ($project === null) {
+            throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+        }
+
+        $result = $this->invites->create($project, $user, [
+            'role' => $data['role'],
+            'days' => $data['days'] ?? 7,
+            'email' => $data['email'] ?? null,
+        ]);
+
+        return [
+            'id' => $result['invite']->id,
+            'url' => $result['url'],
+            'role' => $result['invite']->role->value,
+            'expires_at' => $result['invite']->expires_at->toIso8601String(),
+            'note' => 'Ссылка одноразовая; показывается только сейчас.',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateClient(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $client = $this->resolveClient($user, (string) ($arguments['client_id'] ?? ''));
+        $data = Validator::make($arguments, [
+            'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', 'max:255', 'unique:users,email,'.$client->id],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'messenger_contacts' => ['nullable', 'array'],
+        ])->validate();
+
+        unset($data['client_id']);
+        $client->update($data);
+
+        return ['client' => $client->only(['id', 'name', 'email', 'phone', 'messenger_contacts'])];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function getInvoice(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $invoice = Invoice::query()->with(['client:id,name,email', 'task:id,title'])->findOrFail((string) ($arguments['invoice_id'] ?? ''));
+
+        return [
+            ...$this->serializer->invoice($invoice),
+            'url' => route('admin.invoices.show', $invoice),
+            'client_url' => route('client.invoices.show', $invoice),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function listUsers(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $query = User::query()->where('is_active', true)->orderBy('name');
+        if (filled($arguments['role'] ?? null)) {
+            $query->where('role', $arguments['role']);
+        }
+
+        return ['users' => $query->limit(100)->get(['id', 'name', 'email', 'role'])->map(fn (User $item): array => [
+            'id' => $item->id,
+            'name' => $item->name,
+            'email' => $item->email,
+            'role' => $item->role->value,
+        ])->all()];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function getCustomFieldValues(User $user, array $arguments): array
+    {
+        $entity = CustomFieldEntity::tryFrom((string) ($arguments['entity_type'] ?? ''));
+        if ($entity === null) {
+            throw ValidationException::withMessages(['entity_type' => 'Неизвестная сущность.']);
+        }
+
+        $modelClass = $entity->modelClass();
+        $model = $modelClass::query()->find((string) ($arguments['entity_id'] ?? ''));
+        if ($model === null) {
+            throw ValidationException::withMessages(['entity_id' => 'Запись не найдена.']);
+        }
+
+        if ($user->isClient()) {
+            $ownerId = $entity === CustomFieldEntity::Client
+                ? $model->getKey()
+                : ($model->client_id ?? null);
+
+            if ($ownerId !== $user->id) {
+                throw ValidationException::withMessages(['entity_id' => 'Запись недоступна.']);
+            }
+        }
+
+        return [
+            'entity_type' => $entity->value,
+            'entity_id' => $model->getKey(),
+            'fields' => $this->customFields->valuesFor($model),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function projectPayload(Project $project): array
+    {
+        return [
+            'id' => $project->id,
+            'key' => $project->key,
+            'name' => $project->name,
+            'status' => $project->status->value,
+            'priority' => $project->priority->value,
+            'client' => $project->client?->only(['id', 'name']),
+            'site_url' => $project->site_url,
+            'url' => route('admin.projects.show', $project),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateProject(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $project = $this->resolveProject($user, (string) ($arguments['project_id'] ?? ''));
+        if ($project === null) {
+            throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+        }
+
+        $data = Validator::make($arguments, [
+            'name' => ['required', 'string', 'min:2', 'max:255'],
+            'key' => ['nullable', 'string', 'max:12'],
+            'client_id' => ['nullable', 'uuid', 'exists:users,id'],
+            'description' => ['nullable', 'string', 'max:20000'],
+            'site_url' => ['nullable', 'url', 'max:500'],
+            'status' => ['sometimes', Rule::enum(ProjectStatus::class)],
+            'priority' => ['sometimes', Rule::enum(TaskPriority::class)],
+            'starts_at' => ['nullable', 'date'],
+            'due_at' => ['nullable', 'date'],
+            'instructions' => ['nullable', 'string', 'max:20000'],
+        ])->validate();
+
+        $updated = $this->projects->update($project, $data);
+
+        return $this->projectPayload($updated);
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function archiveProject(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $project = $this->resolveProject($user, (string) ($arguments['project_id'] ?? ''));
+        if ($project === null) {
+            throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+        }
+
+        $this->projects->archive($project);
+
+        return [...$this->projectPayload($project->refresh()), 'archived' => true];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function addProjectMember(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $project = $this->resolveProject($user, (string) ($arguments['project_id'] ?? ''));
+        $data = Validator::make($arguments, [
+            'user_id' => ['required', 'uuid', 'exists:users,id'],
+            'role' => ['required', Rule::enum(ProjectMemberRole::class)],
+        ])->validate();
+        $member = $project->members()->updateOrCreate(
+            ['user_id' => $data['user_id']],
+            ['role' => $data['role'], 'added_by' => $user->id],
+        );
+
+        return ['member' => $this->memberPayload($member->load('user:id,name,email'))];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateProjectMember(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $project = $this->resolveProject($user, (string) ($arguments['project_id'] ?? ''));
+        $data = Validator::make($arguments, [
+            'member_id' => ['required', 'uuid'],
+            'role' => ['required', Rule::enum(ProjectMemberRole::class)],
+        ])->validate();
+        $member = ProjectMember::query()->where('project_id', $project->id)->findOrFail($data['member_id']);
+        $member->update(['role' => $data['role']]);
+
+        return ['member' => $this->memberPayload($member->load('user:id,name,email'))];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function removeProjectMember(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $project = $this->resolveProject($user, (string) ($arguments['project_id'] ?? ''));
+        $member = ProjectMember::query()->where('project_id', $project->id)->findOrFail((string) ($arguments['member_id'] ?? ''));
+        $member->delete();
+
+        return ['removed' => true, 'member_id' => $member->id];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function memberPayload(ProjectMember $member): array
+    {
+        return [
+            'id' => $member->id,
+            'user' => $member->user?->only(['id', 'name', 'email']),
+            'role' => $member->role->value,
+            'role_label' => $member->role->label(),
+        ];
+    }
+
+    private function createReport(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $items = is_array($arguments['items'] ?? null) ? $arguments['items'] : [];
+        $items = array_map(fn (array $item): array => [
+            'summary' => $item['description'] ?? $item['summary'] ?? '',
+            'test_url' => $item['link'] ?? $item['test_url'] ?? null,
+            'screenshot_base64' => $item['screenshot_base64'] ?? null,
+            'screenshot_mime' => $item['screenshot_mime'] ?? null,
+            'screenshot_name' => $item['screenshot_name'] ?? null,
+        ], $items);
+
+        $report = $this->reports->create($user, [
+            'title' => $arguments['title'] ?? null,
+            'recipient_id' => $arguments['recipient_id'] ?? null,
+            'recipient_email' => $arguments['recipient_email'] ?? null,
+            'task_id' => $arguments['task_id'] ?? null,
+            'items' => $items,
+        ]);
+
+        return [
+            'id' => $report->id,
+            'title' => $report->title,
+            'url' => route('reports.show', $report),
+            'recipient' => $report->recipient?->only(['id', 'name', 'email']),
+            'task' => $report->task?->only(['id', 'title']),
+            'items_count' => $report->items->count(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function listBriefs(User $user, array $arguments): array
+    {
+        $status = (string) ($arguments['status'] ?? 'open');
+        $query = Brief::query()
+            ->visibleTo($user)
+            ->with(['template:id,title,slug', 'client:id,name', 'project:id,key,name']);
+
+        match ($status) {
+            'draft' => $query->whereIn('status', [BriefStatus::Draft, BriefStatus::InProgress]),
+            'submitted' => $query->where('status', BriefStatus::Submitted),
+            'archived' => $query->where('status', BriefStatus::Archived),
+            'all' => null,
+            default => $query->whereIn('status', BriefStatus::openCases()),
+        };
+
+        if (filled($arguments['client_id'] ?? null)) {
+            $this->assertAdmin($user);
+            $query->where('client_id', $arguments['client_id']);
+        }
+
+        return ['briefs' => $query->orderByDesc('updated_at')
+            ->limit(min(max((int) ($arguments['limit'] ?? 20), 1), 50))
+            ->get()
+            ->map(static fn (Brief $brief): array => [
+                'id' => $brief->id,
+                'title' => $brief->title,
+                'status' => $brief->status?->value,
+                'status_label' => $brief->status?->label(),
+                'progress' => $brief->progress,
+                'template' => $brief->template?->title,
+                'client' => $brief->client?->name,
+                'project' => $brief->project?->key,
+                'updated_at' => $brief->updated_at?->toIso8601String(),
+            ])->all()];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function getBrief(User $user, array $arguments): array
+    {
+        $brief = Brief::query()
+            ->visibleTo($user)
+            ->with(['template:id,title,slug,schema', 'client:id,name', 'project:id,key,name'])
+            ->find((string) ($arguments['brief_id'] ?? ''));
+
+        if ($brief === null) {
+            throw ValidationException::withMessages(['brief_id' => 'Бриф не найден.']);
+        }
+
+        return [
+            'id' => $brief->id,
+            'title' => $brief->title,
+            'status' => $brief->status?->value,
+            'status_label' => $brief->status?->label(),
+            'progress' => $brief->progress,
+            'template' => $brief->template?->title,
+            'client' => $brief->client?->name,
+            'project' => $brief->project?->key,
+            'submitted_at' => $brief->submitted_at?->toIso8601String(),
+            'url' => route('admin.briefs.show', $brief),
+            'sections' => $this->briefs->sections($brief),
+        ];
+    }
+
+    private function listReports(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $query = TaskReport::query()->with(['recipient:id,name,email', 'task:id,title'])->latest();
+        if (filled($arguments['recipient_id'] ?? null)) {
+            $query->where('recipient_id', $arguments['recipient_id']);
+        }
+        if (filled($arguments['task_id'] ?? null)) {
+            $query->where('task_id', $arguments['task_id']);
+        }
+
+        return ['reports' => $query->limit(min(max((int) ($arguments['limit'] ?? 20), 1), 100))->get()->map(fn (TaskReport $report): array => [
+            'id' => $report->id,
+            'title' => $report->title,
+            'display_title' => $report->title ?: 'Отчёт от '.$report->sent_at?->format('d.m.Y'),
+            'recipient' => $report->recipient?->only(['id', 'name', 'email']),
+            'task' => $report->task?->only(['id', 'title']),
+            'url' => route('reports.show', $report),
+            'sent_at' => $report->sent_at?->toIso8601String(),
+        ])->all()];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function getReport(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+        $report = TaskReport::query()->with(['items', 'recipient:id,name,email', 'task:id,title'])->findOrFail((string) ($arguments['report_id'] ?? ''));
+
+        return [
+            'id' => $report->id,
+            'title' => $report->title,
+            'url' => route('reports.show', $report),
+            'recipient' => $report->recipient?->only(['id', 'name', 'email']),
+            'task' => $report->task?->only(['id', 'title']),
+            'items' => $report->items->map(fn (TaskReportItem $item): array => [
+                'description' => $item->content,
+                'link' => $item->test_url,
+                'screenshot' => $item->screenshot_id !== null,
+            ])->all(),
+        ];
+    }
+
     private function crmHelp(User $user, array $arguments): array
     {
         $query = trim((string) ($arguments['query'] ?? ''));

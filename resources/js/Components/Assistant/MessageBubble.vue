@@ -46,6 +46,7 @@ const TOOL_LABELS = {
     update_task: 'Меняю задачу',
     distribute_project_budget: 'Распределяю бюджет',
     update_tasks: 'Массово меняю задачи',
+    create_report: 'Создаю отчёт',
 };
 
 function stepLabel(step) {

@@ -1,0 +1,359 @@
+{
+  "slug": "landing",
+  "title": "Лендинг",
+  "description": "Быстрый бриф на одностраничный сайт под конкретную задачу",
+  "icon": "target",
+  "estimated_minutes": 8,
+  "version": 1,
+  "sections": [
+    {
+      "key": "goal",
+      "title": "Задача лендинга",
+      "description": "Что продаём и какое действие ждём от посетителя",
+      "fields": [
+        {
+          "key": "product_name",
+          "type": "text",
+          "label": "Название продукта или услуги",
+          "required": true,
+          "validation": {"min_length": 2, "max_length": 200}
+        },
+        {
+          "key": "landing_goal",
+          "type": "single_choice",
+          "label": "Главная цель страницы",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "leads", "label": "Получать заявки"},
+            {"value": "sales", "label": "Продавать напрямую"},
+            {"value": "signup", "label": "Регистрации на вебинар или тест"},
+            {"value": "app_install", "label": "Установки приложения"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ]
+        },
+        {
+          "key": "landing_goal_other",
+          "type": "text",
+          "label": "Какая цель у страницы",
+          "show_if": {"field": "landing_goal", "op": "eq", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "target_action",
+          "type": "text",
+          "label": "Целевое действие посетителя",
+          "help": "Что именно должен сделать человек: оставить заявку, позвонить, скачать",
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "has_current_landing",
+          "type": "single_choice",
+          "label": "Есть действующая страница",
+          "options": [
+            {"value": "yes", "label": "Да, есть"},
+            {"value": "no", "label": "Нет, делаем с нуля"}
+          ]
+        },
+        {
+          "key": "current_landing_url",
+          "type": "url",
+          "label": "Адрес текущей страницы",
+          "show_if": {"field": "has_current_landing", "op": "eq", "value": "yes"},
+          "validation": {"allowed_schemes": ["http", "https"]}
+        },
+        {
+          "key": "traffic_sources",
+          "type": "multi_choice",
+          "label": "Откуда будет трафик",
+          "required": true,
+          "options": [
+            {"value": "context", "label": "Контекстная реклама"},
+            {"value": "target", "label": "Таргетированная реклама"},
+            {"value": "seo", "label": "Поисковый трафик"},
+            {"value": "social", "label": "Социальные сети"},
+            {"value": "email", "label": "E-mail рассылка"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        }
+      ]
+    },
+    {
+      "key": "offer",
+      "title": "Оффер и форма",
+      "description": "Что видит посетитель и как оставляет заявку",
+      "fields": [
+        {
+          "key": "product_desc",
+          "type": "textarea",
+          "label": "Что предлагаем",
+          "help": "Продукт, аудитория, чем отличаемся от конкурентов",
+          "required": true,
+          "validation": {"min_length": 20, "max_length": 3000, "rows": 5}
+        },
+        {
+          "key": "key_benefits",
+          "type": "textarea",
+          "label": "Ключевые выгоды",
+          "help": "Три-пять пунктов, по одному в строке",
+          "required": true,
+          "validation": {"min_length": 10, "max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "has_special_offer",
+          "type": "single_choice",
+          "label": "Есть специальное предложение или акция",
+          "options": [
+            {"value": "yes", "label": "Да, есть"},
+            {"value": "no", "label": "Нет"}
+          ]
+        },
+        {
+          "key": "special_offer",
+          "type": "text",
+          "label": "Суть специального предложения",
+          "show_if": {"field": "has_special_offer", "op": "eq", "value": "yes"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "pricing_model",
+          "type": "single_choice",
+          "label": "Как показываем цену",
+          "required": true,
+          "options": [
+            {"value": "fixed", "label": "Точная цена"},
+            {"value": "from", "label": "Цена «от»"},
+            {"value": "range", "label": "Диапазон цен"},
+            {"value": "free", "label": "Бесплатно"},
+            {"value": "request", "label": "Цена по запросу"}
+          ]
+        },
+        {
+          "key": "price_value",
+          "type": "number",
+          "label": "Значение цены",
+          "show_if": {"field": "pricing_model", "op": "in", "value": ["fixed", "from"]},
+          "validation": {"min": 0, "integer": true, "unit": "₽"}
+        },
+        {
+          "key": "cta_text",
+          "type": "text",
+          "label": "Текст на кнопке",
+          "required": true,
+          "placeholder": "Получить расчёт",
+          "validation": {"max_length": 60}
+        },
+        {
+          "key": "needs_quiz",
+          "type": "single_choice",
+          "label": "Нужен квиз вместо обычной формы",
+          "options": [
+            {"value": "yes", "label": "Да, нужен квиз"},
+            {"value": "no", "label": "Нет, достаточно формы"}
+          ]
+        },
+        {
+          "key": "quiz_steps",
+          "type": "number",
+          "label": "Сколько шагов в квизе",
+          "show_if": {"field": "needs_quiz", "op": "eq", "value": "yes"},
+          "validation": {"min": 2, "max": 10, "integer": true, "unit": "шагов"}
+        },
+        {
+          "key": "form_fields",
+          "type": "multi_choice",
+          "label": "Какие поля нужны в форме",
+          "show_if": {"field": "needs_quiz", "op": "neq", "value": "yes"},
+          "allow_other": true,
+          "options": [
+            {"value": "name", "label": "Имя"},
+            {"value": "phone", "label": "Телефон"},
+            {"value": "email", "label": "E-mail"},
+            {"value": "comment", "label": "Комментарий"},
+            {"value": "file", "label": "Прикрепить файл"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6}
+        },
+        {
+          "key": "form_fields_other",
+          "type": "text",
+          "label": "Какое ещё поле добавить",
+          "show_if": {"field": "form_fields", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 200}
+        }
+      ]
+    },
+    {
+      "key": "content",
+      "title": "Контент и доверие",
+      "description": "Материалы и блоки, которые повышают конверсию",
+      "fields": [
+        {
+          "key": "has_texts",
+          "type": "single_choice",
+          "label": "Тексты для страницы уже есть",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, тексты есть"},
+            {"value": "partly", "label": "Частично"},
+            {"value": "no", "label": "Нет, нужны тексты"}
+          ]
+        },
+        {
+          "key": "texts_source",
+          "type": "single_choice",
+          "label": "Кто напишет тексты",
+          "show_if": {"field": "has_texts", "op": "in", "value": ["partly", "no"]},
+          "required": true,
+          "options": [
+            {"value": "studio", "label": "Копирайтер студии"},
+            {"value": "client", "label": "Напишем сами по вашему шаблону"}
+          ]
+        },
+        {
+          "key": "images_count",
+          "type": "number",
+          "label": "Сколько изображений готовы предоставить",
+          "validation": {"min": 0, "max": 500, "integer": true, "unit": "шт"}
+        },
+        {
+          "key": "has_video",
+          "type": "single_choice",
+          "label": "Есть видео для страницы",
+          "options": [
+            {"value": "yes", "label": "Да"},
+            {"value": "no", "label": "Нет"}
+          ]
+        },
+        {
+          "key": "video_links",
+          "type": "textarea",
+          "label": "Ссылки на видео",
+          "show_if": {"field": "has_video", "op": "eq", "value": "yes"},
+          "validation": {"max_length": 1000, "rows": 3}
+        },
+        {
+          "key": "trust_elements",
+          "type": "multi_choice",
+          "label": "Какие блоки доверия добавить",
+          "allow_other": true,
+          "options": [
+            {"value": "reviews", "label": "Отзывы"},
+            {"value": "cases", "label": "Кейсы"},
+            {"value": "logos", "label": "Логотипы клиентов"},
+            {"value": "certificates", "label": "Сертификаты и лицензии"},
+            {"value": "numbers", "label": "Цифры и статистика"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6}
+        },
+        {
+          "key": "trust_other",
+          "type": "text",
+          "label": "Какой ещё блок доверия нужен",
+          "show_if": {"field": "trust_elements", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 200}
+        },
+        {
+          "key": "references",
+          "type": "textarea",
+          "label": "Референсы страниц, которые нравятся",
+          "help": "Ссылки, по одной в строке",
+          "validation": {"max_length": 2000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "contacts",
+      "title": "Сроки, бюджет и контакты",
+      "description": "Когда запускаем и как с вами связаться",
+      "fields": [
+        {
+          "key": "deadline",
+          "type": "date",
+          "label": "К какой дате нужна готовая страница",
+          "validation": {"not_past": true}
+        },
+        {
+          "key": "budget",
+          "type": "number",
+          "label": "Бюджет на разработку",
+          "validation": {"min": 0, "integer": true, "unit": "₽"}
+        },
+        {
+          "key": "launch_priority",
+          "type": "scale",
+          "label": "Насколько важен срочный запуск",
+          "help": "Показывается, если указаны дата и бюджет",
+          "show_if": {
+            "all": [
+              {"field": "deadline", "op": "answered"},
+              {"field": "budget", "op": "gt", "value": 0}
+            ]
+          },
+          "validation": {"min": 1, "max": 10, "min_label": "Гибко", "max_label": "Критично"}
+        },
+        {
+          "key": "needs_analytics_setup",
+          "type": "single_choice",
+          "label": "Нужна настройка аналитики",
+          "options": [
+            {"value": "yes", "label": "Да, настройте"},
+            {"value": "no", "label": "Нет, настроим сами"}
+          ]
+        },
+        {
+          "key": "analytics_notes",
+          "type": "textarea",
+          "label": "Что важно отслеживать",
+          "show_if": {"field": "needs_analytics_setup", "op": "eq", "value": "yes"},
+          "validation": {"max_length": 1000, "rows": 3}
+        },
+        {
+          "key": "contact",
+          "type": "contact_block",
+          "label": "Контактное лицо",
+          "required": true,
+          "meta": {"fields": ["name", "email", "phone", "telegram"]}
+        },
+        {
+          "key": "preferred_channel",
+          "type": "single_choice",
+          "label": "Удобный канал связи",
+          "required": true,
+          "options": [
+            {"value": "telegram", "label": "Telegram"},
+            {"value": "email", "label": "Электронная почта"},
+            {"value": "phone", "label": "Телефонный звонок"}
+          ]
+        },
+        {
+          "key": "comments",
+          "type": "textarea",
+          "label": "Комментарий к брифу",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "consent",
+          "type": "single_choice",
+          "label": "Согласие на обработку персональных данных",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, согласен на обработку данных"}
+          ]
+        }
+      ]
+    }
+  ],
+  "submit": {
+    "notify_admin": true,
+    "success_message": "Спасибо! Бриф на лендинг отправлен. Пришлю прототип и смету в течение 24 часов.",
+    "pdf_template": "default"
+  }
+}

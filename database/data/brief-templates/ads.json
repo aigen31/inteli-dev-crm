@@ -1,0 +1,407 @@
+{
+  "slug": "ads",
+  "title": "Реклама",
+  "description": "Контекстная и таргетированная реклама: бюджет, гео, офферы, аналитика",
+  "icon": "megaphone",
+  "estimated_minutes": 14,
+  "version": 1,
+  "sections": [
+    {
+      "key": "business",
+      "title": "Бизнес и каналы",
+      "description": "Что рекламируем и где уже пробовали",
+      "fields": [
+        {
+          "key": "company_name",
+          "type": "text",
+          "label": "Компания или проект",
+          "required": true,
+          "validation": {"min_length": 2, "max_length": 200}
+        },
+        {
+          "key": "site_url",
+          "type": "url",
+          "label": "Сайт для рекламы",
+          "required": true,
+          "placeholder": "https://example.ru"
+        },
+        {
+          "key": "ad_channels",
+          "type": "multi_choice",
+          "label": "Какие каналы интересуют",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "yandex_direct", "label": "Яндекс Директ"},
+            {"value": "google_ads", "label": "Google Ads"},
+            {"value": "vk_ads", "label": "VK Реклама"},
+            {"value": "telegram_ads", "label": "Telegram Ads"},
+            {"value": "avito", "label": "Avito"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6}
+        },
+        {
+          "key": "ad_channels_other",
+          "type": "text",
+          "label": "Какой ещё канал интересует",
+          "show_if": {"field": "ad_channels", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 200}
+        },
+        {
+          "key": "has_experience",
+          "type": "single_choice",
+          "label": "Опыт платной рекламы",
+          "required": true,
+          "options": [
+            {"value": "none", "label": "Не запускали"},
+            {"value": "inhouse", "label": "Вели самостоятельно"},
+            {"value": "agency", "label": "Работали с агентством"}
+          ]
+        },
+        {
+          "key": "experience_details",
+          "type": "textarea",
+          "label": "Что уже пробовали и с каким результатом",
+          "show_if": {"field": "has_experience", "op": "in", "value": ["inhouse", "agency"]},
+          "validation": {"max_length": 2000, "rows": 4}
+        }
+      ]
+    },
+    {
+      "key": "goals",
+      "title": "Цели и бюджет",
+      "description": "Сколько готовы вкладывать и какой результат считаем успехом",
+      "fields": [
+        {
+          "key": "campaign_goals",
+          "type": "multi_choice",
+          "label": "Цели кампаний",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "leads", "label": "Заявки"},
+            {"value": "sales", "label": "Продажи"},
+            {"value": "traffic", "label": "Трафик на сайт"},
+            {"value": "app", "label": "Установки приложения"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "campaign_goals_other",
+          "type": "text",
+          "label": "Уточните цель кампаний",
+          "show_if": {"field": "campaign_goals", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "monthly_budget",
+          "type": "number",
+          "label": "Бюджет на рекламу в месяц",
+          "help": "Без учёта вознаграждения агентства",
+          "required": true,
+          "validation": {"min": 1000, "integer": true, "unit": "₽"}
+        },
+        {
+          "key": "budget_split",
+          "type": "single_choice",
+          "label": "Как распределить бюджет",
+          "help": "Показывается при бюджете более 100 000 ₽",
+          "show_if": {"field": "monthly_budget", "op": "gt", "value": 100000},
+          "options": [
+            {"value": "single", "label": "Сосредоточиться на одном канале"},
+            {"value": "multi", "label": "Распределить по нескольким каналам"},
+            {"value": "test", "label": "Сначала тестировать гипотезы"}
+          ]
+        },
+        {
+          "key": "desired_leads",
+          "type": "number",
+          "label": "Сколько заявок в месяц ожидаете",
+          "show_if": {"field": "campaign_goals", "op": "contains", "value": "leads"},
+          "validation": {"min": 1, "integer": true, "unit": "заявок"}
+        },
+        {
+          "key": "cpa_target",
+          "type": "number",
+          "label": "Допустимая стоимость заявки",
+          "show_if": {"field": "campaign_goals", "op": "contains", "value": "leads"},
+          "validation": {"min": 0, "integer": true, "unit": "₽"}
+        },
+        {
+          "key": "start_date",
+          "type": "date",
+          "label": "Планируемая дата старта",
+          "required": true,
+          "validation": {"not_past": true}
+        }
+      ]
+    },
+    {
+      "key": "geo",
+      "title": "География и аудитория",
+      "description": "Кого и где показываем",
+      "fields": [
+        {
+          "key": "geo_regions",
+          "type": "multi_choice",
+          "label": "География показов",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "msk", "label": "Москва и область"},
+            {"value": "spb", "label": "Санкт-Петербург и область"},
+            {"value": "regions", "label": "Крупные города России"},
+            {"value": "cis", "label": "СНГ"},
+            {"value": "world", "label": "Другие страны"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6}
+        },
+        {
+          "key": "geo_other",
+          "type": "text",
+          "label": "Какая ещё география",
+          "show_if": {"field": "geo_regions", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 200}
+        },
+        {
+          "key": "geo_cities",
+          "type": "textarea",
+          "label": "Города для показа",
+          "show_if": {"field": "geo_regions", "op": "contains", "value": "regions"},
+          "validation": {"max_length": 1000, "rows": 3}
+        },
+        {
+          "key": "audience_desc",
+          "type": "textarea",
+          "label": "Описание целевой аудитории",
+          "help": "Кто покупает, какую задачу решает, как принимает решение",
+          "required": true,
+          "validation": {"min_length": 20, "max_length": 3000, "rows": 4}
+        },
+        {
+          "key": "age_range",
+          "type": "multi_choice",
+          "label": "Возраст аудитории",
+          "options": [
+            {"value": "18_24", "label": "18-24"},
+            {"value": "25_34", "label": "25-34"},
+            {"value": "35_44", "label": "35-44"},
+            {"value": "45_54", "label": "45-54"},
+            {"value": "55_plus", "label": "55+"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "audience_interests",
+          "type": "textarea",
+          "label": "Интересы и сегменты",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "exclusions",
+          "type": "textarea",
+          "label": "Кого исключить из показов",
+          "help": "Например: действующие клиенты, вакансии, бесплатный трафик",
+          "validation": {"max_length": 1000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "creatives",
+      "title": "Офферы и креативы",
+      "description": "Что показываем в объявлениях",
+      "fields": [
+        {
+          "key": "usp",
+          "type": "textarea",
+          "label": "Уникальное предложение",
+          "help": "Почему клиент выберет вас, а не конкурента",
+          "required": true,
+          "validation": {"min_length": 10, "max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "has_offers",
+          "type": "single_choice",
+          "label": "Есть акции или спецпредложения для рекламы",
+          "options": [
+            {"value": "yes", "label": "Да, есть"},
+            {"value": "no", "label": "Нет"}
+          ]
+        },
+        {
+          "key": "offers_text",
+          "type": "textarea",
+          "label": "Какие предложения использовать",
+          "show_if": {"field": "has_offers", "op": "eq", "value": "yes"},
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "needs_creatives",
+          "type": "single_choice",
+          "label": "Нужна разработка креативов",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, нужны баннеры и тексты"},
+            {"value": "no", "label": "Нет, материалы предоставим"}
+          ]
+        },
+        {
+          "key": "creative_formats",
+          "type": "multi_choice",
+          "label": "Какие форматы нужны",
+          "show_if": {"field": "needs_creatives", "op": "eq", "value": "yes"},
+          "options": [
+            {"value": "text_graphic", "label": "Текстово-графические"},
+            {"value": "video", "label": "Видеоролики"},
+            {"value": "carousel", "label": "Карусель"},
+            {"value": "audio", "label": "Аудиореклама"}
+          ],
+          "validation": {"min_items": 1, "max_items": 4}
+        },
+        {
+          "key": "has_landing",
+          "type": "single_choice",
+          "label": "Есть посадочная страница под рекламу",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, есть"},
+            {"value": "no", "label": "Нет, нужна доработка"}
+          ]
+        },
+        {
+          "key": "landing_url",
+          "type": "url",
+          "label": "Адрес посадочной страницы",
+          "show_if": {"field": "has_landing", "op": "eq", "value": "yes"},
+          "required": true
+        },
+        {
+          "key": "banned_claims",
+          "type": "textarea",
+          "label": "Запрещённые формулировки",
+          "help": "Что нельзя обещать в объявлениях",
+          "validation": {"max_length": 1000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "analytics",
+      "title": "Аналитика и запуск",
+      "description": "Как считаем результат и как с вами связаться",
+      "fields": [
+        {
+          "key": "has_metrika",
+          "type": "single_choice",
+          "label": "Счётчик Яндекс Метрики установлен",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да"},
+            {"value": "no", "label": "Нет"},
+            {"value": "unknown", "label": "Не знаю"}
+          ]
+        },
+        {
+          "key": "metrika_counter",
+          "type": "text",
+          "label": "Номер счётчика",
+          "show_if": {"field": "has_metrika", "op": "eq", "value": "yes"},
+          "validation": {"max_length": 40}
+        },
+        {
+          "key": "has_goals",
+          "type": "single_choice",
+          "label": "Цели в аналитике настроены",
+          "show_if": {"field": "has_metrika", "op": "eq", "value": "yes"},
+          "options": [
+            {"value": "yes", "label": "Да, цели есть"},
+            {"value": "no", "label": "Нет, нужно настроить"}
+          ]
+        },
+        {
+          "key": "call_tracking",
+          "type": "single_choice",
+          "label": "Нужна подмена номера и коллтрекинг",
+          "options": [
+            {"value": "yes", "label": "Да"},
+            {"value": "no", "label": "Нет"}
+          ]
+        },
+        {
+          "key": "crm_used",
+          "type": "single_choice",
+          "label": "Заявки попадают в CRM",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да"},
+            {"value": "no", "label": "Нет"}
+          ]
+        },
+        {
+          "key": "crm_name",
+          "type": "text",
+          "label": "Какая CRM используется",
+          "show_if": {"field": "crm_used", "op": "eq", "value": "yes"},
+          "required": true,
+          "validation": {"max_length": 120}
+        },
+        {
+          "key": "report_frequency",
+          "type": "single_choice",
+          "label": "Как часто присылать отчёты",
+          "options": [
+            {"value": "weekly", "label": "Раз в неделю"},
+            {"value": "biweekly", "label": "Раз в две недели"},
+            {"value": "monthly", "label": "Раз в месяц"}
+          ]
+        },
+        {
+          "key": "launch_readiness",
+          "type": "scale",
+          "label": "Насколько всё готово к запуску",
+          "help": "Показывается при указанной дате старта и бюджете более 10 000 ₽",
+          "show_if": {
+            "all": [
+              {"field": "start_date", "op": "answered"},
+              {"field": "monthly_budget", "op": "gt", "value": 10000}
+            ]
+          },
+          "validation": {"min": 1, "max": 10, "min_label": "Только планируем", "max_label": "Готовы стартовать"}
+        },
+        {
+          "key": "contact",
+          "type": "contact_block",
+          "label": "Контактное лицо",
+          "required": true,
+          "meta": {"fields": ["name", "email", "phone", "telegram"]}
+        },
+        {
+          "key": "comments",
+          "type": "textarea",
+          "label": "Дополнительные пожелания",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "consent",
+          "type": "single_choice",
+          "label": "Согласие на обработку персональных данных",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, согласен на обработку данных"}
+          ]
+        }
+      ]
+    }
+  ],
+  "submit": {
+    "notify_admin": true,
+    "success_message": "Спасибо! Бриф по рекламе отправлен. Подготовлю медиаплан и прогноз заявок в течение 24 часов.",
+    "pdf_template": "default"
+  }
+}

@@ -11,6 +11,7 @@ enum TaskSource: string
     case Client = 'client';
     case Ai = 'ai';
     case Api = 'api';
+    case Brief = 'brief';
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum TaskSource: string
             self::Client => 'Заявка клиента',
             self::Ai => 'Кики',
             self::Api => 'API',
+            self::Brief => 'Из брифа',
         };
     }
 }

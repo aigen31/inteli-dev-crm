@@ -1,0 +1,370 @@
+{
+  "slug": "seo-audit",
+  "title": "SEO-аудит",
+  "description": "Сбор информации для аудита сайта и плана продвижения",
+  "icon": "search",
+  "estimated_minutes": 12,
+  "version": 1,
+  "sections": [
+    {
+      "key": "company",
+      "title": "О компании",
+      "description": "Базовые сведения, без которых аудит невозможен",
+      "fields": [
+        {
+          "key": "company_name",
+          "type": "text",
+          "label": "Название компании",
+          "help": "Как к вам обращаться в отчёте",
+          "placeholder": "ООО Ромашка",
+          "required": true,
+          "validation": {"min_length": 2, "max_length": 200}
+        },
+        {
+          "key": "site_url",
+          "type": "url",
+          "label": "Адрес сайта",
+          "help": "Основной домен, который продвигаем",
+          "placeholder": "https://example.ru",
+          "required": true,
+          "validation": {"allowed_schemes": ["http", "https"]}
+        },
+        {
+          "key": "business_niche",
+          "type": "text",
+          "label": "Сфера деятельности",
+          "help": "Одно-два слова: чем занимается бизнес",
+          "placeholder": "Производство мебели",
+          "required": true,
+          "validation": {"max_length": 200}
+        },
+        {
+          "key": "regions",
+          "type": "multi_choice",
+          "label": "География продвижения",
+          "help": "Можно выбрать несколько вариантов",
+          "required": true,
+          "options": [
+            {"value": "msk", "label": "Москва и область"},
+            {"value": "spb", "label": "Санкт-Петербург и область"},
+            {"value": "regions", "label": "Регионы России"},
+            {"value": "cis", "label": "СНГ"},
+            {"value": "world", "label": "Другие страны"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "has_site",
+          "type": "single_choice",
+          "label": "Сайт уже работает",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, сайт действующий"},
+            {"value": "no", "label": "Нет, сайта пока нет"}
+          ]
+        },
+        {
+          "key": "cms",
+          "type": "single_choice",
+          "label": "На какой системе сделан сайт",
+          "show_if": {"field": "has_site", "op": "eq", "value": "yes"},
+          "allow_other": true,
+          "options": [
+            {"value": "wordpress", "label": "WordPress"},
+            {"value": "bitrix", "label": "1С-Битрикс"},
+            {"value": "tilda", "label": "Tilda"},
+            {"value": "custom", "label": "Собственная разработка"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ]
+        },
+        {
+          "key": "cms_other",
+          "type": "text",
+          "label": "Какая система используется",
+          "show_if": {"field": "cms", "op": "eq", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 120}
+        }
+      ]
+    },
+    {
+      "key": "goals",
+      "title": "Цели и ресурсы",
+      "description": "Что считаем результатом и какими ресурсами располагаем",
+      "fields": [
+        {
+          "key": "goals",
+          "type": "multi_choice",
+          "label": "Цели продвижения",
+          "help": "Выберите все подходящие варианты",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "leads", "label": "Заявки с сайта"},
+            {"value": "sales", "label": "Продажи в интернете"},
+            {"value": "traffic", "label": "Рост трафика"},
+            {"value": "brand", "label": "Узнаваемость бренда"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "goals_other",
+          "type": "text",
+          "label": "Уточните цель",
+          "show_if": {"field": "goals", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "target_traffic",
+          "type": "number",
+          "label": "Целевой трафик в месяц",
+          "help": "Сколько визитов из поиска хотите получать",
+          "show_if": {"field": "goals", "op": "contains", "value": "traffic"},
+          "validation": {"min": 0, "integer": true, "unit": "визитов"}
+        },
+        {
+          "key": "monthly_budget",
+          "type": "number",
+          "label": "Бюджет на продвижение в месяц",
+          "required": true,
+          "validation": {"min": 0, "integer": true, "unit": "₽"}
+        },
+        {
+          "key": "deadline",
+          "type": "date",
+          "label": "Желаемый срок первых результатов",
+          "validation": {"not_past": true}
+        },
+        {
+          "key": "has_contractor",
+          "type": "single_choice",
+          "label": "Ранее продвижением кто-то занимался",
+          "options": [
+            {"value": "no", "label": "Нет, это первый опыт"},
+            {"value": "inhouse", "label": "Да, штатный специалист"},
+            {"value": "agency", "label": "Да, агентство"}
+          ]
+        },
+        {
+          "key": "previous_contractor",
+          "type": "text",
+          "label": "Кто занимался продвижением",
+          "show_if": {"field": "has_contractor", "op": "in", "value": ["inhouse", "agency"]},
+          "validation": {"max_length": 200}
+        }
+      ]
+    },
+    {
+      "key": "technical",
+      "title": "Техническое состояние",
+      "description": "Доступы и текущее состояние площадки",
+      "fields": [
+        {
+          "key": "site_age",
+          "type": "single_choice",
+          "label": "Возраст сайта",
+          "show_if": {"field": "has_site", "op": "eq", "value": "yes"},
+          "options": [
+            {"value": "lt1", "label": "Меньше года"},
+            {"value": "1_3", "label": "От 1 до 3 лет"},
+            {"value": "3_5", "label": "От 3 до 5 лет"},
+            {"value": "gt5", "label": "Больше 5 лет"}
+          ]
+        },
+        {
+          "key": "cms_notes",
+          "type": "textarea",
+          "label": "Особенности CMS, о которых нам важно знать",
+          "help": "Показывается для WordPress и 1С-Битрикс, если сайт действующий",
+          "show_if": {
+            "all": [
+              {"field": "has_site", "op": "eq", "value": "yes"},
+              {
+                "any": [
+                  {"field": "cms", "op": "eq", "value": "wordpress"},
+                  {"field": "cms", "op": "eq", "value": "bitrix"}
+                ]
+              }
+            ]
+          },
+          "validation": {"max_length": 1000, "rows": 4}
+        },
+        {
+          "key": "has_analytics",
+          "type": "single_choice",
+          "label": "Аналитика уже настроена",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, счётчики стоят"},
+            {"value": "no", "label": "Нет, аналитики нет"}
+          ]
+        },
+        {
+          "key": "analytics_tools",
+          "type": "multi_choice",
+          "label": "Какие системы аналитики используются",
+          "show_if": {"field": "has_analytics", "op": "eq", "value": "yes"},
+          "allow_other": true,
+          "options": [
+            {"value": "metrika", "label": "Яндекс Метрика"},
+            {"value": "ga4", "label": "Google Analytics 4"},
+            {"value": "topvisor", "label": "Topvisor"},
+            {"value": "serpstat", "label": "Serpstat"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "analytics_other",
+          "type": "text",
+          "label": "Какая система аналитики",
+          "show_if": {"field": "analytics_tools", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 200}
+        },
+        {
+          "key": "has_robots",
+          "type": "single_choice",
+          "label": "Файл robots.txt настроен",
+          "show_if": {"field": "has_site", "op": "eq", "value": "yes"},
+          "options": [
+            {"value": "yes", "label": "Да"},
+            {"value": "no", "label": "Нет"},
+            {"value": "unknown", "label": "Не знаю"}
+          ]
+        },
+        {
+          "key": "has_sitemap",
+          "type": "single_choice",
+          "label": "Карта сайта (sitemap.xml) есть",
+          "show_if": {"field": "has_site", "op": "eq", "value": "yes"},
+          "options": [
+            {"value": "yes", "label": "Да"},
+            {"value": "no", "label": "Нет"},
+            {"value": "unknown", "label": "Не знаю"}
+          ]
+        },
+        {
+          "key": "tech_notes",
+          "type": "textarea",
+          "label": "Известные технические проблемы",
+          "help": "Например: медленная загрузка, частые падения, дубли страниц",
+          "validation": {"max_length": 2000, "rows": 4}
+        }
+      ]
+    },
+    {
+      "key": "content",
+      "title": "Контент и семантика",
+      "description": "Кто отвечает за контент и что уже сделано",
+      "fields": [
+        {
+          "key": "content_manager",
+          "type": "single_choice",
+          "label": "Есть ли человек, отвечающий за контент",
+          "options": [
+            {"value": "yes", "label": "Да, есть"},
+            {"value": "partly", "label": "Частично, по возможности"},
+            {"value": "no", "label": "Нет, нужна помощь"}
+          ]
+        },
+        {
+          "key": "content_manager_name",
+          "type": "text",
+          "label": "Кто отвечает за контент",
+          "show_if": {"field": "content_manager", "op": "in", "value": ["yes", "partly"]},
+          "validation": {"max_length": 200}
+        },
+        {
+          "key": "pages_count",
+          "type": "number",
+          "label": "Сколько страниц на сайте",
+          "show_if": {"field": "has_site", "op": "eq", "value": "yes"},
+          "validation": {"min": 1, "integer": true, "unit": "страниц"}
+        },
+        {
+          "key": "key_queries",
+          "type": "textarea",
+          "label": "Ключевые запросы, которые важны",
+          "help": "По одному запросу в строке. Если не знаете — опишите услуги словами",
+          "required": true,
+          "validation": {"min_length": 10, "max_length": 4000, "rows": 6}
+        },
+        {
+          "key": "competitors",
+          "type": "textarea",
+          "label": "Основные конкуренты",
+          "help": "Ссылки или названия, по одному в строке",
+          "validation": {"max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "content_volume",
+          "type": "scale",
+          "label": "Насколько активно готовы публиковать новый контент",
+          "help": "1 — почти не готовы, 5 — готовы публиковать каждую неделю",
+          "validation": {"min": 1, "max": 5, "min_label": "Почти нет", "max_label": "Каждую неделю"}
+        }
+      ]
+    },
+    {
+      "key": "contacts",
+      "title": "Контакты и пожелания",
+      "description": "Как с вами связаться и что учесть в работе",
+      "fields": [
+        {
+          "key": "contact",
+          "type": "contact_block",
+          "label": "Контактное лицо",
+          "required": true,
+          "meta": {"fields": ["name", "email", "phone", "telegram"]}
+        },
+        {
+          "key": "preferred_channel",
+          "type": "single_choice",
+          "label": "Удобный канал связи",
+          "required": true,
+          "options": [
+            {"value": "telegram", "label": "Telegram"},
+            {"value": "email", "label": "Электронная почта"},
+            {"value": "phone", "label": "Телефонный звонок"}
+          ]
+        },
+        {
+          "key": "launch_urgency",
+          "type": "scale",
+          "label": "Насколько срочно нужен старт работ",
+          "help": "Показывается, если указан срок и бюджет больше нуля",
+          "show_if": {
+            "all": [
+              {"field": "deadline", "op": "answered"},
+              {"field": "monthly_budget", "op": "gt", "value": 0}
+            ]
+          },
+          "validation": {"min": 1, "max": 10, "min_label": "Можно ждать", "max_label": "Нужно срочно"}
+        },
+        {
+          "key": "comments",
+          "type": "textarea",
+          "label": "Дополнительные пожелания",
+          "validation": {"max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "consent",
+          "type": "single_choice",
+          "label": "Согласие на обработку персональных данных",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, согласен на обработку данных"}
+          ]
+        }
+      ]
+    }
+  ],
+  "submit": {
+    "notify_admin": true,
+    "success_message": "Спасибо! Бриф на SEO-аудит отправлен. Вернусь с планом и оценкой в течение 24 часов.",
+    "pdf_template": "default"
+  }
+}

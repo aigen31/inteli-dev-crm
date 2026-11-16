@@ -1,0 +1,325 @@
+{
+  "slug": "design",
+  "title": "Дизайн",
+  "description": "Айдентика и визуальные материалы: референсы, объём, ограничения",
+  "icon": "palette",
+  "estimated_minutes": 10,
+  "version": 1,
+  "sections": [
+    {
+      "key": "brand",
+      "title": "Бренд",
+      "description": "Что уже есть и каким должен стать образ",
+      "fields": [
+        {
+          "key": "company_name",
+          "type": "text",
+          "label": "Компания или проект",
+          "required": true,
+          "validation": {"min_length": 2, "max_length": 200}
+        },
+        {
+          "key": "brand_desc",
+          "type": "textarea",
+          "label": "Чем занимается бренд",
+          "help": "Продукт, аудитория, позиционирование",
+          "required": true,
+          "validation": {"min_length": 20, "max_length": 3000, "rows": 5}
+        },
+        {
+          "key": "has_logo",
+          "type": "single_choice",
+          "label": "Логотип уже есть",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, есть"},
+            {"value": "partly", "label": "Есть, но требует доработки"},
+            {"value": "no", "label": "Нет, нужен с нуля"}
+          ]
+        },
+        {
+          "key": "logo_status",
+          "type": "single_choice",
+          "label": "В каком виде логотип",
+          "show_if": {"field": "has_logo", "op": "in", "value": ["yes", "partly"]},
+          "options": [
+            {"value": "vector", "label": "Есть векторные исходники"},
+            {"value": "raster", "label": "Только растровые файлы"},
+            {"value": "none", "label": "Исходников нет"}
+          ]
+        },
+        {
+          "key": "brand_colors",
+          "type": "text",
+          "label": "Текущие фирменные цвета",
+          "help": "HEX-коды через запятую, если известны",
+          "show_if": {"field": "has_logo", "op": "neq", "value": "no"},
+          "placeholder": "#8b7ff5, #101018",
+          "validation": {"max_length": 200}
+        },
+        {
+          "key": "brand_tone",
+          "type": "multi_choice",
+          "label": "Характер бренда",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "strict", "label": "Строгий и надёжный"},
+            {"value": "friendly", "label": "Дружелюбный и близкий"},
+            {"value": "premium", "label": "Премиальный"},
+            {"value": "tech", "label": "Технологичный"},
+            {"value": "bold", "label": "Смелый и дерзкий"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6}
+        },
+        {
+          "key": "brand_tone_other",
+          "type": "text",
+          "label": "Как ещё описать характер бренда",
+          "show_if": {"field": "brand_tone", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "brand_values",
+          "type": "textarea",
+          "label": "Ценности и смыслы бренда",
+          "validation": {"max_length": 2000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "references",
+      "title": "Референсы и стиль",
+      "description": "Что нравится и чего избегать",
+      "fields": [
+        {
+          "key": "liked_examples",
+          "type": "textarea",
+          "label": "Референсы, которые нравятся",
+          "help": "Ссылки на сайты и проекты, по одной в строке",
+          "required": true,
+          "validation": {"min_length": 5, "max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "disliked_examples",
+          "type": "textarea",
+          "label": "Примеры, которые не нравятся",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "preferred_style",
+          "type": "multi_choice",
+          "label": "Предпочтительный визуальный стиль",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "minimal", "label": "Минимализм"},
+            {"value": "brutalism", "label": "Брутализм"},
+            {"value": "glass", "label": "Стекло и размытие"},
+            {"value": "gradient", "label": "Градиенты и свечение"},
+            {"value": "classic", "label": "Классический"},
+            {"value": "three_d", "label": "3D и объём"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 7}
+        },
+        {
+          "key": "preferred_style_other",
+          "type": "text",
+          "label": "Опишите желаемый стиль",
+          "show_if": {"field": "preferred_style", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "color_preferences",
+          "type": "text",
+          "label": "Пожелания по цветам",
+          "help": "Показывается, если логотипа ещё нет",
+          "show_if": {"field": "has_logo", "op": "eq", "value": "no"},
+          "placeholder": "Светлая тема, фиолетовый акцент",
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "mood_keywords",
+          "type": "multi_choice",
+          "label": "Ключевые ощущения от дизайна",
+          "options": [
+            {"value": "calm", "label": "Спокойствие"},
+            {"value": "energy", "label": "Энергия"},
+            {"value": "trust", "label": "Надёжность"},
+            {"value": "innovation", "label": "Инновационность"},
+            {"value": "warmth", "label": "Теплота"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "competitors_design",
+          "type": "textarea",
+          "label": "Дизайн конкурентов",
+          "help": "Что стоит учитывать, чтобы отличаться",
+          "validation": {"max_length": 2000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "scope",
+      "title": "Объём работ",
+      "description": "Какие материалы нужны и в какие сроки",
+      "fields": [
+        {
+          "key": "deliverables",
+          "type": "multi_choice",
+          "label": "Что нужно разработать",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "logo", "label": "Логотип"},
+            {"value": "identity_guide", "label": "Брендбук или гайдлайн"},
+            {"value": "social_kit", "label": "Оформление соцсетей"},
+            {"value": "presentation", "label": "Презентация"},
+            {"value": "packaging", "label": "Упаковка"},
+            {"value": "website_design", "label": "Дизайн сайта"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 7}
+        },
+        {
+          "key": "deliverables_other",
+          "type": "text",
+          "label": "Что ещё нужно разработать",
+          "show_if": {"field": "deliverables", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "needs_guideline",
+          "type": "single_choice",
+          "label": "Нужен гайдлайн по использованию",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, нужен"},
+            {"value": "no", "label": "Нет, достаточно исходников"}
+          ]
+        },
+        {
+          "key": "guideline_pages",
+          "type": "number",
+          "label": "Ориентировочный объём гайдлайна",
+          "show_if": {"field": "needs_guideline", "op": "eq", "value": "yes"},
+          "validation": {"min": 5, "max": 120, "integer": true, "unit": "страниц"}
+        },
+        {
+          "key": "needs_sources",
+          "type": "single_choice",
+          "label": "Нужны исходные файлы",
+          "options": [
+            {"value": "yes", "label": "Да, передайте исходники"},
+            {"value": "no", "label": "Нет, достаточно экспорта"}
+          ]
+        },
+        {
+          "key": "deadline",
+          "type": "date",
+          "label": "К какой дате нужен результат",
+          "validation": {"not_past": true}
+        },
+        {
+          "key": "budget",
+          "type": "number",
+          "label": "Бюджет на дизайн",
+          "validation": {"min": 0, "integer": true, "unit": "₽"}
+        },
+        {
+          "key": "priority",
+          "type": "scale",
+          "label": "Насколько важен срочный старт",
+          "help": "Показывается, если указаны дата и бюджет",
+          "show_if": {
+            "all": [
+              {"field": "deadline", "op": "answered"},
+              {"field": "budget", "op": "gt", "value": 0}
+            ]
+          },
+          "validation": {"min": 1, "max": 10, "min_label": "Можно планировать", "max_label": "Нужно срочно"}
+        }
+      ]
+    },
+    {
+      "key": "constraints",
+      "title": "Ограничения и контакты",
+      "description": "Что учесть в работе и как с вами связаться",
+      "fields": [
+        {
+          "key": "must_keep",
+          "type": "textarea",
+          "label": "Что обязательно сохранить",
+          "help": "Элементы, цвета, формулировки, которые нельзя менять",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "must_avoid",
+          "type": "textarea",
+          "label": "Чего избегать",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "print_usage",
+          "type": "single_choice",
+          "label": "Планируется печать материалов",
+          "options": [
+            {"value": "yes", "label": "Да, нужна подготовка к печати"},
+            {"value": "no", "label": "Нет, только digital"}
+          ]
+        },
+        {
+          "key": "print_details",
+          "type": "textarea",
+          "label": "Что и как печатаем",
+          "show_if": {"field": "print_usage", "op": "eq", "value": "yes"},
+          "validation": {"max_length": 1000, "rows": 3}
+        },
+        {
+          "key": "contact",
+          "type": "contact_block",
+          "label": "Контактное лицо",
+          "required": true,
+          "meta": {"fields": ["name", "email", "phone", "telegram"]}
+        },
+        {
+          "key": "preferred_channel",
+          "type": "single_choice",
+          "label": "Удобный канал связи",
+          "required": true,
+          "options": [
+            {"value": "telegram", "label": "Telegram"},
+            {"value": "email", "label": "Электронная почта"},
+            {"value": "phone", "label": "Телефонный звонок"}
+          ]
+        },
+        {
+          "key": "comments",
+          "type": "textarea",
+          "label": "Дополнительные пожелания",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "consent",
+          "type": "single_choice",
+          "label": "Согласие на обработку персональных данных",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, согласен на обработку данных"}
+          ]
+        }
+      ]
+    }
+  ],
+  "submit": {
+    "notify_admin": true,
+    "success_message": "Спасибо! Бриф на дизайн отправлен. Пришлю предложение по составу работ и срокам в течение 24 часов.",
+    "pdf_template": "default"
+  }
+}

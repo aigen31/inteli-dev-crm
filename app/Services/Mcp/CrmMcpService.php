@@ -12,6 +12,7 @@ use App\Actions\Invoice\MarkInvoiceAsPaidAction;
 use App\Actions\Invoice\ProcessRefundAction;
 use App\Actions\Task\ChangeTaskStatusAction;
 use App\Actions\Task\CreateTaskAction;
+use App\Enums\BriefStatus;
 use App\Enums\CustomFieldEntity;
 use App\Enums\CustomFieldType;
 use App\Enums\InvoiceStatus;
@@ -24,6 +25,8 @@ use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Enums\UserRole;
 use App\Exceptions\AiException;
+use App\Models\Brief;
+use App\Models\BriefTemplate;
 use App\Models\CustomField;
 use App\Models\FormTemplate;
 use App\Models\Invoice;
@@ -36,6 +39,8 @@ use App\Models\TaskReport;
 use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\Ai\KernelClient;
+use App\Services\Briefs\BriefFormatter;
+use App\Services\Briefs\BriefService;
 use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use App\Services\HtmlSanitizer;
@@ -75,7 +80,11 @@ class CrmMcpService
         private readonly SettingsService $settings,
         private readonly HtmlSanitizer $sanitizer,
         private readonly KernelClient $kernel,
+        private readonly BriefService $briefs,
+        private readonly BriefFormatter $briefFormatter,
     ) {}
+
+    private ?User $actor = null;
 
     /**
      * @return list<array<string, mixed>>
@@ -133,6 +142,30 @@ class CrmMcpService
             $this->tool('list_forms', 'Form templates available to clients, with field schema.', [
                 'active_only' => ['type' => 'boolean'],
             ], [], true),
+            $this->tool('list_briefs', 'List client briefs with status, progress, client and template. Filter by status, client or project.', [
+                'status' => ['type' => 'string', 'enum' => ['open', 'draft', 'submitted', 'archived', 'all']],
+                'client_id' => ['type' => 'string'],
+                'project_id' => ['type' => 'string'],
+                'query' => ['type' => 'string'],
+                'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100],
+            ], [], true),
+            $this->tool('get_brief', 'Client brief card: template, client, progress, answers by section and revision history.', [
+                'brief' => ['type' => 'string', 'description' => 'Brief UUID.'],
+            ], ['brief'], true),
+            $this->tool('create_brief', 'Create a client brief from a template and assign it to a client or project. The client fills it in their CRM account.', [
+                'template' => ['type' => 'string', 'description' => 'Template UUID or slug (see list_brief_templates).'],
+                'client_id' => ['type' => 'string'],
+                'project_id' => ['type' => 'string'],
+                'title' => ['type' => 'string'],
+            ], ['template']),
+            $this->tool('reopen_brief', 'Send a submitted brief back to the client for revision.', [
+                'brief' => ['type' => 'string', 'description' => 'Brief UUID.'],
+            ], ['brief']),
+            $this->tool('archive_brief', 'Archive a client brief. Destructive: requires confirm=true.', [
+                'brief' => ['type' => 'string', 'description' => 'Brief UUID.'],
+                'confirm' => ['type' => 'boolean'],
+            ], ['brief', 'confirm']),
+            $this->tool('list_brief_templates', 'Brief templates available for new briefs: slug, title, section and field counts.', [], [], true),
             $this->tool('list_task_templates', 'Task templates with checklist and defaults.', [
                 'client_id' => ['type' => 'string'],
                 'active_only' => ['type' => 'boolean'],
@@ -346,6 +379,7 @@ class CrmMcpService
         }
 
         $request->setUserResolver(fn (): User => $actor);
+        $this->actor = $actor;
 
         return match ($name) {
             'crm_overview' => $this->overview(),
@@ -357,6 +391,12 @@ class CrmMcpService
             'get_task' => $this->getTask($arguments),
             'list_invoices' => $this->listInvoices($arguments),
             'get_invoice' => $this->getInvoice($arguments),
+            'list_briefs' => $this->listBriefs($arguments),
+            'get_brief' => $this->getBrief($arguments),
+            'create_brief' => $this->storeBrief($arguments),
+            'reopen_brief' => $this->reopenBrief($arguments),
+            'archive_brief' => $this->archiveBrief($arguments),
+            'list_brief_templates' => $this->listBriefTemplates(),
             'list_reports' => $this->listReports($arguments),
             'get_report' => $this->getReport($arguments),
             'list_users' => $this->listUsers($arguments),
@@ -381,6 +421,15 @@ class CrmMcpService
             'crm_operation' => $this->operation($arguments, $request),
             default => throw new \InvalidArgumentException('Unknown tool: '.$name),
         };
+    }
+
+    private function actor(): User
+    {
+        if ($this->actor === null) {
+            throw ValidationException::withMessages(['actor' => 'Нет авторизованного администратора.']);
+        }
+
+        return $this->actor;
     }
 
     /**
@@ -619,6 +668,164 @@ class CrmMcpService
      * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function listBriefs(array $arguments): array
+    {
+        $limit = min(max((int) ($arguments['limit'] ?? 20), 1), 100);
+        $status = (string) ($arguments['status'] ?? 'open');
+
+        $query = Brief::query()->with(['template:id,title,slug', 'client:id,name', 'project:id,key,name']);
+
+        match ($status) {
+            'draft' => $query->whereIn('status', [BriefStatus::Draft, BriefStatus::InProgress]),
+            'submitted' => $query->where('status', BriefStatus::Submitted),
+            'archived' => $query->where('status', BriefStatus::Archived),
+            'all' => null,
+            default => $query->whereIn('status', BriefStatus::openCases()),
+        };
+
+        if (filled($arguments['client_id'] ?? null)) {
+            $query->where('client_id', $arguments['client_id']);
+        }
+
+        if (filled($arguments['project_id'] ?? null)) {
+            $query->where('project_id', $arguments['project_id']);
+        }
+
+        if (filled($arguments['query'] ?? null)) {
+            $query->where('title', 'like', '%'.(string) $arguments['query'].'%');
+        }
+
+        return ['briefs' => $query->orderByDesc('updated_at')->limit($limit)->get()
+            ->map(fn (Brief $brief): array => $this->briefSummary($brief))->all()];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function getBrief(array $arguments): array
+    {
+        $brief = $this->findBrief((string) ($arguments['brief'] ?? ''));
+        $brief->load(['template:id,title,slug,schema', 'client:id,name,email', 'project:id,key,name', 'creator:id,name', 'revisions.creator:id,name']);
+
+        return [
+            ...$this->briefSummary($brief),
+            'submitted_at' => $brief->submitted_at?->toIso8601String(),
+            'created_at' => $brief->created_at?->toIso8601String(),
+            'admin_note' => $brief->admin_note,
+            'url' => route('admin.briefs.show', $brief),
+            'sections' => $this->briefFormatter->sections($brief),
+            'revisions' => $brief->revisions->map(fn ($revision): array => [
+                'version' => $revision->version,
+                'reason' => $revision->reason,
+                'author' => $revision->creator?->name,
+                'created_at' => $revision->created_at?->toIso8601String(),
+            ])->values()->all(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function storeBrief(array $arguments): array
+    {
+        $template = BriefTemplate::query()
+            ->where(function ($query) use ($arguments): void {
+                $query->where('slug', (string) $arguments['template']);
+
+                if (Str::isUuid((string) $arguments['template'])) {
+                    $query->orWhere('id', (string) $arguments['template']);
+                }
+            })
+            ->where('is_active', true)
+            ->first();
+
+        if ($template === null) {
+            throw ValidationException::withMessages(['template' => 'Шаблон брифа не найден или выключен.']);
+        }
+
+        $brief = $this->briefs->create($template, [
+            'title' => $arguments['title'] ?? null,
+            'client_id' => $arguments['client_id'] ?? null,
+            'project_id' => $arguments['project_id'] ?? null,
+        ], $this->actor());
+
+        return $this->briefSummary($brief->load(['template:id,title,slug', 'client:id,name', 'project:id,key,name']));
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function reopenBrief(array $arguments): array
+    {
+        $brief = $this->findBrief((string) ($arguments['brief'] ?? ''));
+
+        if ($brief->status !== BriefStatus::Submitted) {
+            throw ValidationException::withMessages(['brief' => 'На доработку можно вернуть только отправленный бриф.']);
+        }
+
+        return $this->briefSummary($this->briefs->reopen($brief, $this->actor()));
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function archiveBrief(array $arguments): array
+    {
+        if (! ($arguments['confirm'] ?? false)) {
+            throw ValidationException::withMessages(['confirm' => 'Архивация требует confirm=true.']);
+        }
+
+        $brief = $this->findBrief((string) ($arguments['brief'] ?? ''));
+
+        return $this->briefSummary($this->briefs->archive($brief));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function listBriefTemplates(): array
+    {
+        return ['templates' => BriefTemplate::query()->active()->orderBy('sort_order')->orderBy('title')->get()
+            ->map(fn (BriefTemplate $template): array => $template->toLibraryArray())->all()];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function briefSummary(Brief $brief): array
+    {
+        return [
+            'id' => $brief->id,
+            'title' => $brief->title,
+            'status' => $brief->status?->value,
+            'status_label' => $brief->status?->label(),
+            'progress' => $brief->progress,
+            'template' => $brief->template?->only(['id', 'title', 'slug']),
+            'client' => $brief->client?->only(['id', 'name']),
+            'project' => $brief->project ? ['id' => $brief->project->id, 'key' => $brief->project->key, 'name' => $brief->project->name] : null,
+            'updated_at' => $brief->updated_at?->toIso8601String(),
+        ];
+    }
+
+    private function findBrief(string $value): Brief
+    {
+        $brief = Brief::query()->where('id', $value)->first();
+
+        if ($brief === null) {
+            throw ValidationException::withMessages(['brief' => 'Бриф не найден.']);
+        }
+
+        return $brief;
+    }
+
     private function listReports(array $arguments): array
     {
         $limit = min(max((int) ($arguments['limit'] ?? 20), 1), 100);

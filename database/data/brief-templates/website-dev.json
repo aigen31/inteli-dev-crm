@@ -1,0 +1,478 @@
+{
+  "slug": "website-dev",
+  "title": "Разработка сайта",
+  "description": "Техническое задание на сайт: цели, структура, функциональность, дизайн",
+  "icon": "layout",
+  "estimated_minutes": 18,
+  "version": 1,
+  "sections": [
+    {
+      "key": "project",
+      "title": "О проекте",
+      "description": "Что за проект и какую задачу решает сайт",
+      "fields": [
+        {
+          "key": "project_name",
+          "type": "text",
+          "label": "Название проекта или компании",
+          "required": true,
+          "validation": {"min_length": 2, "max_length": 200}
+        },
+        {
+          "key": "site_type",
+          "type": "single_choice",
+          "label": "Тип сайта",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "corporate", "label": "Корпоративный сайт"},
+            {"value": "catalog", "label": "Каталог товаров"},
+            {"value": "shop", "label": "Интернет-магазин"},
+            {"value": "service", "label": "Сайт услуг"},
+            {"value": "portal", "label": "Портал или медиа"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ]
+        },
+        {
+          "key": "site_type_other",
+          "type": "text",
+          "label": "Какой именно тип сайта",
+          "show_if": {"field": "site_type", "op": "eq", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 200}
+        },
+        {
+          "key": "has_existing",
+          "type": "single_choice",
+          "label": "Есть действующий сайт",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, есть"},
+            {"value": "no", "label": "Нет, делаем с нуля"}
+          ]
+        },
+        {
+          "key": "current_url",
+          "type": "url",
+          "label": "Адрес действующего сайта",
+          "show_if": {"field": "has_existing", "op": "eq", "value": "yes"},
+          "required": true,
+          "placeholder": "https://example.ru"
+        },
+        {
+          "key": "business_desc",
+          "type": "textarea",
+          "label": "Чем занимается компания",
+          "help": "Опишите продукт, аудиторию и преимущества",
+          "required": true,
+          "validation": {"min_length": 20, "max_length": 3000, "rows": 5}
+        },
+        {
+          "key": "languages",
+          "type": "multi_choice",
+          "label": "Языковые версии сайта",
+          "required": true,
+          "options": [
+            {"value": "ru", "label": "Русский"},
+            {"value": "en", "label": "Английский"},
+            {"value": "de", "label": "Немецкий"},
+            {"value": "zh", "label": "Китайский"}
+          ],
+          "validation": {"min_items": 1, "max_items": 4}
+        },
+        {
+          "key": "competitors",
+          "type": "textarea",
+          "label": "Конкуренты и референсы",
+          "help": "Ссылки, по одному в строке",
+          "validation": {"max_length": 2000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "structure",
+      "title": "Структура сайта",
+      "description": "Из каких разделов состоит сайт",
+      "fields": [
+        {
+          "key": "pages_estimate",
+          "type": "number",
+          "label": "Ожидаемое количество страниц",
+          "validation": {"min": 1, "max": 100000, "integer": true, "unit": "страниц"}
+        },
+        {
+          "key": "structure_ready",
+          "type": "single_choice",
+          "label": "Структура уже описана",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, есть готовая структура"},
+            {"value": "partly", "label": "Частично"},
+            {"value": "no", "label": "Нет, нужна помощь"}
+          ]
+        },
+        {
+          "key": "structure_file",
+          "type": "file",
+          "label": "Файл со структурой",
+          "help": "Excel, Word или PDF со списком страниц",
+          "show_if": {"field": "structure_ready", "op": "in", "value": ["yes", "partly"]},
+          "validation": {"accept": ["application/pdf", "text/plain", "application/zip"], "max_size_mb": 10}
+        },
+        {
+          "key": "key_sections",
+          "type": "multi_choice",
+          "label": "Какие разделы точно нужны",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "about", "label": "О компании"},
+            {"value": "services", "label": "Услуги"},
+            {"value": "cases", "label": "Портфолио и кейсы"},
+            {"value": "blog", "label": "Блог"},
+            {"value": "reviews", "label": "Отзывы"},
+            {"value": "contacts", "label": "Контакты"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 2, "max_items": 7}
+        },
+        {
+          "key": "key_sections_other",
+          "type": "text",
+          "label": "Какой ещё раздел нужен",
+          "show_if": {"field": "key_sections", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "has_blog",
+          "type": "single_choice",
+          "label": "Планируется вести блог",
+          "options": [
+            {"value": "yes", "label": "Да"},
+            {"value": "no", "label": "Нет"}
+          ]
+        },
+        {
+          "key": "blog_topics",
+          "type": "textarea",
+          "label": "Темы для блога",
+          "show_if": {"field": "has_blog", "op": "eq", "value": "yes"},
+          "validation": {"max_length": 2000, "rows": 4}
+        }
+      ]
+    },
+    {
+      "key": "functionality",
+      "title": "Функциональность",
+      "description": "Интеграции и нестандартные возможности",
+      "fields": [
+        {
+          "key": "required_integrations",
+          "type": "multi_choice",
+          "label": "Нужные интеграции",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "crm", "label": "CRM"},
+            {"value": "payment", "label": "Онлайн-оплата"},
+            {"value": "delivery", "label": "Расчёт доставки"},
+            {"value": "analytics", "label": "Аналитика"},
+            {"value": "email", "label": "E-mail рассылки"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6}
+        },
+        {
+          "key": "integrations_other",
+          "type": "text",
+          "label": "Какая ещё интеграция нужна",
+          "show_if": {"field": "required_integrations", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "crm_name",
+          "type": "text",
+          "label": "Какая CRM используется",
+          "show_if": {"field": "required_integrations", "op": "contains", "value": "crm"},
+          "required": true,
+          "placeholder": "Битрикс24, amoCRM, retailCRM",
+          "validation": {"max_length": 120}
+        },
+        {
+          "key": "needs_auth",
+          "type": "single_choice",
+          "label": "Нужен личный кабинет",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, нужен"},
+            {"value": "no", "label": "Нет, не нужен"}
+          ]
+        },
+        {
+          "key": "auth_roles",
+          "type": "multi_choice",
+          "label": "Роли пользователей в личном кабинете",
+          "show_if": {"field": "needs_auth", "op": "eq", "value": "yes"},
+          "options": [
+            {"value": "client", "label": "Клиент"},
+            {"value": "manager", "label": "Менеджер"},
+            {"value": "partner", "label": "Партнёр"},
+            {"value": "admin", "label": "Администратор"}
+          ],
+          "validation": {"min_items": 1, "max_items": 4}
+        },
+        {
+          "key": "needs_search",
+          "type": "single_choice",
+          "label": "Нужен поиск по сайту",
+          "options": [
+            {"value": "yes", "label": "Да"},
+            {"value": "no", "label": "Нет"}
+          ]
+        },
+        {
+          "key": "special_features",
+          "type": "textarea",
+          "label": "Нестандартные требования",
+          "help": "Калькуляторы, конфигураторы, карты, выгрузки",
+          "validation": {"max_length": 3000, "rows": 4}
+        }
+      ]
+    },
+    {
+      "key": "design",
+      "title": "Дизайн",
+      "description": "Айдентика, стиль и референсы",
+      "fields": [
+        {
+          "key": "has_brandbook",
+          "type": "single_choice",
+          "label": "Есть фирменный стиль или брендбук",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, есть"},
+            {"value": "no", "label": "Нет, нужен дизайн с нуля"}
+          ]
+        },
+        {
+          "key": "brand_colors",
+          "type": "text",
+          "label": "Фирменные цвета",
+          "show_if": {"field": "has_brandbook", "op": "eq", "value": "yes"},
+          "placeholder": "#8b7ff5, #101018",
+          "validation": {"max_length": 200}
+        },
+        {
+          "key": "style_preferences",
+          "type": "multi_choice",
+          "label": "Предпочтения по стилю",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "minimal", "label": "Минимализм"},
+            {"value": "bright", "label": "Яркий и выразительный"},
+            {"value": "strict", "label": "Строгий деловой"},
+            {"value": "modern", "label": "Современный технологичный"},
+            {"value": "classic", "label": "Классический"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6}
+        },
+        {
+          "key": "style_other",
+          "type": "text",
+          "label": "Опишите желаемый стиль",
+          "show_if": {"field": "style_preferences", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "references",
+          "type": "textarea",
+          "label": "Референсы, которые нравятся",
+          "help": "Ссылки на сайты, по одному в строке",
+          "required": true,
+          "validation": {"min_length": 5, "max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "anti_references",
+          "type": "textarea",
+          "label": "Референсы, которые не нравятся",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "design_deadline",
+          "type": "date",
+          "label": "Когда нужен дизайн",
+          "validation": {"not_past": true}
+        }
+      ]
+    },
+    {
+      "key": "content",
+      "title": "Контент",
+      "description": "Кто готовит тексты, фото и наполняет сайт",
+      "fields": [
+        {
+          "key": "content_provider",
+          "type": "single_choice",
+          "label": "Кто готовит контент",
+          "required": true,
+          "options": [
+            {"value": "client", "label": "Мы сами"},
+            {"value": "studio", "label": "Нужна помощь студии"},
+            {"value": "joint", "label": "Совместно"}
+          ]
+        },
+        {
+          "key": "texts_ready",
+          "type": "single_choice",
+          "label": "Тексты уже готовы",
+          "show_if": {"field": "content_provider", "op": "eq", "value": "client"},
+          "options": [
+            {"value": "yes", "label": "Да, все тексты есть"},
+            {"value": "partly", "label": "Частично"},
+            {"value": "no", "label": "Нет"}
+          ]
+        },
+        {
+          "key": "photos_ready",
+          "type": "single_choice",
+          "label": "Фотографии и графика готовы",
+          "options": [
+            {"value": "yes", "label": "Да"},
+            {"value": "partly", "label": "Частично"},
+            {"value": "no", "label": "Нет"}
+          ]
+        },
+        {
+          "key": "content_notes",
+          "type": "textarea",
+          "label": "Пожелания по контенту",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "seo_required",
+          "type": "single_choice",
+          "label": "Нужна SEO-оптимизация при разработке",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, обязательно"},
+            {"value": "no", "label": "Нет, достаточно базовой разметки"}
+          ]
+        },
+        {
+          "key": "seo_keywords",
+          "type": "textarea",
+          "label": "Ключевые запросы для оптимизации",
+          "show_if": {"field": "seo_required", "op": "eq", "value": "yes"},
+          "required": true,
+          "validation": {"min_length": 5, "max_length": 4000, "rows": 5}
+        }
+      ]
+    },
+    {
+      "key": "launch",
+      "title": "Сроки и бюджет",
+      "description": "Когда запускаем и в какие рамки укладываемся",
+      "fields": [
+        {
+          "key": "desired_launch",
+          "type": "date",
+          "label": "Желаемая дата запуска",
+          "required": true,
+          "validation": {"not_past": true}
+        },
+        {
+          "key": "budget_range",
+          "type": "single_choice",
+          "label": "Ориентировочный бюджет проекта",
+          "required": true,
+          "options": [
+            {"value": "lt100", "label": "До 100 000 ₽"},
+            {"value": "100_300", "label": "100 000 — 300 000 ₽"},
+            {"value": "300_600", "label": "300 000 — 600 000 ₽"},
+            {"value": "gt600", "label": "Более 600 000 ₽"},
+            {"value": "unknown", "label": "Пока не определён"}
+          ]
+        },
+        {
+          "key": "budget_details",
+          "type": "number",
+          "label": "Точная сумма бюджета",
+          "help": "Показывается для бюджетов от 100 000 ₽",
+          "show_if": {"field": "budget_range", "op": "in", "value": ["100_300", "300_600", "gt600"]},
+          "validation": {"min": 100000, "integer": true, "unit": "₽"}
+        },
+        {
+          "key": "promo_urgency",
+          "type": "scale",
+          "label": "Насколько срочен запуск",
+          "help": "Показывается при указанной дате запуска и определённом бюджете",
+          "show_if": {
+            "all": [
+              {"field": "desired_launch", "op": "answered"},
+              {"field": "budget_range", "op": "neq", "value": "unknown"}
+            ]
+          },
+          "validation": {"min": 1, "max": 10, "min_label": "Спокойно", "max_label": "Очень срочно"}
+        },
+        {
+          "key": "support_after",
+          "type": "single_choice",
+          "label": "Нужна техническая поддержка после запуска",
+          "options": [
+            {"value": "yes", "label": "Да, нужна"},
+            {"value": "no", "label": "Нет, справимся сами"}
+          ]
+        },
+        {
+          "key": "support_terms",
+          "type": "textarea",
+          "label": "Что входит в поддержку",
+          "show_if": {"field": "support_after", "op": "eq", "value": "yes"},
+          "validation": {"max_length": 1000, "rows": 3}
+        },
+        {
+          "key": "hosting_preference",
+          "type": "single_choice",
+          "label": "Хостинг",
+          "options": [
+            {"value": "own", "label": "Есть свой сервер"},
+            {"value": "studio", "label": "Подберите хостинг вы"},
+            {"value": "unknown", "label": "Не знаю"}
+          ]
+        },
+        {
+          "key": "contact",
+          "type": "contact_block",
+          "label": "Контактное лицо",
+          "required": true,
+          "meta": {"fields": ["name", "email", "phone", "telegram"]}
+        },
+        {
+          "key": "comments",
+          "type": "textarea",
+          "label": "Дополнительные пожелания",
+          "validation": {"max_length": 2000, "rows": 3}
+        },
+        {
+          "key": "consent",
+          "type": "single_choice",
+          "label": "Согласие на обработку персональных данных",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, согласен на обработку данных"}
+          ]
+        }
+      ]
+    }
+  ],
+  "submit": {
+    "notify_admin": true,
+    "success_message": "Спасибо! Техническое задание получено. Подготовлю смету и план работ в течение двух рабочих дней.",
+    "pdf_template": "default"
+  }
+}

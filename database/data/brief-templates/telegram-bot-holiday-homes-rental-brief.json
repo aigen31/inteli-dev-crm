@@ -1,0 +1,297 @@
+{
+  "slug": "telegram-bot-holiday-homes-rental-brief",
+  "title": "Telegram-бот Holiday Homes Rental",
+  "description": "Бриф на разработку Telegram-бота для Holiday Homes Rental: брендинг, эскалации, операционка, языки и реферальная программа",
+  "icon": "code",
+  "estimated_minutes": 9,
+  "version": 1,
+  "sections": [
+    {
+      "key": "brand",
+      "title": "Брендинг и названия",
+      "description": "Как называются гостевой и внутренний боты, что пишут первым сообщением и какие темы всегда уходят человеку",
+      "fields": [
+        {
+          "key": "guest_bot_name",
+          "type": "single_choice",
+          "label": "T-01. Какое имя бота вы видите для гостей",
+          "help": "Отображаемое имя в шапке чата. Меняется в BotFather без пересборки кода",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "holiday_homes_rental", "label": "Holiday Homes Rental"},
+            {"value": "holiday_homes_uae", "label": "Holiday Homes UAE"},
+            {"value": "homestay_uae", "label": "HomeStay UAE"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ]
+        },
+        {
+          "key": "guest_bot_name_other",
+          "type": "text",
+          "label": "Какое имя дать гостевому боту",
+          "show_if": {"field": "guest_bot_name", "op": "eq", "value": "other"},
+          "required": true,
+          "validation": {"min_length": 2, "max_length": 64}
+        },
+        {
+          "key": "guest_bot_username",
+          "type": "single_choice",
+          "label": "T-01. Юзернейм: @HolidayHomesBot или @HolidayHomesUAEBot",
+          "help": "Юзернейм должен заканчиваться на «bot». Смена юзернейма ломает старые ссылки, поэтому решаем один раз",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "holidayhomesbot", "label": "@HolidayHomesBot", "description": "Короче, легче диктуется голосом"},
+            {"value": "holidayhomesuaebot", "label": "@HolidayHomesUAEBot", "description": "Явно указывает на рынок ОАЭ"},
+            {"value": "other", "label": "Другой юзернейм", "description": "Опишу словами"}
+          ]
+        },
+        {
+          "key": "guest_bot_username_other",
+          "type": "text",
+          "label": "Какой юзернейм использовать",
+          "help": "Без символа @, только латиница, цифры и подчёркивание",
+          "show_if": {"field": "guest_bot_username", "op": "eq", "value": "other"},
+          "required": true,
+          "placeholder": "HolidayHomesStayBot",
+          "validation": {"min_length": 5, "max_length": 32}
+        },
+        {
+          "key": "ops_bot_name",
+          "type": "single_choice",
+          "label": "T-02. Как называть внутренний бот для команды",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "hh_ops", "label": "Holiday Homes · Ops", "description": "Коротко и понятно сотрудникам"},
+            {"value": "hhr_operations", "label": "HHR Operations", "description": "Сокращение от названия компании"},
+            {"value": "hh_manager", "label": "Holiday Homes Manager", "description": "Акцент на управлении объектами"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ]
+        },
+        {
+          "key": "ops_bot_name_other",
+          "type": "text",
+          "label": "Какое имя дать внутреннему боту",
+          "show_if": {"field": "ops_bot_name", "op": "eq", "value": "other"},
+          "required": true,
+          "validation": {"min_length": 2, "max_length": 64}
+        },
+        {
+          "key": "ops_bot_icon",
+          "type": "single_choice",
+          "label": "T-02. Иконка и фото профиля внутреннего бота",
+          "help": "Разная иконка помогает не перепутать рабочий чат с гостевым",
+          "required": true,
+          "options": [
+            {"value": "same_logo", "label": "Тот же логотип, что у гостевого"},
+            {"value": "distinct", "label": "Отличимая: инструмент или шестерёнка"}
+          ]
+        },
+        {
+          "key": "welcome_tone",
+          "type": "single_choice",
+          "label": "T-03. Приветственное сообщение: что должно быть в первом абзаце",
+          "required": true,
+          "options": [
+            {"value": "formal", "label": "Формальный", "description": "«Добро пожаловать в Holiday Homes Rental LLC...»"},
+            {"value": "friendly", "label": "Дружелюбный", "description": "«Привет! Я помогу найти и забронировать...»"}
+          ]
+        },
+        {
+          "key": "welcome_notes",
+          "type": "textarea",
+          "label": "Пожелания к тексту приветствия",
+          "help": "Готовый текст или тезисы, которые обязательно должны попасть в первое сообщение",
+          "validation": {"max_length": 1000, "rows": 4}
+        },
+        {
+          "key": "escalation_topics",
+          "type": "multi_choice",
+          "label": "T-04. Какие темы всегда уходят человеку, даже при высокой уверенности AI",
+          "help": "Сейчас рекомендовано: возвраты, жалобы, конфликты, финансовые изменения",
+          "required": true,
+          "allow_other": true,
+          "options": [
+            {"value": "refunds", "label": "Возвраты"},
+            {"value": "complaints", "label": "Жалобы"},
+            {"value": "conflicts", "label": "Конфликты"},
+            {"value": "finance_changes", "label": "Финансовые изменения"},
+            {"value": "other", "label": "Другое", "description": "Опишу словами"}
+          ],
+          "validation": {"min_items": 1, "max_items": 5}
+        },
+        {
+          "key": "escalation_topics_other",
+          "type": "text",
+          "label": "Какие ещё темы уходят человеку всегда",
+          "show_if": {"field": "escalation_topics", "op": "contains", "value": "other"},
+          "required": true,
+          "validation": {"max_length": 300}
+        },
+        {
+          "key": "escalation_business_topics",
+          "type": "textarea",
+          "label": "T-04. Что добавить специфичного для вашего бизнеса",
+          "help": "Например: заселение вне графика, вопросы по депозиту, претензии к уборке",
+          "validation": {"max_length": 1000, "rows": 3}
+        },
+        {
+          "key": "sla_mode",
+          "type": "single_choice",
+          "label": "T-05. За какое время оператор отвечает на эскалацию",
+          "required": true,
+          "options": [
+            {
+              "value": "split",
+              "label": "30 минут в рабочее время, 2 часа вне рабочего времени",
+              "description": "Рекомендуем как основу"
+            },
+            {"value": "always_thirty", "label": "Всегда 30 минут"}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ops",
+      "title": "Операционка (внутренний бот)",
+      "description": "Как контролируем уборку и что попадает в ежедневную сводку",
+      "fields": [
+        {
+          "key": "cleaners_scope",
+          "type": "single_choice",
+          "label": "T-06. Уборщики: все объекты или только часть",
+          "required": true,
+          "options": [
+            {"value": "all", "label": "Все уборщики видят все объекты"},
+            {"value": "selected", "label": "Только часть объектов"}
+          ]
+        },
+        {
+          "key": "cleaners_properties",
+          "type": "textarea",
+          "label": "Какие объекты закреплены за уборщиками",
+          "help": "Формат: сотрудник — объект, по одной строке",
+          "show_if": {"field": "cleaners_scope", "op": "eq", "value": "selected"},
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 5}
+        },
+        {
+          "key": "cleaning_photo_policy",
+          "type": "single_choice",
+          "label": "T-07. Обязательны ли фото при завершении уборки",
+          "required": true,
+          "options": [
+            {"value": "strict", "label": "Строго: без фото статус не переходит в completed"},
+            {"value": "optional", "label": "Опционально", "description": "Рекомендуем на первые две недели"},
+            {"value": "problem_only", "label": "Только для проблемных объектов"}
+          ]
+        },
+        {
+          "key": "cleaning_photo_min_count",
+          "type": "number",
+          "label": "Сколько фото минимум принимает бот",
+          "show_if": {
+            "any": [
+              {"field": "cleaning_photo_policy", "op": "eq", "value": "strict"},
+              {"field": "cleaning_photo_policy", "op": "eq", "value": "problem_only"}
+            ]
+          },
+          "required": true,
+          "validation": {"min": 1, "max": 50, "integer": true, "unit": "фото"}
+        },
+        {
+          "key": "cleaning_problem_properties",
+          "type": "textarea",
+          "label": "Какие объекты считаем проблемными",
+          "help": "По каким признакам объект попадает в строгий режим",
+          "show_if": {"field": "cleaning_photo_policy", "op": "eq", "value": "problem_only"},
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 4}
+        },
+        {
+          "key": "daily_summary_sections",
+          "type": "multi_choice",
+          "label": "T-08. Что должно быть в ежедневной сводке",
+          "required": true,
+          "options": [
+            {"value": "checkins", "label": "Заезды"},
+            {"value": "checkouts", "label": "Выезды"},
+            {"value": "active_bookings", "label": "Активные брони"},
+            {"value": "cleaning_tasks", "label": "Задачи уборки"},
+            {"value": "pending_payments", "label": "Ожидаемые оплаты"},
+            {"value": "ai_escalations", "label": "AI-эскалации"}
+          ],
+          "validation": {"min_items": 1, "max_items": 6}
+        },
+        {
+          "key": "daily_summary_notes",
+          "type": "textarea",
+          "label": "T-08. Что добавить или убрать в сводке",
+          "help": "Если нужного раздела нет в списке или какой-то лишний — напишите здесь",
+          "validation": {"max_length": 1000, "rows": 3}
+        }
+      ]
+    },
+    {
+      "key": "language",
+      "title": "Язык и международная коммуникация",
+      "description": "Когда включаем арабский и что именно переводим",
+      "fields": [
+        {
+          "key": "arabic_phase",
+          "type": "single_choice",
+          "label": "T-09. Включать ли арабский интерфейс на Phase 1 или отложить до Phase 2",
+          "help": "RTL-вёрстка и переведённые шаблоны базы знаний — дополнительная работа, но окупается для локальных гостей",
+          "required": true,
+          "options": [
+            {"value": "phase1", "label": "Включить на Phase 1"},
+            {"value": "phase2", "label": "Отложить до Phase 2", "description": "Быстрее запуск, меньше объём первой итерации"}
+          ]
+        },
+        {
+          "key": "localization_scope",
+          "type": "textarea",
+          "label": "Что переводим на арабский",
+          "help": "Интерфейс Mini App, сообщения бота, шаблоны базы знаний, RTL-вёрстка",
+          "show_if": {"field": "arabic_phase", "op": "eq", "value": "phase1"},
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 4}
+        }
+      ]
+    },
+    {
+      "key": "marketing",
+      "title": "Атрибуция и маркетинг",
+      "description": "Реферальная программа через Telegram и её условия",
+      "fields": [
+        {
+          "key": "referral_program",
+          "type": "single_choice",
+          "label": "T-10. Готовы ли запускать реферальную программу через Telegram",
+          "help": "Проверенный механизм роста повторных броней: скидка 10% на вторую бронь и credit 20 долларов пригласившему",
+          "required": true,
+          "options": [
+            {"value": "yes", "label": "Да, готовы запускать", "description": "Скидка 10% на вторую бронь и credit 20 долларов пригласившему"},
+            {"value": "custom", "label": "Да, но с другими условиями"},
+            {"value": "no", "label": "Не сейчас"}
+          ]
+        },
+        {
+          "key": "referral_terms_custom",
+          "type": "textarea",
+          "label": "Какие условия реферальной программы нужны",
+          "help": "Размер скидки или credit, срок жизни приглашения, ограничения",
+          "show_if": {"field": "referral_program", "op": "eq", "value": "custom"},
+          "required": true,
+          "validation": {"max_length": 2000, "rows": 4}
+        }
+      ]
+    }
+  ],
+  "submit": {
+    "notify_admin": true,
+    "success_message": "Спасибо! Бриф на Telegram-бота для Holiday Homes Rental отправлен. Вернусь с прототипом сценариев и сметой в течение 24 часов.",
+    "pdf_template": "default"
+  }
+}
