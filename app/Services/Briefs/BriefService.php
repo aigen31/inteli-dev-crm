@@ -6,7 +6,6 @@ namespace App\Services\Briefs;
 
 use App\Enums\BriefStatus;
 use App\Models\Brief;
-use App\Models\BriefLink;
 use App\Models\BriefTemplate;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
