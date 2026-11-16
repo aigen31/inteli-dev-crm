@@ -688,6 +688,10 @@ class CrmMcpService
         };
 
         if (filled($arguments['client_id'] ?? null)) {
+            if (! Str::isUuid((string) $arguments['client_id'])) {
+                throw ValidationException::withMessages(['client_id' => 'client_id must be a UUID.']);
+            }
+
             $query->where('client_id', $arguments['client_id']);
         }
 
@@ -817,7 +821,7 @@ class CrmMcpService
 
     private function findBrief(string $value): Brief
     {
-        $brief = Brief::query()->where('id', $value)->first();
+        $brief = Str::isUuid($value) ? Brief::query()->find($value) : null;
 
         if ($brief === null) {
             throw ValidationException::withMessages(['brief' => 'Бриф не найден.']);
