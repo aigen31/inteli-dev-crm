@@ -89,6 +89,7 @@ const filled = computed(() => {
     return { answered, total };
 });
 
+const titleOpen = ref(false);
 const titleDirty = computed(() => form.title.trim() !== props.brief.title && form.title.trim().length > 0);
 
 function saveTitle() {
@@ -97,7 +98,13 @@ function saveTitle() {
     form.patch(route('admin.briefs.update', props.brief.id), {
         preserveScroll: true,
         only: ['brief'],
+        onSuccess: () => { titleOpen.value = false; },
     });
+}
+
+function openTitle() {
+    form.title = props.brief.title;
+    titleOpen.value = true;
 }
 
 function saveNote() {
@@ -115,8 +122,12 @@ function reopen() {
 
 <template>
     <AdminLayout :title="brief.title">
+
         <template #actions>
             <div class="flex flex-wrap items-center gap-2">
+                <Button variant="secondary" size="sm" @click="openTitle">
+                    <PencilSquareIcon class="h-4 w-4" />Название
+                </Button>
                 <Link :href="route('admin.briefs.index')">
                     <Button variant="ghost" size="sm"><ArrowLeftIcon class="h-4 w-4" />К списку</Button>
                 </Link>
@@ -138,19 +149,6 @@ function reopen() {
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="min-w-0">
                             <p class="eyebrow">{{ brief.template?.title || 'Шаблон удалён' }}</p>
-                            <div class="mt-1 flex items-center gap-2">
-                                <input
-                                    v-model="form.title"
-                                    type="text"
-                                    maxlength="200"
-                                    aria-label="Заголовок брифа"
-                                    class="min-w-0 flex-1 rounded-[10px] border border-transparent bg-transparent px-2 py-1 text-[18px] font-medium tracking-[-0.02em] text-ink transition hover:border-line focus:border-primary-500/60 focus:bg-white/70 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                                    @keyup.enter="saveTitle"
-                                />
-                                <Button v-if="titleDirty" size="sm" variant="secondary" :disabled="form.processing" @click="saveTitle">
-                                    Сохранить
-                                </Button>
-                            </div>
                             <p class="mt-2 text-[11px] text-muted">
                                 <template v-if="brief.client">Клиент: <strong class="text-ink">{{ brief.client.name }}</strong> · </template>
                                 <template v-if="brief.project">{{ brief.project.key }} · {{ brief.project.name }} · </template>
@@ -261,6 +259,33 @@ function reopen() {
                 </section>
             </aside>
         </div>
+
+        <Modal :show="titleOpen" max-width="md" @close="titleOpen = false">
+            <div class="p-6">
+                <p class="eyebrow">Заголовок брифа</p>
+                <h3 class="mt-1 text-[18px] font-medium tracking-[-0.02em] text-ink">Как назвать бриф</h3>
+                <p class="mt-2 text-[12px] leading-relaxed text-muted">
+                    Заголовок видят клиент в кабинете, публичная ссылка и PDF. Задача на разбор сохранит своё название.
+                </p>
+
+                <input
+                    v-model="form.title"
+                    type="text"
+                    maxlength="200"
+                    aria-label="Заголовок брифа"
+                    class="mt-4 w-full rounded-[12px] border border-line bg-white/70 px-3 py-2.5 text-[13px] text-ink focus:border-primary-500/60 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                    @keyup.enter="saveTitle"
+                />
+                <p class="mt-1 text-right font-mono text-[9px] text-faint">{{ form.title.length }}/200</p>
+
+                <div v-if="form.errors.title" class="mt-2 text-[11px] text-danger">{{ form.errors.title }}</div>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <Button variant="ghost" size="sm" @click="titleOpen = false">Отмена</Button>
+                    <Button size="sm" :disabled="form.processing || !titleDirty" @click="saveTitle">Сохранить</Button>
+                </div>
+            </div>
+        </Modal>
 
         <Modal :show="linkOpen" max-width="md" @close="closeLinkModal">
             <div class="p-6">
