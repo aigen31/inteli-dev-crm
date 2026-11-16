@@ -155,6 +155,39 @@ class KernelClient
     }
 
     /**
+     * Start a free-form DeepSeek Harness research run.
+     *
+     * @return array{run_id: string, status: string}
+     */
+    public function startResearch(string $task, ?string $url = null): array
+    {
+        return $this->send(fn (PendingRequest $request) => $request->post($this->url('/v1/harness/runs'), [
+            'task' => $task,
+            'url' => $url,
+        ]));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function researchStatus(string $runId): array
+    {
+        return $this->send(fn (PendingRequest $request) => $request->get(
+            $this->url('/v1/harness/runs/'.rawurlencode($runId)),
+        ));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function cancelResearch(string $runId): array
+    {
+        return $this->send(fn (PendingRequest $request) => $request->post(
+            $this->url('/v1/harness/runs/'.rawurlencode($runId).'/cancel'),
+        ));
+    }
+
+    /**
      * Shared price snapshot from the kernel.
      *
      * @return array<string, mixed>

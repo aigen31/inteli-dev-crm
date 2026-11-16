@@ -212,6 +212,8 @@ class CrmToolbox
             'create_report' => $this->createReport($user, $arguments),
             'list_brief_templates' => $this->listBriefTemplates($user),
             'create_brief' => $this->createBrief($user, $arguments),
+            'research' => $this->research($user, $arguments),
+            'research_status' => $this->researchStatus($user, $arguments),
             'create_brief_template' => $this->createBriefTemplate($user, $arguments),
             'update_brief_template' => $this->updateBriefTemplate($user, $arguments),
             'delete_brief_template' => $this->deleteBriefTemplate($user, $arguments),
@@ -773,6 +775,27 @@ class CrmToolbox
                 'required' => ['template'],
                 'roles' => ['admin'],
                 'confirm' => true,
+            ],
+            'research' => [
+                'description' => 'Поручить DeepSeek Harness исследование: открыть страницу, собрать свежие факты, сравнить источники. Используй, когда данных нет в CRM или они могли устареть — цены и услуги на сайте, новые разделы, упоминания. Верни ответ пользователю, а не сырой лог.',
+                'properties' => [
+                    'task' => ['type' => 'string', 'description' => 'Что именно выяснить, одним-двумя предложениями.'],
+                    'url' => ['type' => 'string', 'description' => 'Страница-источник (необязательно). Для проекта по умолчанию берётся его site_url.'],
+                    'project_id' => ['type' => 'string', 'description' => 'UUID проекта: подставит сайт и контекст проекта.'],
+                    'wait_seconds' => ['type' => 'integer', 'description' => 'Сколько ждать ответа, 5–45. По умолчанию 20.'],
+                ],
+                'required' => ['task'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'research_status' => [
+                'description' => 'Проверить фоновое исследование по run_id и забрать ответ, когда оно завершится.',
+                'properties' => [
+                    'run_id' => ['type' => 'string', 'description' => 'Идентификатор запуска из research.'],
+                ],
+                'required' => ['run_id'],
+                'roles' => ['admin'],
+                'confirm' => false,
             ],
             'create_brief_template' => [
                 'description' => 'Создать шаблон брифа: секции и поля. Новый сценарий оформляется схемой, код не нужен. После создания шаблон можно выдать клиенту через create_brief.',
@@ -2684,6 +2707,122 @@ class CrmToolbox
     /**
      * @return array<string, mixed>
      */
+    /**
+     * Запускает исследование в DeepSeek Harness и ждёт ответ в пределах
+     * `wait_seconds`. Долгие прогоны возвращают run_id для research_status.
+     *
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function research(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $data = Validator::make($arguments, [
+            'task' => ['required', 'string', 'min:8', 'max:2000'],
+            'url' => ['nullable', 'url', 'max:500'],
+            'project_id' => ['nullable', 'uuid'],
+            'wait_seconds' => ['nullable', 'integer', 'min:1', 'max:45'],
+        ])->validate();
+
+        $project = null;
+
+        if (filled($data['project_id'] ?? null)) {
+            $project = Project::query()->find((string) $data['project_id']);
+
+            if ($project === null) {
+                throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+            }
+        }
+
+        $url = $data['url'] ?? null;
+
+        if ($url === null && $project !== null) {
+            $site = trim((string) $project->site_url);
+            $url = $site !== '' ? $site : null;
+        }
+
+        $task = (string) $data['task'];
+
+        if ($project !== null) {
+            // У ядра свой потолок в 2000 символов; контекст проекта ужимаем
+            // так, чтобы сама задача осталась целиком.
+            $budget = max(200, 1900 - mb_strlen($task));
+            $context = Str::limit(collect([
+                $project->name,
+                $project->site_url,
+                trim((string) $project->agents_md),
+            ])->filter(static fn (mixed $value): bool => is_string($value) && trim($value) !== '')->implode("\n"), $budget, '…');
+
+            $task = "Проект: {$context}\n\nЗадача: {$task}";
+        }
+
+        $started = $this->kernel->startResearch($task, $url);
+        $runId = (string) ($started['run_id'] ?? '');
+
+        if ($runId === '') {
+            throw ValidationException::withMessages(['task' => 'Исследовательский сервис не вернул run_id.']);
+        }
+
+        $wait = (int) ($data['wait_seconds'] ?? 20);
+        $deadline = microtime(true) + $wait;
+        $payload = ['status' => (string) ($started['status'] ?? 'running'), 'run_id' => $runId];
+        $status = $payload['status'];
+
+        $pollMs = max(50, (int) config('ai.research_poll_ms', 2000));
+
+        while (in_array($status, ['running', 'queued'], true) && microtime(true) < $deadline) {
+            usleep($pollMs * 1000);
+            $payload = $this->kernel->researchStatus($runId);
+            $status = (string) ($payload['status'] ?? 'running');
+        }
+
+        $answer = $payload['answer'] ?? null;
+
+        if ($status === 'completed' && is_string($answer) && trim($answer) !== '') {
+            return [
+                'status' => 'completed',
+                'run_id' => $runId,
+                'answer' => trim($answer),
+                'url' => $url,
+                'project' => $project?->key,
+            ];
+        }
+
+        if ($status === 'failed') {
+            return [
+                'status' => 'failed',
+                'run_id' => $runId,
+                'error' => $payload['error'] ?? 'Исследование не удалось.',
+                'url' => $url,
+            ];
+        }
+
+        return [
+            'status' => $status,
+            'run_id' => $runId,
+            'url' => $url,
+            'message' => 'Исследование ещё идёт. Проверь статус через research_status и вернись с ответом.',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function researchStatus(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $runId = trim((string) ($arguments['run_id'] ?? ''));
+
+        if ($runId === '' || strlen($runId) > 120) {
+            throw ValidationException::withMessages(['run_id' => 'Нужен run_id из research.']);
+        }
+
+        return $this->kernel->researchStatus($runId);
+    }
+
     private function listBriefTemplates(User $user): array
     {
         $this->assertAdmin($user);
