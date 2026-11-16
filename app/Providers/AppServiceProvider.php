@@ -44,5 +44,19 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('assistant', function (Request $request): Limit {
             return Limit::perMinute(30)->by('assistant:'.($request->user()?->getKey() ?? $request->ip()));
         });
+
+        // Публичная ссылка на бриф: токен в URL, авторизации нет, поэтому
+        // режем по IP и отдельно по паре «IP + токен».
+        RateLimiter::for('brief-link', function (Request $request): Limit {
+            return Limit::perMinute(60)->by('brief-link:'.$request->ip());
+        });
+
+        RateLimiter::for('brief-save', function (Request $request): Limit {
+            return Limit::perMinute(120)->by('brief-save:'.$request->ip().':'.$request->route('token'));
+        });
+
+        RateLimiter::for('brief-submit', function (Request $request): Limit {
+            return Limit::perMinute(10)->by('brief-submit:'.$request->ip());
+        });
     }
 }
