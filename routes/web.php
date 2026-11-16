@@ -235,6 +235,7 @@ Route::middleware('auth')->group(function () {
         // Settings
         Route::get('/settings', [Admin\SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
+        Route::patch('/settings/tasks', [Admin\SettingsController::class, 'updateTaskControl'])->name('settings.tasks');
 
     });
 

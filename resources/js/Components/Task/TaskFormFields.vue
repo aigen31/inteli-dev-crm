@@ -84,6 +84,22 @@ function error(key) {
     return props.errors?.[key] || null;
 }
 
+const strictValue = computed(() => {
+    if (props.modelValue.strict_control === null || props.modelValue.strict_control === undefined) return 'inherit';
+
+    return props.modelValue.strict_control ? 'strict' : 'soft';
+});
+
+const strictOptions = [
+    { value: 'inherit', label: 'Как в CRM — по умолчанию' },
+    { value: 'strict', label: 'Строгий — принимает клиент' },
+    { value: 'soft', label: 'Мягкий — исполнитель закрывает сам' },
+];
+
+function updateStrict(value) {
+    update('strict_control', value === 'inherit' ? null : value === 'strict');
+}
+
 const statusOptions = computed(() =>
     (props.statuses || []).filter((status) => ['pending_review', 'queued'].includes(status.value)),
 );
@@ -155,6 +171,18 @@ const statusOptions = computed(() =>
                     :error="error('status')"
                     @update:model-value="update('status', $event)"
                 />
+                <div class="sm:col-span-2">
+                    <SelectInput
+                        :model-value="strictValue"
+                        label="Контроль приёмки"
+                        :options="strictOptions"
+                        :error="error('strict_control')"
+                        @update:model-value="updateStrict"
+                    />
+                    <p class="mt-1 text-[10px] leading-relaxed text-muted">
+                        Влияет на переход «Ожидает оценки» → «Завершено». Пустое значение наследует настройку CRM.
+                    </p>
+                </div>
                 <TaskDateCalendar
                     :model-value="modelValue.starts_at || ''"
                     label="Старт работ"

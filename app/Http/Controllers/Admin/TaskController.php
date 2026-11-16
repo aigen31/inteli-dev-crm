@@ -24,6 +24,7 @@ use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use App\Services\FormTemplateService;
 use App\Services\HtmlSanitizer;
+use App\Services\Tasks\TaskStrictControl;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,7 @@ class TaskController extends Controller
     public function __construct(
         private readonly CustomFieldService $customFields,
         private readonly HtmlSanitizer $sanitizer,
+        private readonly TaskStrictControl $strictControl,
     ) {}
 
     public function index(Request $request): Response
@@ -53,14 +55,9 @@ class TaskController extends Controller
 
         $tasks->through(fn (Task $task): array => [
             ...$task->toArray(),
-            'allowed_transitions' => collect($task->status->allowedTransitions())
-                ->filter(fn (TaskStatus $status): bool => $task->status->canBeChangedBy(UserRole::Admin, $status))
-                ->map(fn (TaskStatus $status): array => [
-                    'value' => $status->value,
-                    'label' => $status->label(),
-                ])
-                ->values()
-                ->all(),
+            'allowed_transitions' => $this->strictControl->allowed($task, $request->user()),
+            'strict_control' => $task->strict_control,
+            'strict_control_active' => $this->strictControl->enabledFor($task),
         ]);
 
         return Inertia::render('Admin/Tasks/Index', [
@@ -172,14 +169,15 @@ class TaskController extends Controller
             'project',
         ]);
 
-        $allowedTransitions = collect($task->status->allowedTransitions())
-            ->filter(fn (TaskStatus $s) => $task->status->canBeChangedBy(UserRole::Admin, $s))
-            ->map(fn (TaskStatus $s) => ['value' => $s->value, 'label' => $s->label()])
-            ->values();
+        $allowedTransitions = collect($this->strictControl->allowed($task, request()->user()));
 
         return Inertia::render('Admin/Tasks/Show', [
             'task' => $task,
             'allowedTransitions' => $allowedTransitions,
+            'strictControl' => [
+                'override' => $task->strict_control,
+                'active' => $this->strictControl->enabledFor($task),
+            ],
             'customFields' => $this->customFields->serializedValues($task),
         ]);
     }
@@ -239,7 +237,7 @@ class TaskController extends Controller
             }
 
             if ($status !== null) {
-                if ($task->status->canTransitionTo($status) && $task->status->canBeChangedBy(UserRole::Admin, $status)) {
+                if ($this->strictControl->canChange($task, $request->user(), $status)) {
                     $action->execute($task, $status, $request->user(), $comment);
                     $statusChanged++;
                 } else {

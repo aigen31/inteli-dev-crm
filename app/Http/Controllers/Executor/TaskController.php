@@ -10,6 +10,8 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Executor\ChangeExecutorTaskStatusRequest;
 use App\Models\Task;
+use App\Models\User;
+use App\Services\Tasks\TaskStrictControl;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +20,10 @@ use Inertia\Response;
 
 class TaskController extends Controller
 {
+    public function __construct(
+        private readonly TaskStrictControl $strictControl,
+    ) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -31,7 +37,7 @@ class TaskController extends Controller
             ->withQueryString()
             ->through(fn (Task $task): array => [
                 ...$task->toArray(),
-                'allowed_transitions' => $this->transitions($task),
+                'allowed_transitions' => $this->transitions($task, $request->user()),
             ]);
 
         return Inertia::render('Executor/Tasks/Index', [
@@ -61,7 +67,11 @@ class TaskController extends Controller
 
         return Inertia::render('Executor/Tasks/Show', [
             'task' => $task,
-            'allowedTransitions' => $this->transitions($task),
+            'allowedTransitions' => $this->transitions($task, request()->user()),
+            'strictControl' => [
+                'override' => $task->strict_control,
+                'active' => $this->strictControl->enabledFor($task),
+            ],
         ]);
     }
 
@@ -93,12 +103,8 @@ class TaskController extends Controller
     /**
      * @return list<array{value: string, label: string}>
      */
-    private function transitions(Task $task): array
+    private function transitions(Task $task, User $user): array
     {
-        return collect($task->status->allowedTransitions())
-            ->filter(fn (TaskStatus $status): bool => $task->status->canBeChangedBy(UserRole::Executor, $status))
-            ->map(fn (TaskStatus $status): array => ['value' => $status->value, 'label' => $status->label()])
-            ->values()
-            ->all();
+        return $this->strictControl->allowed($task, $user);
     }
 }

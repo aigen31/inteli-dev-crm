@@ -15,6 +15,7 @@ import { ArrowLeftIcon, CheckIcon, PlusIcon } from '@heroicons/vue/24/outline';
 const props = defineProps({
     task: { type: Object, required: true },
     allowedTransitions: { type: Array, default: () => [] },
+    strictControl: { type: Object, default: () => ({ override: null, active: true }) },
 });
 
 const checklist = computed(() => props.task.checklist || []);
@@ -129,6 +130,12 @@ function sendReport() {
                         <Button type="submit" class="w-full" size="sm" :disabled="statusForm.processing || !statusForm.status">Применить</Button>
                     </form>
                     <p v-else class="text-[11px] leading-relaxed text-muted">Сейчас статус меняет клиент или администратор.</p>
+                    <p v-if="!strictControl.active && task.status === 'awaiting_review'" class="mt-2 rounded-[10px] bg-surface-2 px-3 py-2 text-[10px] leading-relaxed text-muted">
+                        Мягкий режим: задачу можно закрыть без подтверждения клиента.
+                    </p>
+                    <p v-else-if="strictControl.active && task.status === 'awaiting_review'" class="mt-2 text-[10px] leading-relaxed text-faint">
+                        Строгий контроль: закрыть задачу может только клиент.
+                    </p>
                 </Card>
 
                 <Card title="Информация">

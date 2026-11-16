@@ -8,21 +8,32 @@ use App\Enums\TaskStatus;
 use App\Events\Task\TaskStatusChanged;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Tasks\TaskStrictControl;
 use Illuminate\Validation\ValidationException;
 
 class ChangeTaskStatusAction
 {
+    public function __construct(
+        private readonly TaskStrictControl $control,
+    ) {}
+
     public function execute(Task $task, TaskStatus $newStatus, User $changedBy, ?string $comment = null): Task
     {
         $oldStatus = $task->status;
 
-        if (! $oldStatus->canTransitionTo($newStatus)) {
+        if ($oldStatus === $newStatus) {
+            throw ValidationException::withMessages([
+                'status' => 'Задача уже в этом статусе.',
+            ]);
+        }
+
+        if (! $changedBy->isAdmin() && ! $oldStatus->canTransitionTo($newStatus)) {
             throw ValidationException::withMessages([
                 'status' => "Нельзя перевести задачу из «{$oldStatus->label()}» в «{$newStatus->label()}».",
             ]);
         }
 
-        if (! $oldStatus->canBeChangedBy($changedBy->roleForTask($task), $newStatus)) {
+        if (! $this->control->canChange($task, $changedBy, $newStatus)) {
             throw ValidationException::withMessages([
                 'status' => 'У вас нет прав для изменения статуса задачи.',
             ]);

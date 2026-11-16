@@ -16,6 +16,7 @@ import ThemePreferenceCard from '@/Components/UI/ThemePreferenceCard.vue';
 import { formatDateTime } from '@/Utils/formatters.js';
 import {
     AdjustmentsHorizontalIcon,
+    ClipboardDocumentCheckIcon,
     ArrowDownIcon,
     ArrowUpIcon,
     CheckIcon,
@@ -40,6 +41,7 @@ const props = defineProps({
     apiTokens: Array,
     aiActions: Array,
     mcp: Object,
+    taskControl: { type: Object, default: () => ({ strict: true }) },
 });
 
 const tabGroups = [
@@ -54,6 +56,7 @@ const tabGroups = [
         items: [
             { value: 'payments', label: 'Оплата', icon: CreditCardIcon, title: 'Оплата и реквизиты', description: 'Как клиенты видят счета и переводят оплату.' },
             { value: 'fields', label: 'Поля', icon: AdjustmentsHorizontalIcon, title: 'Пользовательские поля', description: 'Данные, которые нужны именно вашему процессу.' },
+            { value: 'tasks', label: 'Задачи', icon: ClipboardDocumentCheckIcon, title: 'Задачи и приёмка', description: 'Кто закрывает задачу и как работает строгий контроль.' },
         ],
     },
     {
@@ -99,6 +102,23 @@ const groupedFields = computed(() => {
 
 const fieldModal = ref(false);
 const editingField = ref(null);
+const taskForm = useForm({
+    strict_control: props.taskControl.strict,
+});
+
+const taskSaving = ref(false);
+
+function toggleStrictControl() {
+    taskForm.strict_control = ! taskForm.strict_control;
+    taskSaving.value = true;
+
+    taskForm.patch(route('admin.settings.tasks'), {
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => { taskSaving.value = false; },
+    });
+}
+
 const fieldForm = useForm({
     entity_type: 'client',
     key: '',
@@ -321,6 +341,57 @@ async function copyMcp() {
                 </template>
 
                 <!-- Custom fields -->
+                <!-- Tasks -->
+                <template v-else-if="activeTab === 'tasks'">
+                    <div class="surface-card p-5 sm:p-6">
+                        <div class="flex flex-wrap items-start justify-between gap-4">
+                            <div class="min-w-0 max-w-[560px]">
+                                <p class="text-[13px] font-semibold text-ink">Строгий контроль задач</p>
+                                <p class="mt-1 text-[12px] leading-relaxed text-muted">
+                                    Включён — работу принимает клиент: «Ожидает оценки» → «Завершено» ставит только он.
+                                    Выключен — исполнитель может закрыть задачу сам. Настройка действует на все задачи,
+                                    кроме тех, где режим переопределён в карточке задачи.
+                                </p>
+                            </div>
+
+                            <div class="flex shrink-0 items-center gap-3">
+                                <span class="font-mono text-[10px] uppercase tracking-[0.14em]" :class="taskForm.strict_control ? 'text-primary-700' : 'text-faint'">
+                                    {{ taskForm.strict_control ? 'Включён' : 'Выключен' }}
+                                </span>
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    :aria-checked="taskForm.strict_control"
+                                    aria-label="Строгий контроль задач"
+                                    class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
+                                    :class="taskForm.strict_control ? 'border-primary-500 bg-primary-500' : 'border-line-strong bg-surface-2'"
+                                    :disabled="taskSaving"
+                                    @click="toggleStrictControl"
+                                >
+                                    <span
+                                        class="absolute h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
+                                        :class="taskForm.strict_control ? 'translate-x-6' : 'translate-x-1'"
+                                    />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line/60 pt-3 text-[11px] text-muted">
+                            <span>По умолчанию включён.</span>
+                            <span class="text-faint">·</span>
+                            <span>Переопределение задаётся в форме задачи: «Контроль приёмки».</span>
+                            <span class="text-faint">·</span>
+                            <span v-if="taskSaving" class="text-primary-700">Сохраняю…</span>
+                            <span v-else class="text-faint">Администратор может менять статус любой задачи в любой статус.</span>
+                        </div>
+                    </div>
+
+                    <p class="px-1 text-[10px] leading-relaxed text-muted">
+                        Переключатель виден только администратору. Исполнитель не может изменить настройку — только получить
+                        право закрыть задачу, если режим для неё выключен.
+                    </p>
+                </template>
+
                 <template v-else-if="activeTab === 'fields'">
                     <div class="surface-card p-5 sm:p-6">
                         <div class="flex flex-wrap items-start justify-between gap-4">

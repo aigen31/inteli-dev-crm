@@ -18,6 +18,15 @@ const props = defineProps({
     task: Object,
     allowedTransitions: Array,
     customFields: Array,
+    strictControl: { type: Object, default: () => ({ override: null, active: true }) },
+});
+
+const controlLabel = computed(() => {
+    if (props.strictControl.override === null) {
+        return props.strictControl.active ? 'Строгий (как в CRM)' : 'Мягкий (как в CRM)';
+    }
+
+    return props.strictControl.override ? 'Строгий (задан в задаче)' : 'Мягкий (задан в задаче)';
 });
 
 const statusForm = useForm({ status: '', comment: '' });
@@ -186,6 +195,7 @@ function addComment() {
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Оценка</dt><dd class="text-ink">{{ task.estimated_minutes ? `${task.estimated_minutes} мин` : '—' }}</dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Бюджет</dt><dd class="font-mono text-[11px] text-ink">{{ task.budget ? formatMoney(task.budget) : '—' }}</dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Источник</dt><dd class="text-ink">{{ taskSourceLabels[task.source] || task.source }}</dd></div>
+                        <div class="flex items-center justify-between gap-3"><dt class="text-muted">Контроль приёмки</dt><dd class="text-ink">{{ controlLabel }}</dd></div>
                     </dl>
                 </Card>
 
