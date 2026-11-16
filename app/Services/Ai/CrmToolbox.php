@@ -2709,14 +2709,17 @@ class CrmToolbox
 
         $data = Validator::make($arguments, [
             'template' => ['required', 'string', 'max:120'],
-            'task_id' => ['nullable', 'uuid', 'exists:tasks,id'],
-            'client_id' => ['nullable', 'uuid', 'exists:users,id'],
-            'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
+            'task_id' => ['nullable', 'uuid'],
+            'client_id' => ['nullable', 'uuid'],
+            'project_id' => ['nullable', 'uuid'],
             'title' => ['nullable', 'string', 'max:200'],
         ])->validate();
 
+        $identifier = (string) $data['template'];
         $template = BriefTemplate::query()
-            ->where(fn ($query) => $query->where('slug', (string) $data['template'])->orWhere('id', (string) $data['template']))
+            ->where(fn ($query) => $query
+                ->where('slug', $identifier)
+                ->when(Str::isUuid($identifier), fn ($builder) => $builder->orWhere('id', $identifier)))
             ->where('is_active', true)
             ->first();
 
@@ -2736,6 +2739,14 @@ class CrmToolbox
 
             $projectId ??= $task->project_id;
             $clientId ??= $task->client_id;
+        }
+
+        if ($clientId !== null && ! User::query()->whereKey($clientId)->exists()) {
+            throw ValidationException::withMessages(['client_id' => 'Клиент не найден.']);
+        }
+
+        if ($projectId !== null && ! Project::query()->whereKey($projectId)->exists()) {
+            throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
         }
 
         $brief = $this->briefService->create($template, [
@@ -2966,8 +2977,9 @@ class CrmToolbox
     private function findBriefTemplate(string $value): BriefTemplate
     {
         $template = BriefTemplate::query()
-            ->where('slug', $value)
-            ->orWhere('id', $value)
+            ->where(fn ($query) => $query
+                ->where('slug', $value)
+                ->when(Str::isUuid($value), fn ($builder) => $builder->orWhere('id', $value)))
             ->first();
 
         if ($template === null) {
@@ -3012,6 +3024,11 @@ class CrmToolbox
 
         if (filled($arguments['client_id'] ?? null)) {
             $this->assertAdmin($user);
+
+            if (! Str::isUuid((string) $arguments['client_id'])) {
+                throw ValidationException::withMessages(['client_id' => 'client_id должен быть UUID.']);
+            }
+
             $query->where('client_id', $arguments['client_id']);
         }
 
@@ -3037,10 +3054,14 @@ class CrmToolbox
      */
     private function getBrief(User $user, array $arguments): array
     {
-        $brief = Brief::query()
-            ->visibleTo($user)
-            ->with(['template:id,title,slug,schema', 'client:id,name', 'project:id,key,name'])
-            ->find((string) ($arguments['brief_id'] ?? ''));
+        $briefId = (string) ($arguments['brief_id'] ?? '');
+
+        $brief = Str::isUuid($briefId)
+            ? Brief::query()
+                ->visibleTo($user)
+                ->with(['template:id,title,slug,schema', 'client:id,name', 'project:id,key,name'])
+                ->find($briefId)
+            : null;
 
         if ($brief === null) {
             throw ValidationException::withMessages(['brief_id' => 'Бриф не найден.']);

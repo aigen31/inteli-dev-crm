@@ -614,3 +614,23 @@ test('Kiki proposes creating a brief and confirms it into the client portal', fu
 
     expect(Brief::query()->where('title', 'Бриф из чата')->exists())->toBeTrue();
 });
+
+test('create_brief accepts a template slug and rejects unknown identifiers cleanly', function (): void {
+    $toolbox = app(CrmToolbox::class);
+
+    $brief = $toolbox->execute('create_brief', $this->admin, [
+        'template' => 'test-brief',
+        'client_id' => $this->client->id,
+        'title' => 'Бриф по slug',
+    ]);
+
+    expect($brief['template'])->toBe('Тестовый бриф');
+
+    expect(fn () => $toolbox->execute('create_brief', $this->admin, ['template' => 'no-such-template']))
+        ->toThrow(ValidationException::class);
+
+    expect(fn () => $toolbox->execute('create_brief', $this->admin, [
+        'template' => 'test-brief',
+        'client_id' => 'not-a-uuid',
+    ]))->toThrow(ValidationException::class);
+});
