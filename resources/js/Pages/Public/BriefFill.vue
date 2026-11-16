@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import BriefField from '@/Components/Briefs/BriefField.vue';
 import Button from '@/Components/UI/Button.vue';
 import { isAnswered, briefProgress, isVisible } from '@/Utils/briefs.js';
@@ -132,6 +132,11 @@ function matchReason(reason) {
 </script>
 
 <template>
+    <Head>
+        <meta name="referrer" content="no-referrer" />
+        <meta name="robots" content="noindex, nofollow" />
+    </Head>
+
     <div class="min-h-screen bg-canvas px-4 py-8 sm:px-6 sm:py-12">
         <div class="mx-auto w-full max-w-[760px]">
             <header class="mb-6 flex items-center justify-between gap-3">
