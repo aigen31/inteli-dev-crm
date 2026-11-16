@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Brief;
 use App\Models\BriefLink;
 use App\Services\Briefs\BriefSchema;
 use App\Services\Briefs\BriefService;
