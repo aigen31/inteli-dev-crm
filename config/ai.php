@@ -12,4 +12,6 @@ return [
     'kernel_channel' => (string) env('KERNEL_CHANNEL', 'crm'),
     'kernel_data_class' => (string) env('KERNEL_DATA_CLASS', 'internal'),
     'kernel_timeout' => (int) env('KERNEL_TIMEOUT', 90),
+    // Как часто research переспрашивает статус прогона в harness, мс.
+    'research_poll_ms' => (int) env('AI_RESEARCH_POLL_MS', 2000),
 ];
