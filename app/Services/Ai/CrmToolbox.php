@@ -22,6 +22,7 @@ use App\Enums\TaskType;
 use App\Enums\UserRole;
 use App\Models\AiDocument;
 use App\Models\Brief;
+use App\Models\BriefTemplate;
 use App\Models\CustomField;
 use App\Models\FormTemplate;
 use App\Models\Invoice;
@@ -33,6 +34,8 @@ use App\Models\TaskReportItem;
 use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\Briefs\BriefFormatter;
+use App\Services\Briefs\BriefSchema;
+use App\Services\Briefs\BriefService;
 use App\Services\CustomFieldService;
 use App\Services\FormTemplateService;
 use App\Services\HtmlSanitizer;
@@ -67,6 +70,7 @@ class CrmToolbox
         private readonly ProjectService $projects,
         private readonly ProjectInviteService $invites,
         private readonly BriefFormatter $briefs,
+        private readonly BriefService $briefService,
     ) {}
 
     /**
@@ -153,6 +157,10 @@ class CrmToolbox
             'study_project_site' => 'изучить сайт проекта',
             'apply_template' => 'создать задачу из шаблона',
             'set_custom_field' => 'изменить поле «'.($arguments['key'] ?? '').'»',
+            'create_brief' => 'создать бриф «'.($arguments['title'] ?? $arguments['template'] ?? '').'»',
+            'create_brief_template' => 'создать шаблон брифа «'.($arguments['title'] ?? '').'»',
+            'update_brief_template' => 'изменить шаблон брифа «'.($arguments['title'] ?? $arguments['template'] ?? '').'»',
+            'delete_brief_template' => 'удалить шаблон брифа «'.($arguments['template'] ?? '').'»',
             default => $name,
         };
     }
@@ -202,6 +210,11 @@ class CrmToolbox
             'get_payment_link' => $this->paymentLink($user, $arguments),
             'crm_help' => $this->crmHelp($user, $arguments),
             'create_report' => $this->createReport($user, $arguments),
+            'list_brief_templates' => $this->listBriefTemplates($user),
+            'create_brief' => $this->createBrief($user, $arguments),
+            'create_brief_template' => $this->createBriefTemplate($user, $arguments),
+            'update_brief_template' => $this->updateBriefTemplate($user, $arguments),
+            'delete_brief_template' => $this->deleteBriefTemplate($user, $arguments),
             'list_briefs' => $this->listBriefs($user, $arguments),
             'get_brief' => $this->getBrief($user, $arguments),
             'list_reports' => $this->listReports($user, $arguments),
@@ -740,6 +753,64 @@ class CrmToolbox
                 'required' => ['brief_id'],
                 'roles' => ['admin', 'client'],
                 'confirm' => false,
+            ],
+            'list_brief_templates' => [
+                'description' => 'Каталог шаблонов брифов: slug, название, число секций и полей. Вызывай перед create_brief, чтобы выбрать подходящий шаблон.',
+                'properties' => (object) [],
+                'required' => [],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'create_brief' => [
+                'description' => 'Создать бриф клиента по шаблону и выдать его в кабинет. Можно привязать к задаче (task_id) — клиент и проект возьмутся из неё. Требует подтверждения.',
+                'properties' => [
+                    'template' => ['type' => 'string', 'description' => 'Slug или UUID шаблона (см. list_brief_templates).'],
+                    'task_id' => ['type' => 'string', 'description' => 'UUID задачи, из которой берутся клиент и проект (необязательно).'],
+                    'client_id' => ['type' => 'string', 'description' => 'UUID клиента, если он не выводится из задачи.'],
+                    'project_id' => ['type' => 'string', 'description' => 'UUID проекта (необязательно).'],
+                    'title' => ['type' => 'string', 'description' => 'Название брифа; по умолчанию — название шаблона.'],
+                ],
+                'required' => ['template'],
+                'roles' => ['admin'],
+                'confirm' => true,
+            ],
+            'create_brief_template' => [
+                'description' => 'Создать шаблон брифа: секции и поля. Новый сценарий оформляется схемой, код не нужен. После создания шаблон можно выдать клиенту через create_brief.',
+                'properties' => [
+                    'title' => ['type' => 'string', 'description' => 'Название шаблона, например «Аудит рекламы».'],
+                    'slug' => ['type' => 'string', 'description' => 'Латиница через дефис; по умолчанию из названия.'],
+                    'summary' => ['type' => 'string', 'description' => 'Короткое описание для карточки шаблона.'],
+                    'icon' => ['type' => 'string', 'description' => 'Имя иконки Lucide, например clipboard-list.'],
+                    'estimated_minutes' => ['type' => 'integer', 'description' => 'Сколько минут займёт заполнение.'],
+                    'sections' => ['type' => 'array', 'description' => 'Секции: [{"title","description","fields":[{"key","type","label","required","help","options","show_if","validation"}]}]. Типы: text, textarea, number, scale, date, url, email, phone, single_choice, multi_choice, contact_block, file.'],
+                ],
+                'required' => ['title', 'sections'],
+                'roles' => ['admin'],
+                'confirm' => false,
+            ],
+            'update_brief_template' => [
+                'description' => 'Изменить шаблон брифа: название, описание, иконку, время или схему целиком. Версия схемы растёт, уже отправленные брифы сохраняют свой снимок. Действие требует подтверждения.',
+                'properties' => [
+                    'template' => ['type' => 'string', 'description' => 'UUID или slug шаблона.'],
+                    'title' => ['type' => 'string', 'description' => 'Новое название.'],
+                    'slug' => ['type' => 'string', 'description' => 'Новый slug.'],
+                    'summary' => ['type' => 'string', 'description' => 'Новое описание.'],
+                    'icon' => ['type' => 'string', 'description' => 'Новая иконка.'],
+                    'estimated_minutes' => ['type' => 'integer', 'description' => 'Новая оценка времени.'],
+                    'sections' => ['type' => 'array', 'description' => 'Новая схема целиком; старые ответы не мигрируют.'],
+                ],
+                'required' => ['template'],
+                'roles' => ['admin'],
+                'confirm' => true,
+            ],
+            'delete_brief_template' => [
+                'description' => 'Удалить шаблон брифа. Нельзя удалить шаблон, по которому уже созданы брифы — сначала архивируйте или удалите их. Требует подтверждения.',
+                'properties' => [
+                    'template' => ['type' => 'string', 'description' => 'UUID или slug шаблона.'],
+                ],
+                'required' => ['template'],
+                'roles' => ['admin'],
+                'confirm' => true,
             ],
             'list_reports' => [
                 'description' => 'Последние отчёты клиентам с ссылками. Только администратор.',
@@ -2606,6 +2677,324 @@ class CrmToolbox
      * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    /**
+     * @return array<string, mixed>
+     */
+    private function listBriefTemplates(User $user): array
+    {
+        $this->assertAdmin($user);
+
+        return ['templates' => BriefTemplate::query()
+            ->active()
+            ->orderBy('sort_order')
+            ->orderBy('title')
+            ->get()
+            ->map(fn (BriefTemplate $template): array => [
+                ...$template->toLibraryArray(),
+                'used_in_briefs' => $template->briefs()->count(),
+            ])->all()];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function createBrief(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $data = Validator::make($arguments, [
+            'template' => ['required', 'string', 'max:120'],
+            'task_id' => ['nullable', 'uuid', 'exists:tasks,id'],
+            'client_id' => ['nullable', 'uuid', 'exists:users,id'],
+            'project_id' => ['nullable', 'uuid', 'exists:projects,id'],
+            'title' => ['nullable', 'string', 'max:200'],
+        ])->validate();
+
+        $template = BriefTemplate::query()
+            ->where(fn ($query) => $query->where('slug', (string) $data['template'])->orWhere('id', (string) $data['template']))
+            ->where('is_active', true)
+            ->first();
+
+        if ($template === null) {
+            throw ValidationException::withMessages(['template' => 'Шаблон брифа не найден или выключен. Посмотрите list_brief_templates.']);
+        }
+
+        $clientId = $data['client_id'] ?? null;
+        $projectId = $data['project_id'] ?? null;
+
+        if (filled($data['task_id'] ?? null)) {
+            $task = Task::query()->with('project:id,key,name,client_id')->find((string) $data['task_id']);
+
+            if ($task === null) {
+                throw ValidationException::withMessages(['task_id' => 'Задача не найдена.']);
+            }
+
+            $projectId ??= $task->project_id;
+            $clientId ??= $task->client_id;
+        }
+
+        $brief = $this->briefService->create($template, [
+            'title' => $data['title'] ?? null,
+            'client_id' => $clientId,
+            'project_id' => $projectId,
+        ], $user);
+
+        return [
+            'id' => $brief->id,
+            'title' => $brief->title,
+            'status' => $brief->status?->value,
+            'status_label' => $brief->status?->label(),
+            'template' => $template->title,
+            'client' => $brief->client?->name,
+            'project' => $brief->project?->key,
+            'url' => route('admin.briefs.show', $brief),
+        ];
+    }
+
+    private function createBriefTemplate(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $data = Validator::make($arguments, [
+            'title' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:120', 'regex:/^[a-z0-9-]+$/'],
+            'summary' => ['nullable', 'string', 'max:500'],
+            'icon' => ['nullable', 'string', 'max:64'],
+            'estimated_minutes' => ['nullable', 'integer', 'min:1', 'max:600'],
+            'sections' => ['required', 'array', 'min:1', 'max:30'],
+        ])->validate();
+
+        $schema = $this->prepareBriefSchema($data);
+
+        $template = BriefTemplate::query()->create([
+            'slug' => $this->uniqueBriefSlug($data['slug'] ?? $data['title']),
+            'title' => $data['title'],
+            'summary' => $data['summary'] ?? null,
+            'icon' => $data['icon'] ?? null,
+            'estimated_minutes' => $data['estimated_minutes'] ?? null,
+            'schema' => $schema,
+            'schema_hash' => BriefSchema::hash($schema),
+            'version' => 1,
+            'is_active' => true,
+            'sort_order' => 100,
+        ]);
+
+        return $this->briefTemplatePayload($template);
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function updateBriefTemplate(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $template = $this->findBriefTemplate((string) ($arguments['template'] ?? ''));
+
+        $data = Validator::make($arguments, [
+            'title' => ['nullable', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:120', 'regex:/^[a-z0-9-]+$/'],
+            'summary' => ['nullable', 'string', 'max:500'],
+            'icon' => ['nullable', 'string', 'max:64'],
+            'estimated_minutes' => ['nullable', 'integer', 'min:1', 'max:600'],
+            'sections' => ['nullable', 'array', 'min:1', 'max:30'],
+        ])->validate();
+
+        if (filled($data['slug'] ?? null) && $data['slug'] !== $template->slug) {
+            $taken = BriefTemplate::query()->where('slug', $data['slug'])->whereKeyNot($template->id)->exists();
+
+            if ($taken) {
+                throw ValidationException::withMessages(['slug' => 'Такой slug уже занят другим шаблоном.']);
+            }
+        }
+
+        $attributes = [
+            'title' => $data['title'] ?? $template->title,
+            'slug' => $data['slug'] ?? $template->slug,
+            'summary' => $data['summary'] ?? $template->summary,
+            'icon' => $data['icon'] ?? $template->icon,
+            'estimated_minutes' => $data['estimated_minutes'] ?? $template->estimated_minutes,
+        ];
+
+        if (filled($data['sections'] ?? null)) {
+            $schema = $this->prepareBriefSchema([
+                'title' => $attributes['title'],
+                'sections' => $data['sections'],
+                'slug' => $attributes['slug'],
+                'summary' => $attributes['summary'],
+                'icon' => $attributes['icon'],
+                'estimated_minutes' => $attributes['estimated_minutes'],
+            ]);
+
+            $attributes['schema'] = $schema;
+            $attributes['schema_hash'] = BriefSchema::hash($schema);
+            $attributes['version'] = $template->version + 1;
+        }
+
+        $template->update($attributes);
+
+        return $this->briefTemplatePayload($template->refresh());
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function deleteBriefTemplate(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $template = $this->findBriefTemplate((string) ($arguments['template'] ?? ''));
+        $used = $template->briefs()->count();
+
+        if ($used > 0) {
+            throw ValidationException::withMessages([
+                'template' => "Шаблон используют {$used} бриф(ов). Удалить нельзя: отправленные брифы хранят ссылку на него.",
+            ]);
+        }
+
+        $payload = $this->briefTemplatePayload($template);
+        $template->delete();
+
+        return [...$payload, 'deleted' => true];
+    }
+
+    /**
+     * Достраивает ключи секциям и полям и проверяет схему целиком.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function prepareBriefSchema(array $data): array
+    {
+        $sections = [];
+        $seenSections = [];
+
+        foreach ((array) ($data['sections'] ?? []) as $sectionIndex => $section) {
+            if (! is_array($section)) {
+                continue;
+            }
+
+            $title = trim((string) ($section['title'] ?? ''));
+            $key = trim((string) ($section['key'] ?? '')) ?: Str::slug($title) ?: 'section-'.($sectionIndex + 1);
+            $key = $this->uniqueKey($key, $seenSections);
+            $seenSections[] = $key;
+
+            $fields = [];
+            $seenFields = [];
+
+            foreach ((array) ($section['fields'] ?? []) as $fieldIndex => $field) {
+                if (! is_array($field)) {
+                    continue;
+                }
+
+                $label = trim((string) ($field['label'] ?? ''));
+                $fieldKey = trim((string) ($field['key'] ?? '')) ?: Str::slug($label) ?: 'field-'.($fieldIndex + 1);
+                $fieldKey = $this->uniqueKey($fieldKey, $seenFields);
+                $seenFields[] = $fieldKey;
+
+                $fields[] = [
+                    ...$field,
+                    'key' => $fieldKey,
+                    'label' => $label !== '' ? $label : $fieldKey,
+                    'type' => (string) ($field['type'] ?? 'text'),
+                ];
+            }
+
+            $sections[] = [
+                ...$section,
+                'key' => $key,
+                'title' => $title !== '' ? $title : $key,
+                'fields' => $fields,
+            ];
+        }
+
+        $schema = BriefSchema::normalize([
+            'slug' => (string) ($data['slug'] ?? ''),
+            'title' => (string) ($data['title'] ?? ''),
+            'description' => (string) ($data['summary'] ?? ''),
+            'icon' => (string) ($data['icon'] ?? ''),
+            'estimated_minutes' => (int) ($data['estimated_minutes'] ?? 0),
+            'sections' => $sections,
+        ]);
+
+        $errors = BriefSchema::validateDefinition($schema);
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages(['sections' => $errors]);
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @param  list<string>  $seen
+     */
+    private function uniqueKey(string $key, array $seen): string
+    {
+        $base = $key;
+        $suffix = 2;
+
+        while (in_array($key, $seen, true)) {
+            $key = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $key;
+    }
+
+    private function uniqueBriefSlug(string $source): string
+    {
+        $base = Str::slug($source) ?: 'brief';
+        $slug = $base;
+        $suffix = 2;
+
+        while (BriefTemplate::query()->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $slug;
+    }
+
+    private function findBriefTemplate(string $value): BriefTemplate
+    {
+        $template = BriefTemplate::query()
+            ->where('slug', $value)
+            ->orWhere('id', $value)
+            ->first();
+
+        if ($template === null) {
+            throw ValidationException::withMessages(['template' => 'Шаблон брифа не найден.']);
+        }
+
+        return $template;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function briefTemplatePayload(BriefTemplate $template): array
+    {
+        return [
+            'id' => $template->id,
+            'slug' => $template->slug,
+            'title' => $template->title,
+            'summary' => $template->summary,
+            'version' => $template->version,
+            'sections' => count($template->sections()),
+            'fields' => $template->fieldCount(),
+            'is_active' => $template->is_active,
+            'url' => route('admin.briefs.templates'),
+        ];
+    }
+
     private function listBriefs(User $user, array $arguments): array
     {
         $status = (string) ($arguments['status'] ?? 'open');

@@ -787,6 +787,10 @@ class AgentService
             'create_task_from_form' => 'Заявка собрана из формы',
             'propose_task_plan' => 'План задач создан',
             'create_task_template' => 'Шаблон создан',
+            'create_brief' => 'Бриф создан',
+            'create_brief_template' => 'Шаблон брифа создан',
+            'update_brief_template' => 'Шаблон брифа обновлён',
+            'delete_brief_template' => 'Шаблон брифа удалён',
             'set_custom_field' => 'Поле обновлено',
             default => 'Готово',
         };
