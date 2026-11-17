@@ -131,8 +131,6 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['is_active', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
-        Route::get('/widget-zone/data', [Admin\WidgetZoneController::class, 'data'])->name('widget-zone.data');
-        Route::patch('/widget-zone/layout', [Admin\WidgetZoneController::class, 'updateLayout'])->name('widget-zone.layout');
 
         // Team
         Route::get('/team', [Admin\TeamController::class, 'index'])->name('team.index');
@@ -285,6 +283,8 @@ Route::middleware('auth')->group(function () {
 // Reports are shared by both roles; the policy checks the recipient.
 Route::middleware(['auth', 'is_active'])->group(function () {
     Route::patch('/sidebar-preferences', [SidebarPreferenceController::class, 'update'])->name('sidebar.update');
+    Route::get('/widget-zone/data', [Admin\WidgetZoneController::class, 'data'])->name('widget-zone.data');
+    Route::patch('/widget-zone/layout', [Admin\WidgetZoneController::class, 'updateLayout'])->name('widget-zone.layout');
     Route::patch('/dashboard-layout', [DashboardLayoutController::class, 'update'])->name('dashboard.layout');
     Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');

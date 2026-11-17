@@ -15,19 +15,36 @@ test('an admin can load widget panel data and save its own layout', function ():
     ];
 
     $this->actingAs($admin)
-        ->getJson(route('admin.widget-zone.data'))
+        ->getJson(route('widget-zone.data'))
         ->assertOk()
         ->assertJsonStructure(['counters', 'monthlyRevenue', 'focusTasks', 'upcomingDeadlines', 'recentHistory']);
 
     $this->actingAs($admin)
-        ->patchJson(route('admin.widget-zone.layout'), ['widgets' => $widgets])
+        ->patchJson(route('widget-zone.layout'), ['widgets' => $widgets])
         ->assertOk();
 
     expect($admin->fresh()->widget_zone_layout)->toBe($widgets);
 });
 
-test('a client cannot use the widget panel', function (): void {
+test('every user gets a scoped widget panel', function (): void {
+    $executor = User::factory()->executor()->create();
     $client = User::factory()->client()->create();
 
-    $this->actingAs($client)->getJson(route('admin.widget-zone.data'))->assertForbidden();
+    $this->actingAs($executor)
+        ->getJson(route('widget-zone.data'))
+        ->assertOk()
+        ->assertJsonPath('isAdmin', false)
+        ->assertJsonCount(0, 'team');
+
+    $this->actingAs($client)
+        ->getJson(route('widget-zone.data'))
+        ->assertOk()
+        ->assertJsonPath('isAdmin', false);
+
+    // Раскладка сохраняется для каждого пользователя отдельно.
+    $this->actingAs($client)
+        ->patchJson(route('widget-zone.layout'), ['widgets' => [['id' => 'focus', 'w' => 2, 'h' => 2]]])
+        ->assertOk();
+
+    expect($client->fresh()->widget_zone_layout)->toBe([['id' => 'focus', 'w' => 2, 'h' => 2]]);
 });

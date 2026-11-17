@@ -97,7 +97,7 @@ test('the admin dashboard and widget zone expose the employee picker data', func
             ->has('team', 3));
 
     $this->actingAs($this->admin)
-        ->getJson(route('admin.widget-zone.data'))
+        ->getJson(route('widget-zone.data'))
         ->assertOk()
         ->assertJsonPath('currentUserId', $this->admin->id)
         ->assertJsonCount(3, 'team');

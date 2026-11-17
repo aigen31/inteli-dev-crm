@@ -19,10 +19,13 @@ use Illuminate\Validation\Rule;
 
 class WidgetZoneController extends Controller
 {
-    private const WIDGETS = ['clients', 'active_tasks', 'revenue', 'templates', 'focus', 'activity', 'deadlines', 'quick_links', 'activity_calendar'];
+    private const WIDGETS = ['clients', 'active_tasks', 'revenue', 'focus', 'activity', 'deadlines', 'quick_links', 'activity_calendar', 'user_workload'];
 
     public function data(Request $request): JsonResponse
     {
+        $user = $request->user();
+        $isAdmin = $user->isAdmin();
+
         $activeStatuses = [
             TaskStatus::PendingReview,
             TaskStatus::Queued,
@@ -32,6 +35,7 @@ class WidgetZoneController extends Controller
         ];
 
         $todayTasks = Task::with('client')
+            ->when(! $isAdmin, fn ($q) => $q->where('assignee_id', $user->id))
             ->whereNotNull('deadline')
             ->whereDate('deadline', '<=', today())
             ->whereIn('status', $activeStatuses)
@@ -40,12 +44,14 @@ class WidgetZoneController extends Controller
             ->get();
 
         $pendingTasks = Task::with('client')
+            ->when(! $isAdmin, fn ($q) => $q->where('assignee_id', $user->id))
             ->where('status', TaskStatus::PendingReview)
             ->latest()
             ->take(5)
             ->get();
 
         $upcomingDeadlines = Task::with('client')
+            ->when(! $isAdmin, fn ($q) => $q->where('assignee_id', $user->id))
             ->whereNotNull('deadline')
             ->whereNotIn('status', [TaskStatus::Completed, TaskStatus::RejectedByAdmin])
             ->where('deadline', '>=', today())
@@ -54,33 +60,41 @@ class WidgetZoneController extends Controller
             ->get();
 
         $recentHistory = TaskStatusHistory::query()
-            ->with(['task:id,title,client_id', 'task.client:id,name', 'changedBy:id,name'])
+            ->with(['task:id,title,client_id,assignee_id', 'task.client:id,name', 'changedBy:id,name'])
+            ->when(! $isAdmin, fn ($q) => $q->whereHas('task', fn ($task) => $task->where('assignee_id', $user->id)))
             ->latest('created_at')
             ->limit(6)
             ->get();
 
-        $monthlyRevenue = (float) Invoice::where('status', InvoiceStatus::Paid)
+        $monthlyRevenue = (float) Invoice::query()
+            ->where('status', InvoiceStatus::Paid)
+            ->when(! $isAdmin, fn ($q) => $q->where('client_id', $user->id))
             ->whereMonth('paid_at', now()->month)
             ->whereYear('paid_at', now()->year)
             ->sum('amount');
 
         return response()->json([
-            'team' => User::query()
+            'isAdmin' => $isAdmin,
+            'team' => $isAdmin ? User::query()
                 ->whereIn('role', [UserRole::Admin, UserRole::Executor])
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'role'])
-                ->map(fn (User $user): array => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'role' => $user->role->value,
+                ->map(fn (User $member): array => [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'role' => $member->role->value,
                 ])
-                ->all(),
+                ->all() : [],
             'currentUserId' => $request->user()->id,
             'counters' => [
-                'clients' => User::query()->where('role', 'client')->where('is_active', true)->count(),
-                'active_tasks' => Task::query()->whereIn('status', $activeStatuses)->count(),
+                'clients' => $isAdmin ? User::query()->where('role', 'client')->where('is_active', true)->count() : 0,
+                'active_tasks' => Task::query()
+                    ->when(! $isAdmin, fn ($q) => $q->where('assignee_id', $user->id))
+                    ->whereIn('status', $activeStatuses)
+                    ->count(),
                 'overdue' => Task::query()
+                    ->when(! $isAdmin, fn ($q) => $q->where('assignee_id', $user->id))
                     ->whereNotNull('deadline')
                     ->whereDate('deadline', '<', today())
                     ->whereIn('status', $activeStatuses)
