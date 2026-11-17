@@ -72,7 +72,7 @@ test('tasks on a calendar date are visible only when the user can open them', fu
         ->assertJsonMissingPath('tasks.0.project');
 });
 
-test('activity calendar summarises workload for admins only', function (): void {
+test('activity calendar is scoped to the assignee and the admin may switch users', function (): void {
     $admin = User::factory()->admin()->create();
     $client = User::factory()->client()->create();
     $executor = User::factory()->executor()->create();
@@ -86,16 +86,24 @@ test('activity calendar summarises workload for admins only', function (): void 
         ]);
     }
 
+    // По умолчанию админ видит только свои задачи, а не всю команду.
     $this->actingAs($admin)
         ->getJson(route('calendar.activity', ['month' => '2026-11']))
+        ->assertOk()
+        ->assertJsonPath('days.2026-11-16', null);
+
+    $this->actingAs($admin)
+        ->getJson(route('calendar.activity', ['month' => '2026-11', 'assignee_id' => $executor->id]))
         ->assertOk()
         ->assertJsonPath('days.2026-11-16', 2)
         ->assertJsonPath('days.2026-11-18', 2)
         ->assertJsonPath('days.2026-11-15', null);
 
+    // Клиент видит свой (пустой) календарь, а не 403.
     $this->actingAs($client)
         ->getJson(route('calendar.activity', ['month' => '2026-11']))
-        ->assertForbidden();
+        ->assertOk()
+        ->assertJsonPath('days', []);
 });
 
 test('the task calendar keeps every task in the workload count', function (): void {

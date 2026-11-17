@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Executor;
 
 use App\Actions\Task\ChangeTaskStatusAction;
 use App\Enums\TaskStatus;
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Executor\ChangeExecutorTaskStatusRequest;
 use App\Models\Task;

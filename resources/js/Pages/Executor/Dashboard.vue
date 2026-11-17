@@ -1,6 +1,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import ExecutorLayout from '@/Components/Layout/ExecutorLayout.vue';
+import ActivityCalendarWidget from '@/Components/Dashboard/ActivityCalendarWidget.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
@@ -70,6 +71,15 @@ defineProps({
                             <p class="truncate text-[11px] font-semibold text-ink">{{ report.title || 'Отчёт' }}</p>
                             <p class="mt-0.5 truncate text-[9px] text-muted">{{ report.task?.title || 'Без задачи' }} · {{ formatDateTime(report.created_at) }}</p>
                         </Link>
+                    </div>
+                </section>
+                <section class="surface-card p-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="eyebrow">Моя нагрузка</p>
+                        <span class="font-mono text-[9px] uppercase tracking-[0.12em] text-faint">задачи</span>
+                    </div>
+                    <div class="mt-2">
+                        <ActivityCalendarWidget compact />
                     </div>
                 </section>
                 <section class="rounded-[20px] border border-line/70 bg-white/35 p-4">

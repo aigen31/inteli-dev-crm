@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\InvoiceStatus;
 use App\Enums\TaskStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\FormTemplate;
 use App\Models\Invoice;
@@ -20,7 +21,7 @@ class WidgetZoneController extends Controller
 {
     private const WIDGETS = ['clients', 'active_tasks', 'revenue', 'templates', 'focus', 'activity', 'deadlines', 'quick_links', 'activity_calendar'];
 
-    public function data(): JsonResponse
+    public function data(Request $request): JsonResponse
     {
         $activeStatuses = [
             TaskStatus::PendingReview,
@@ -64,6 +65,18 @@ class WidgetZoneController extends Controller
             ->sum('amount');
 
         return response()->json([
+            'team' => User::query()
+                ->whereIn('role', [UserRole::Admin, UserRole::Executor])
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'role'])
+                ->map(fn (User $user): array => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role->value,
+                ])
+                ->all(),
+            'currentUserId' => $request->user()->id,
             'counters' => [
                 'clients' => User::query()->where('role', 'client')->where('is_active', true)->count(),
                 'active_tasks' => Task::query()->whereIn('status', $activeStatuses)->count(),
