@@ -62,7 +62,6 @@ const baseNavigation = computed(() => {
             { key: 'admin.team', label: 'Команда', href: route('admin.team.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/admin/team') },
             { key: 'admin.invoices', label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },
             { key: 'admin.reports', label: 'Отчёты', href: route('admin.reports.index'), icon: InboxIcon, active: path.value.startsWith('/admin/reports') },
-            { key: 'assistant', label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
         ];
     }
 
@@ -72,7 +71,6 @@ const baseNavigation = computed(() => {
             { key: 'executor.tasks', label: 'Мои задачи', href: route('executor.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/executor/tasks') },
             ...(hasClientDelegation.value ? [{ key: 'client.tasks', label: 'Мои заявки', href: route('client.tasks.index'), icon: RectangleStackIcon, active: path.value.startsWith('/tasks') }] : []),
             { key: 'executor.reports', label: 'Отчёты', href: route('executor.reports.index'), icon: InboxIcon, active: path.value.startsWith('/executor/reports') },
-            { key: 'assistant', label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
         ];
     }
 
@@ -84,7 +82,6 @@ const baseNavigation = computed(() => {
         { key: 'client.briefs', label: 'Брифы', href: route('client.briefs.index'), icon: ClipboardDocumentListIcon, active: path.value.startsWith('/briefs') },
         { key: 'client.invoices', label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
         { key: 'client.reports', label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') },
-        { key: 'assistant', label: 'Кики', href: route('assistant.index'), icon: SparklesIcon, active: path.value.startsWith('/assistant') },
     ];
 });
 
