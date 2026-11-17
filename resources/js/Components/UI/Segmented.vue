@@ -15,12 +15,12 @@ defineEmits(['update:modelValue']);
             type="button"
             :class="[
                 'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition',
-                modelValue === option.value ? 'bg-ink text-canvas shadow-sm' : 'text-muted hover:text-ink',
+                modelValue === option.value ? 'bg-primary-600 text-white shadow-sm' : 'text-muted hover:text-ink',
             ]"
             @click="$emit('update:modelValue', option.value)"
         >
             {{ option.label }}
-            <span v-if="option.count != null" :class="['rounded-full px-1.5 py-0.5 font-mono text-[9px]', modelValue === option.value ? 'bg-white/15' : 'bg-ink/[0.06]']">
+            <span v-if="option.count != null" :class="['rounded-full px-1.5 py-0.5 font-mono text-[9px]', modelValue === option.value ? 'bg-white/20' : 'bg-ink/[0.06]']">
                 {{ option.count }}
             </span>
         </button>

@@ -58,12 +58,6 @@ const mainIcons = {
 function isSelectedForm(key) {
     return ! freeform.value && selectedKey.value === key;
 }
-const selectedProject = computed(() => (props.projects || []).find((project) => project.id === form.project_id));
-const isSelfProject = computed(() => selectedProject.value?.type === 'self');
-
-watch(isSelfProject, (self) => {
-    if (self) form.consent = true;
-});
 const priorityLabel = computed(() => (props.priorities || []).find((priority) => priority.value === form.priority)?.label || form.priority);
 
 function emptyFormData(template) {
@@ -97,6 +91,14 @@ const form = useForm({
     deadline: '',
     form_data: emptyFormData(preferredForm),
 });
+
+const selectedProject = computed(() => (props.projects || []).find((project) => project.id === form.project_id));
+const isSelfProject = computed(() => selectedProject.value?.type === 'self');
+
+watch(isSelfProject, (self) => {
+    if (self) form.consent = true;
+});
+
 
 function choose(template) {
     freeform.value = false;

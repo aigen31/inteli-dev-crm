@@ -70,7 +70,7 @@ const baseNavigation = computed(() => {
         return [
             { key: 'executor.dashboard', label: 'Обзор', href: route('executor.dashboard'), icon: HomeIcon, active: path.value === '/executor/dashboard' },
             { key: 'client.projects', label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') && !path.value.startsWith('/projects/system') },
-            { key: 'client.tasks', label: 'Заявки', href: route('client.tasks.index'), icon: RectangleStackIcon, active: path.value.startsWith('/tasks') },
+            { key: 'client.tasks', label: 'Задачи', href: route('client.tasks.index'), icon: RectangleStackIcon, active: path.value.startsWith('/tasks') },
             { key: 'executor.tasks', label: 'Назначено мне', href: route('executor.tasks.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/executor/tasks') },
             { key: 'client.briefs', label: 'Брифы', href: route('client.briefs.index'), icon: ClipboardDocumentListIcon, active: path.value.startsWith('/briefs') },
             { key: 'client.invoices', label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
@@ -210,22 +210,6 @@ const breadcrumbParent = computed(() => {
 
     return hrefPath === path.value ? null : { label: item.label, href: item.href };
 });
-
-const isRootPage = computed(() => {
-    const roots = ['/admin/dashboard', '/executor/dashboard', '/dashboard', '/assistant'];
-
-    return roots.includes(path.value);
-});
-
-function goBack() {
-    if (window.history.length > 1) {
-        window.history.back();
-
-        return;
-    }
-
-    router.visit(isAdmin.value ? route('admin.dashboard') : isExecutor.value ? route('executor.dashboard') : route('client.dashboard'));
-}
 
 const sectionLabel = computed(() => {
     if (path.value.startsWith('/admin/settings')) return 'Настройки';
@@ -432,16 +416,6 @@ function logout() {
             <!-- Desktop top strip -->
             <div v-if="!bare" class="mx-auto hidden max-w-[1280px] items-center gap-4 px-8 pt-6 lg:flex">
                 <div class="flex min-w-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-                    <button
-                        v-if="!isRootPage"
-                        type="button"
-                        class="hidden shrink-0 items-center justify-center rounded-full border border-line bg-surface-2/60 p-1.5 text-muted transition hover:border-line-strong hover:text-ink sm:inline-flex"
-                        aria-label="Назад"
-                        title="Назад"
-                        @click="goBack"
-                    >
-                        <ArrowLeftIcon class="h-3.5 w-3.5" />
-                    </button>
                     <nav class="flex min-w-0 items-center gap-2" aria-label="Хлебные крошки">
                         <span class="hidden shrink-0 text-faint sm:inline">inteli dev</span>
                         <span class="hidden shrink-0 text-faint sm:inline">/</span>

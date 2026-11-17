@@ -26,6 +26,34 @@ function toggleSize() {
     }
 }
 
+const sessions = ref([]);
+const sessionsLoading = ref(false);
+
+async function fetchSessions() {
+    if (sessionsLoading.value) return;
+    sessionsLoading.value = true;
+    try {
+        const { data } = await axios.get(route('assistant.conversations.index'));
+        sessions.value = data.sessions ?? [];
+    } catch {
+        sessions.value = [];
+    } finally {
+        sessionsLoading.value = false;
+    }
+}
+
+async function openSession(id) {
+    await loadSession(id);
+    fetchSessions();
+}
+
+watch(
+    () => [state.open, isFullscreen.value],
+    ([open, full]) => {
+        if (open && full) fetchSessions();
+    },
+);
+
 onMounted(() => {
     try {
         const saved = window.localStorage.getItem(sizeKey.value);
@@ -61,6 +89,7 @@ const {
     uploadDocuments,
     removeDocument,
     reset,
+    loadSession,
 } = useAssistantChat({
     context: () => ({ url: page.url, page: page.component }),
     projectId: () => state.project?.id ?? null,
@@ -186,7 +215,33 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                     </div>
                 </header>
 
-                <ChatThread
+                <div class="flex min-h-0 flex-1">
+                    <aside v-if="isFullscreen" class="hidden w-[260px] shrink-0 flex-col border-r border-line bg-surface-2/40 lg:flex">
+                        <div class="flex items-center justify-between gap-2 border-b border-line/70 px-3 py-2.5">
+                            <p class="font-mono text-[9px] uppercase tracking-[0.12em] text-muted">Диалоги</p>
+                            <button type="button" class="rounded-lg p-1.5 text-muted transition hover:bg-ink/[0.05] hover:text-ink" title="Новый диалог" @click="newChat">
+                                <PlusIcon class="h-4 w-4" />
+                            </button>
+                        </div>
+                        <div class="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
+                            <button
+                                v-for="item in sessions"
+                                :key="item.id"
+                                type="button"
+                                :class="[
+                                    'flex w-full items-center gap-2 rounded-[10px] px-2.5 py-2 text-left text-[11px] transition',
+                                    item.id === conversationId ? 'bg-primary-600 text-white' : 'text-ink-soft hover:bg-ink/[0.05]',
+                                ]"
+                                @click="openSession(item.id)"
+                            >
+                                <span class="min-w-0 flex-1 truncate">{{ item.title || 'Без названия' }}</span>
+                            </button>
+                            <p v-if="! sessions.length" class="px-2 py-3 text-[11px] text-faint">Пока нет диалогов</p>
+                        </div>
+                    </aside>
+
+                    <div class="flex min-h-0 flex-1 flex-col">
+                        <ChatThread
                     class="min-h-0 flex-1"
                     compact
                     :messages="messages"
@@ -228,6 +283,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                         на обработку данных.
                     </p>
                 </footer>
+                    </div>
+                </div>
             </aside>
         </div>
     </Teleport>

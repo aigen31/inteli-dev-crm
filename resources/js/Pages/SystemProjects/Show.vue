@@ -228,7 +228,7 @@ function updateStatus(item, event) {
                         :class="[
                             'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition',
                             (filters.status || '') === chip.value
-                                ? 'border-ink bg-ink text-canvas'
+                                ? 'border-primary-500 bg-primary-600 text-white'
                                 : 'border-line bg-surface-2/50 text-muted hover:border-line-strong hover:text-ink',
                         ]"
                         @click="setStatus(chip.value)"
@@ -236,11 +236,11 @@ function updateStatus(item, event) {
                         {{ chip.label }}
                         <span class="font-mono text-[9px] opacity-60">{{ chip.count }}</span>
                     </button>
-                    <span class="ml-auto inline-flex rounded-full border border-line bg-white/50 p-1">
-                        <button type="button" :class="['rounded-full px-2.5 py-1 text-[9px] font-semibold', filters.sort !== 'new' ? 'bg-ink text-canvas' : 'text-muted']" @click="filter({ sort: 'top' })">Топ</button>
-                        <button type="button" :class="['rounded-full px-2.5 py-1 text-[9px] font-semibold', filters.sort === 'new' ? 'bg-ink text-canvas' : 'text-muted']" @click="filter({ sort: 'new' })">Новые</button>
+                    <span class="ml-auto inline-flex rounded-full border border-line bg-surface-2/60 p-1">
+                        <button type="button" :class="['rounded-full px-2.5 py-1 text-[9px] font-semibold', filters.sort !== 'new' ? 'bg-primary-600 text-white' : 'text-muted']" @click="filter({ sort: 'top' })">Топ</button>
+                        <button type="button" :class="['rounded-full px-2.5 py-1 text-[9px] font-semibold', filters.sort === 'new' ? 'bg-primary-600 text-white' : 'text-muted']" @click="filter({ sort: 'new' })">Новые</button>
                     </span>
-                    <button v-if="canManage" type="button" :class="['inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[9px] font-semibold transition', filters.archived ? 'border-ink bg-ink text-canvas' : 'border-line bg-surface-2/50 text-muted hover:text-ink']" @click="filter({ archived: !filters.archived })"><ArchiveBoxIcon class="h-3 w-3" />{{ filters.archived ? 'К активным' : 'Архив' }}</button>
+                    <button v-if="canManage" type="button" :class="['inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[9px] font-semibold transition', filters.archived ? 'border-primary-500 bg-primary-600 text-white' : 'border-line bg-surface-2/50 text-muted hover:text-ink']" @click="filter({ archived: !filters.archived })"><ArchiveBoxIcon class="h-3 w-3" />{{ filters.archived ? 'К активным' : 'Архив' }}</button>
                 </div>
 
                 <form class="relative mb-4" @submit.prevent="search">
