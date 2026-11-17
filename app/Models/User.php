@@ -65,14 +65,38 @@ class User extends Authenticatable
         return $this->role === UserRole::Admin;
     }
 
+    /**
+     * Роли «клиент» и «исполнитель» объединены: любой не-админ может быть
+     * назначен и заказчиком, и исполнителем в рамках проекта или задачи.
+     */
     public function isClient(): bool
     {
-        return $this->role === UserRole::Client;
+        return ! $this->isAdmin();
     }
 
     public function isExecutor(): bool
     {
-        return $this->role === UserRole::Executor;
+        return ! $this->isAdmin();
+    }
+
+    public function isUser(): bool
+    {
+        return ! $this->isAdmin();
+    }
+
+    /**
+     * Роли для фильтрации инструментов: обычный пользователь считается и
+     * клиентом, и исполнителем — кем он выступает, решает назначение.
+     *
+     * @return list<string>
+     */
+    public function roleNames(): array
+    {
+        if ($this->isAdmin()) {
+            return [UserRole::Admin->value];
+        }
+
+        return [UserRole::User->value, UserRole::Client->value, UserRole::Executor->value];
     }
 
     public function hasClientDelegation(): bool

@@ -29,9 +29,9 @@ class ClientController extends Controller
             ->values();
 
         $clients = User::query()
-            ->where('role', UserRole::Client)
+            ->where('role', '!=', UserRole::Admin)
             ->with('customFieldValues.customField')
-            ->withCount(['clientTasks', 'invoices'])
+            ->withCount(['clientTasks', 'assignedTasks', 'invoices'])
             ->when($request->input('q'), function ($query, $search): void {
                 $query->where(fn ($q) => $q
                     ->where('name', 'like', "%{$search}%")

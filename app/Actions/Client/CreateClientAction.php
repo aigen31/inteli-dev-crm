@@ -13,7 +13,7 @@ class CreateClientAction
     public function execute(array $data): User
     {
         $client = User::create([
-            'role' => UserRole::Client,
+            'role' => UserRole::User,
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'] ?? null,

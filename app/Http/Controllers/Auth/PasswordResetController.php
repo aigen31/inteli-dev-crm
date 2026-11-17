@@ -64,7 +64,6 @@ class PasswordResetController extends Controller
 
         $target = match (true) {
             $user->isAdmin() => route('admin.dashboard'),
-            $user->isExecutor() || (! $user->hasClientDelegation() && $user->hasExecutorDelegation()) => route('executor.dashboard'),
             default => route('client.dashboard'),
         };
 

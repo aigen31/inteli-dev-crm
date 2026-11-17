@@ -83,7 +83,7 @@ class CrmToolbox
         $definitions = [];
 
         foreach ($this->catalog() as $name => $tool) {
-            if (! in_array($user->role->value, $tool['roles'], true)) {
+            if (array_intersect($user->roleNames(), $tool['roles']) === []) {
                 continue;
             }
 
@@ -180,7 +180,7 @@ class CrmToolbox
             throw ValidationException::withMessages(['tool' => "Инструмент «{$name}» не найден."]);
         }
 
-        if (! in_array($user->role->value, $tool['roles'], true)) {
+        if (array_intersect($user->roleNames(), $tool['roles']) === []) {
             throw ValidationException::withMessages(['tool' => 'Недостаточно прав для этого действия.']);
         }
 

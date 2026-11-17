@@ -26,11 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
 
-        $middleware->redirectUsersTo(fn (Request $request) => match (true) {
-            $request->user()?->isAdmin() => '/admin/dashboard',
-            $request->user()?->isExecutor() => '/executor/dashboard',
-            default => '/dashboard',
-        });
+        // Роли объединены: у обычного пользователя один кабинет.
+        $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->isAdmin()
+            ? '/admin/dashboard'
+            : '/dashboard');
 
         $middleware->web(append: [
             HandleInertiaRequests::class,
