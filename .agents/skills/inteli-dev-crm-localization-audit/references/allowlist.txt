@@ -1,0 +1,5 @@
+# Technical/brand strings that intentionally do not need en/zh translation.
+# One exact string per line; comments start with #.
+Windows XP
+03 Steps
+/[^a-zа-я0-9]+/u

@@ -14,6 +14,7 @@ use App\Enums\CustomFieldEntity;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\ProjectMemberRole;
+use App\Enums\ProjectType;
 use App\Enums\ProjectStatus;
 use App\Enums\TaskPriority;
 use App\Enums\TaskSource;
@@ -33,6 +34,7 @@ use App\Models\TaskReport;
 use App\Models\TaskReportItem;
 use App\Models\TaskTemplate;
 use App\Models\User;
+use App\Services\BalanceService;
 use App\Services\Briefs\BriefFormatter;
 use App\Services\Briefs\BriefSchema;
 use App\Services\Briefs\BriefService;
@@ -73,6 +75,7 @@ class CrmToolbox
         private readonly BriefFormatter $briefs,
         private readonly BriefService $briefService,
         private readonly TaskStrictControl $strictControl,
+        private readonly BalanceService $balance,
     ) {}
 
     /**
@@ -237,6 +240,8 @@ class CrmToolbox
             'get_invoice' => $this->getInvoice($user, $arguments),
             'list_users' => $this->listUsers($user, $arguments),
             'get_custom_field_values' => $this->getCustomFieldValues($user, $arguments),
+            'get_balance' => $this->getBalance($user, $arguments),
+            'adjust_balance' => $this->adjustBalance($user, $arguments),
             default => throw ValidationException::withMessages(['tool' => "Инструмент «{$name}» не реализован."]),
         };
     }
@@ -583,11 +588,32 @@ class CrmToolbox
                 'roles' => ['admin'],
                 'confirm' => false,
             ],
+            'get_balance' => [
+                'description' => 'Баланс пользователя и последние операции. Клиент видит только свой баланс, администратор — любого пользователя.',
+                'properties' => [
+                    'user_id' => ['type' => 'string', 'description' => 'UUID или email пользователя (только администратор).'],
+                ],
+                'required' => [],
+                'roles' => ['admin', 'client'],
+                'confirm' => false,
+            ],
+            'adjust_balance' => [
+                'description' => 'Изменить баланс пользователя на сумму со знаком (+ пополнение, − списание, баланс может уйти в минус). Денежное действие, требует подтверждения.',
+                'properties' => [
+                    'user_id' => ['type' => 'string', 'description' => 'UUID или email пользователя.'],
+                    'amount' => ['type' => 'number', 'description' => 'Сумма со знаком: 1500 или -500.'],
+                    'description' => ['type' => 'string', 'description' => 'Причина изменения.'],
+                ],
+                'required' => ['user_id', 'amount'],
+                'roles' => ['admin'],
+                'confirm' => true,
+            ],
             'create_project' => [
-                'description' => 'Создать проект для клиента. Только администратор.',
+                'description' => 'Создать проект. type=client — для клиента, type=self — внутренний (заказчик — администратор). Только администратор.',
                 'properties' => [
                     'name' => ['type' => 'string'],
                     'key' => ['type' => 'string'],
+                    'type' => ['type' => 'string', 'enum' => ['client', 'self'], 'description' => 'Тип проекта. По умолчанию client.'],
                     'client_id' => ['type' => 'string'],
                     'description' => ['type' => 'string'],
                     'site_url' => ['type' => 'string'],
@@ -2369,12 +2395,86 @@ class CrmToolbox
      * @param  array<string, mixed>  $arguments
      * @return array<string, mixed>
      */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function getBalance(User $user, array $arguments): array
+    {
+        $target = $user;
+        $value = trim((string) ($arguments['user_id'] ?? ''));
+
+        if ($value !== '') {
+            $this->assertAdmin($user);
+            $target = Str::isUuid($value)
+                ? User::query()->find($value)
+                : User::query()->where('email', $value)->first();
+
+            if ($target === null) {
+                throw ValidationException::withMessages(['user_id' => 'Пользователь не найден.']);
+            }
+        }
+
+        $target->load(['balanceTransactions' => fn ($query) => $query->latest()->limit(10)]);
+
+        return [
+            'user' => ['id' => $target->id, 'name' => $target->name, 'email' => $target->email],
+            'balance' => (float) $target->balance,
+            'transactions' => $target->balanceTransactions->map(fn ($transaction): array => [
+                'amount' => (float) $transaction->amount,
+                'balance_after' => (float) $transaction->balance_after,
+                'reason' => $transaction->reason,
+                'description' => $transaction->description,
+                'created_at' => $transaction->created_at?->toIso8601String(),
+            ])->all(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function adjustBalance(User $user, array $arguments): array
+    {
+        $this->assertAdmin($user);
+
+        $data = Validator::make($arguments, [
+            'user_id' => ['required', 'string'],
+            'amount' => ['required', 'numeric', 'between:-1000000,1000000', 'not_in:0'],
+            'description' => ['nullable', 'string', 'max:200'],
+        ])->validate();
+
+        $target = Str::isUuid($data['user_id'])
+            ? User::query()->find($data['user_id'])
+            : User::query()->where('email', $data['user_id'])->first();
+
+        if ($target === null || $target->isAdmin()) {
+            throw ValidationException::withMessages(['user_id' => 'Пользователь не найден.']);
+        }
+
+        $transaction = $this->balance->adjust(
+            $target,
+            (float) $data['amount'],
+            'manual',
+            $data['description'] ?? null,
+            [],
+            $user,
+        );
+
+        return [
+            'user' => ['id' => $target->id, 'name' => $target->name, 'email' => $target->email],
+            'amount' => (float) $transaction->amount,
+            'balance' => (float) $transaction->balance_after,
+        ];
+    }
+
     private function createProject(User $user, array $arguments): array
     {
         $this->assertAdmin($user);
         $data = Validator::make($arguments, [
             'name' => ['required', 'string', 'min:2', 'max:255'],
             'key' => ['nullable', 'string', 'max:12'],
+            'type' => ['sometimes', Rule::enum(ProjectType::class)],
             'client_id' => ['nullable', 'uuid', 'exists:users,id'],
             'description' => ['nullable', 'string', 'max:20000'],
             'site_url' => ['nullable', 'url', 'max:500'],
@@ -2578,6 +2678,7 @@ class CrmToolbox
         $data = Validator::make($arguments, [
             'name' => ['required', 'string', 'min:2', 'max:255'],
             'key' => ['nullable', 'string', 'max:12'],
+            'type' => ['sometimes', Rule::enum(ProjectType::class)],
             'client_id' => ['nullable', 'uuid', 'exists:users,id'],
             'description' => ['nullable', 'string', 'max:20000'],
             'site_url' => ['nullable', 'url', 'max:500'],

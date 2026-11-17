@@ -290,3 +290,46 @@ test('MCP returns signed screenshot links for report items', function (): void {
 
     $this->get($result['items'][0]['screenshot_url'])->assertOk()->assertHeader('Content-Type', 'image/png');
 });
+
+test('MCP reads and adjusts a user balance with confirmation', function (): void {
+    $read = mcpCall($this, 'get_balance', ['user' => $this->client->email]);
+
+    expect($read['isError'])->toBeFalse()
+        ->and((float) $read['structuredContent']['balance'])->toBe(0.0);
+
+    $withoutConfirm = mcpCall($this, 'adjust_balance', [
+        'user' => $this->client->id,
+        'amount' => 1500,
+    ]);
+
+    expect($withoutConfirm['isError'])->toBeTrue();
+
+    $adjusted = mcpCall($this, 'adjust_balance', [
+        'user' => $this->client->id,
+        'amount' => 1500,
+        'description' => 'Предоплата',
+        'confirm' => true,
+    ]);
+
+    expect($adjusted['isError'])->toBeFalse()
+        ->and((float) $adjusted['structuredContent']['balance'])->toBe(1500.0);
+
+    $after = mcpCall($this, 'get_balance', ['user' => $this->client->id]);
+
+    expect((float) $after['structuredContent']['balance'])->toBe(1500.0)
+        ->and($after['structuredContent']['transactions'])->toHaveCount(1);
+});
+
+test('MCP creates a self project without an external client', function (): void {
+    $result = mcpCall($this, 'create_project', [
+        'name' => 'Внутренний MCP',
+        'type' => 'self',
+    ]);
+
+    expect($result['isError'])->toBeFalse();
+
+    $project = Project::query()->where('key', $result['structuredContent']['key'])->firstOrFail();
+
+    expect($project->type->value)->toBe('self')
+        ->and($project->client_id)->toBe($this->admin->id);
+});
