@@ -181,7 +181,7 @@ onBeforeUnmount(() => {
     </div>
     <Teleport to="body">
         <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-            <div v-if="selectedDay" class="fixed inset-0 z-[95] flex items-center justify-center bg-ink/45 p-3 backdrop-blur-[3px] sm:p-6" @click.self="closeTasks">
+            <div v-if="selectedDay" class="fixed inset-0 z-[95] flex items-center justify-center bg-black/45 p-3 backdrop-blur-[3px] sm:p-6" @click.self="closeTasks">
                 <section class="flex max-h-[88vh] w-full max-w-[660px] flex-col overflow-hidden rounded-[28px] border border-line bg-surface shadow-[0_30px_90px_rgba(20,16,30,.28)]" role="dialog" aria-modal="true" aria-label="Задачи на день">
                     <header class="relative shrink-0 overflow-hidden border-b border-line/70 px-5 pb-5 pt-6 sm:px-7">
                         <div class="absolute inset-x-0 top-0 h-1.5" :style="{ backgroundColor: tone(selectedLoad).background }"></div>

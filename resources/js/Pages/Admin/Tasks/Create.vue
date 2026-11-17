@@ -287,6 +287,16 @@ function submit() {
                     <span class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/50 px-2.5 py-1 text-[10px] font-semibold text-ink-soft"><span class="font-mono text-[9px] text-primary-600">03</span> Шаги</span>
                 </div>
 
+                <section v-if="selectedTemplate" class="surface-card mt-4 p-5 sm:p-6">
+                    <p class="eyebrow">Структурированная заявка</p>
+                    <h2 class="mt-1 text-[15px] font-bold text-ink">{{ selectedTemplate.name }}</h2>
+                    <p class="mt-1 text-[11px] text-muted">Поля шаблона — то же, что заполняет клиент.</p>
+                    <div class="mt-4">
+                        <TextInput v-model="form.title" label="Название задачи" :error="form.errors.title" placeholder="Коротко: что нужно сделать" />
+                    </div>
+                    <StructuredForm class="mt-4" :template="selectedTemplate" :model-value="form.form_data" :errors="form.errors" />
+                </section>
+
                 <TaskFormFields
                     :model-value="form"
                     :clients="clients"
@@ -302,15 +312,6 @@ function submit() {
                     @update:model-value="update"
                 />
 
-                <section v-if="selectedTemplate" class="surface-card mt-4 p-5 sm:p-6">
-                    <p class="eyebrow">Структурированная заявка</p>
-                    <h2 class="mt-1 text-[15px] font-bold text-ink">{{ selectedTemplate.name }}</h2>
-                    <p class="mt-1 text-[11px] text-muted">Поля шаблона — то же, что заполняет клиент.</p>
-                    <div class="mt-4">
-                        <TextInput v-model="form.title" label="Название задачи" :error="form.errors.title" placeholder="Коротко: что нужно сделать" />
-                    </div>
-                    <StructuredForm class="mt-4" :template="selectedTemplate" :model-value="form.form_data" :errors="form.errors" />
-                </section>
             </div>
 
             <aside class="space-y-4 xl:sticky xl:top-24">

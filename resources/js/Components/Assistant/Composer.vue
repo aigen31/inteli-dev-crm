@@ -132,7 +132,7 @@ defineExpose({ focus: () => textarea.value?.focus() });
                 <img :src="file.url" :alt="file.name" class="h-16 w-16 object-cover" />
                 <button
                     type="button"
-                    class="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink/70 text-white transition hover:bg-danger"
+                    class="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white transition hover:bg-danger"
                     title="Убрать изображение"
                     @click="emit('remove', file.id)"
                 >

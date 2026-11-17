@@ -170,7 +170,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 <template>
     <Teleport to="body">
         <div v-if="state.open" class="pointer-events-none fixed inset-0 z-[70]">
-            <div class="pointer-events-auto absolute inset-0 bg-ink/25 backdrop-blur-[2px] lg:hidden" @click="close"></div>
+            <div class="pointer-events-auto absolute inset-0 bg-black/25 backdrop-blur-[2px] lg:hidden" @click="close"></div>
 
             <aside
                 :class="[

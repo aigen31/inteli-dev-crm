@@ -326,7 +326,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
         <Teleport to="body">
             <div v-if="sidebarOpen" class="fixed inset-0 z-[80] lg:hidden">
-                <div class="absolute inset-0 bg-ink/30 backdrop-blur-[2px]" @click="sidebarOpen = false"></div>
+                <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]" @click="sidebarOpen = false"></div>
                 <div class="absolute inset-y-0 left-0 flex w-[86%] max-w-[330px] flex-col overflow-hidden border-r border-line bg-surface shadow-[0_30px_80px_rgba(28,24,35,0.3)]">
                     <div class="flex items-center justify-between border-b border-line/70 px-4 py-3">
                         <div class="flex items-center gap-2">
