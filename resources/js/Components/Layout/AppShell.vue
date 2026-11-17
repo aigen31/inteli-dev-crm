@@ -58,8 +58,7 @@ const baseNavigation = computed(() => {
             { key: 'admin.projects', label: 'Проекты', href: route('admin.projects.index'), icon: FolderIcon, active: path.value.startsWith('/admin/projects') },
             { key: 'admin.briefs', label: 'Брифы', href: route('admin.briefs.index'), icon: ClipboardDocumentListIcon, active: path.value.startsWith('/admin/briefs') },
             { key: 'admin.forms', label: 'Шаблоны', href: route('admin.forms.index'), icon: RectangleStackIcon, active: path.value.startsWith('/admin/forms') },
-            { key: 'admin.clients', label: 'Клиенты', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') },
-            { key: 'admin.team', label: 'Команда', href: route('admin.team.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/admin/team') },
+            { key: 'admin.clients', label: 'Пользователи', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') || path.value.startsWith('/admin/team') },
             { key: 'admin.invoices', label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },
             { key: 'admin.reports', label: 'Отчёты', href: route('admin.reports.index'), icon: InboxIcon, active: path.value.startsWith('/admin/reports') },
         ];

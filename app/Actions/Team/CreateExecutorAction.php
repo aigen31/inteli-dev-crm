@@ -12,7 +12,7 @@ class CreateExecutorAction
     public function execute(array $data): User
     {
         return User::create([
-            'role' => UserRole::Executor,
+            'role' => UserRole::User,
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'] ?? null,

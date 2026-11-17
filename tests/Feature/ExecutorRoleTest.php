@@ -29,7 +29,7 @@ test('an admin can create an executor account from the team section', function (
 
     $executor = User::query()->where('email', 'executor-one@example.com')->firstOrFail();
 
-    expect($executor->role)->toBe(UserRole::Executor)
+    expect($executor->role)->toBe(UserRole::User)
         ->and($executor->isExecutor())->toBeTrue();
 });
 
@@ -136,12 +136,13 @@ test('an executor can update the checklist and send a report to the client', fun
         ->and($report->task_id)->toBe($task->id);
 });
 
-test('executor-only routes are closed to clients and admins', function (): void {
+test('executor-only routes are open to any user but closed to admins', function (): void {
     $executor = User::factory()->executor()->create();
     $client = User::factory()->client()->create();
     $admin = User::factory()->admin()->create();
 
-    $this->actingAs($client)->get(route('executor.dashboard'))->assertForbidden();
+    // Любой пользователь — и заказчик, и исполнитель по назначению.
+    $this->actingAs($client)->get(route('executor.dashboard'))->assertOk();
     $this->actingAs($admin)->get(route('executor.dashboard'))->assertForbidden();
 });
 

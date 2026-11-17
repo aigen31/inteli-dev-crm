@@ -67,12 +67,12 @@ function statusTone(label) {
 </script>
 
 <template>
-    <AdminLayout title="Клиенты">
+    <AdminLayout title="Пользователи">
         <template #actions>
             <Link :href="route('admin.clients.create')">
                 <Button>
                     <PlusIcon class="h-4 w-4" />
-                    Новый клиент
+                    Новый пользователь
                 </Button>
             </Link>
         </template>
@@ -87,12 +87,12 @@ function statusTone(label) {
                     class="h-10 w-full rounded-full border border-line bg-white/60 pl-10 pr-4 text-[12px] text-ink placeholder-faint focus:border-primary-400 focus:outline-none"
                 />
             </form>
-            <span class="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{{ clients.total }} клиентов</span>
+            <span class="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{{ clients.total }} пользователей</span>
         </div>
 
         <div v-if="!clients.data.length" class="surface-card">
-            <EmptyState variant="clients" title="Клиентов пока нет" text="Создайте первый аккаунт — клиент получит доступ к своим задачам, счетам и шаблонам.">
-                <Link :href="route('admin.clients.create')"><Button size="sm">Создать клиента</Button></Link>
+            <EmptyState variant="clients" title="Пользователей пока нет" text="Создайте первый аккаунт — человек сможет быть и заказчиком, и исполнителем в разных проектах.">
+                <Link :href="route('admin.clients.create')"><Button size="sm">Создать пользователя</Button></Link>
             </EmptyState>
         </div>
 
