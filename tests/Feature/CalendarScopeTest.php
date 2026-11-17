@@ -102,3 +102,44 @@ test('the admin dashboard and widget zone expose the employee picker data', func
         ->assertJsonPath('currentUserId', $this->admin->id)
         ->assertJsonCount(3, 'team');
 });
+
+test('completed and rejected tasks do not count as workload', function (): void {
+    Task::factory()->create([
+        'client_id' => $this->client->id,
+        'created_by' => $this->admin->id,
+        'assignee_id' => $this->admin->id,
+        'status' => TaskStatus::Completed,
+        'title' => 'Сделанная задача',
+        'starts_at' => '2026-03-10',
+        'deadline' => '2026-03-12',
+    ]);
+
+    Task::factory()->create([
+        'client_id' => $this->client->id,
+        'created_by' => $this->admin->id,
+        'assignee_id' => $this->admin->id,
+        'status' => TaskStatus::RejectedByAdmin,
+        'title' => 'Отклонённая задача',
+        'starts_at' => '2026-03-10',
+        'deadline' => '2026-03-12',
+    ]);
+
+    // Считается только задача в работе.
+    $this->actingAs($this->admin)
+        ->getJson(route('calendar.activity', ['month' => '2026-03']))
+        ->assertOk()
+        ->assertJsonPath('days.2026-03-10', 1)
+        ->assertJsonPath('days.2026-03-11', 1)
+        ->assertJsonPath('days.2026-03-12', 1);
+
+    $this->actingAs($this->admin)
+        ->getJson(route('calendar.tasks', ['date' => '2026-03-10']))
+        ->assertOk()
+        ->assertJsonCount(1, 'tasks')
+        ->assertJsonPath('tasks.0.title', 'Задача админа');
+
+    $this->actingAs($this->admin)
+        ->getJson(route('calendar.intervals'))
+        ->assertOk()
+        ->assertJsonCount(1, 'intervals');
+});
