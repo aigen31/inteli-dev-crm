@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Models\Task;
 use App\Models\User;
@@ -13,6 +14,15 @@ use Illuminate\Support\Carbon;
 
 class CalendarIntervalController extends Controller
 {
+    /**
+     * Завершённая работа не создаёт нагрузку: такие задачи не считаются
+     * ни в календаре, ни в модалке дня. Отклонённая админом — тоже тупик.
+     */
+    private const NOT_WORKLOAD = [
+        TaskStatus::Completed->value,
+        TaskStatus::RejectedByAdmin->value,
+    ];
+
     public function __invoke(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -31,6 +41,7 @@ class CalendarIntervalController extends Controller
 
         $intervals = Task::query()
             ->where('assignee_id', $assigneeId)
+            ->whereNotIn('status', self::NOT_WORKLOAD)
             ->where(fn ($query) => $query->whereNotNull('starts_at')->orWhereNotNull('deadline'))
             ->get(['starts_at', 'deadline'])
             ->map(fn (Task $task): array => [
@@ -64,6 +75,7 @@ class CalendarIntervalController extends Controller
         $tasks = Task::query()
             ->visibleTo($user)
             ->where('assignee_id', $assigneeId)
+            ->whereNotIn('status', self::NOT_WORKLOAD)
             ->where(function ($query) use ($date): void {
                 $query->where(function ($query) use ($date): void {
                     $query->whereNotNull('starts_at')->whereNotNull('deadline')
@@ -133,6 +145,7 @@ class CalendarIntervalController extends Controller
 
         $tasks = Task::query()
             ->where('assignee_id', $assigneeId)
+            ->whereNotIn('status', self::NOT_WORKLOAD)
             ->where(fn ($query) => $query->whereNotNull('starts_at')->orWhereNotNull('deadline'))
             ->get(['starts_at', 'deadline']);
 
