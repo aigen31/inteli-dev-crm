@@ -164,7 +164,28 @@ watch(
 );
 
 onMounted(() => window.addEventListener('keydown', onKeydown));
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
+let previousBodyOverflow = '';
+
+watch(
+    () => state.open,
+    (open) => {
+        if (open) {
+            previousBodyOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = previousBodyOverflow;
+        }
+    },
+    { immediate: true },
+);
+
+onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onKeydown);
+
+    if (state.open) {
+        document.body.style.overflow = previousBodyOverflow;
+    }
+});
 </script>
 
 <template>
