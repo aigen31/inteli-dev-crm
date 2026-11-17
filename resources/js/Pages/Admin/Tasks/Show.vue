@@ -185,7 +185,7 @@ function addComment() {
             </div>
 
             <aside class="space-y-5">
-                <Card title="Иншаблонция">
+                <Card title="Информация">
                     <dl class="space-y-3 text-[12px]">
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Клиент</dt><dd><Link v-if="task.client?.role === 'client'" :href="route('admin.clients.show', task.client_id)" class="font-semibold text-primary-700 hover:underline">{{ task.client?.name }}</Link><span v-else class="font-semibold text-ink">{{ task.client?.name }}</span></dd></div>
                         <div class="flex items-center justify-between gap-3"><dt class="text-muted">Исполнитель</dt><dd class="text-ink">{{ task.assignee?.name || 'не назначен' }}</dd></div>
