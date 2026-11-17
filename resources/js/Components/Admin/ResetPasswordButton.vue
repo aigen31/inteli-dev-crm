@@ -48,7 +48,7 @@ function close() { open.value = false; }
     </button>
 
     <Teleport to="body">
-        <div v-if="open" class="fixed inset-0 z-[80] flex items-end justify-center bg-ink/45 p-3 backdrop-blur-sm sm:items-center sm:p-6" @click.self="close">
+        <div v-if="open" class="fixed inset-0 z-[80] flex items-end justify-center bg-black/45 p-3 backdrop-blur-sm sm:items-center sm:p-6" @click.self="close">
             <section class="relative w-full max-w-[500px] overflow-hidden rounded-[26px] border border-line bg-surface shadow-[0_28px_90px_rgba(16,13,24,.28)]" role="dialog" aria-modal="true" aria-label="Ссылка для сброса пароля">
                 <div class="relative overflow-hidden bg-ink px-5 pb-5 pt-5 text-canvas">
                     <div class="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary-400/30 blur-2xl"></div>

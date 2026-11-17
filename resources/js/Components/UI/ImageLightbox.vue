@@ -45,7 +45,7 @@ onBeforeUnmount(() => {
 
 <template>
     <Teleport to="body">
-        <div v-if="open && current" class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/75 p-4 backdrop-blur-sm sm:p-8" @click.self="close">
+        <div v-if="open && current" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm sm:p-8" @click.self="close">
             <button type="button" class="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20" aria-label="Закрыть" @click="close">
                 <XMarkIcon class="h-5 w-5" />
             </button>
@@ -59,7 +59,7 @@ onBeforeUnmount(() => {
 
             <figure class="flex max-h-full max-w-[1100px] flex-col items-center gap-3" @click.stop>
                 <img :src="current.url" :alt="current.alt || 'Изображение'" class="max-h-[78vh] max-w-full rounded-[18px] bg-white object-contain shadow-2xl" />
-                <figcaption class="flex max-w-full items-center gap-3 rounded-full bg-ink/55 px-4 py-2 text-[11px] text-white/80 backdrop-blur">
+                <figcaption class="flex max-w-full items-center gap-3 rounded-full bg-black/55 px-4 py-2 text-[11px] text-white/80 backdrop-blur">
                     <span class="truncate">{{ current.alt || 'Изображение' }}</span>
                     <span v-if="hasMany" class="font-mono text-[10px] text-white/50">{{ index + 1 }} / {{ images.length }}</span>
                     <a :href="current.download" class="inline-flex shrink-0 items-center gap-1 text-white/90 hover:text-white">

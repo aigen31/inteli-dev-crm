@@ -115,7 +115,7 @@ function reset() {
     <Teleport to="body">
         <template v-if="open">
         <transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-            <div class="fixed inset-0 z-[60] flex justify-end bg-ink/30 backdrop-blur-[2px]" @click.self="emit('clear')">
+            <div class="fixed inset-0 z-[60] flex justify-end bg-black/30 backdrop-blur-[2px]" @click.self="emit('clear')">
                 <transition enter-active-class="transition duration-200 ease-out" enter-from-class="translate-x-6 opacity-0" enter-to-class="translate-x-0 opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="translate-x-0 opacity-100" leave-to-class="translate-x-6 opacity-0">
                     <section class="flex h-full w-full max-w-[440px] flex-col border-l border-line bg-surface shadow-[-24px_0_70px_rgba(16,13,24,.16)]" role="dialog" aria-modal="true" aria-label="Пакетное редактирование задач">
                         <header class="relative overflow-hidden bg-ink px-5 pb-5 pt-5 text-canvas">

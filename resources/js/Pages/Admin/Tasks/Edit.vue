@@ -66,6 +66,16 @@ function submit() {
             <Button size="sm" :disabled="form.processing" @click="submit">Сохранить</Button>
         </template>
 
+        <section v-if="hasTemplate" class="surface-card p-5 sm:p-6">
+            <p class="eyebrow">Заявка из шаблона</p>
+            <h2 class="mt-1 text-[15px] font-bold text-ink">{{ task.form_template.name }}</h2>
+            <p class="mt-1 text-[11px] text-muted">Редактируются только поля этого шаблона — обычные поля задачи скрыты.</p>
+            <div class="mt-5">
+                <TextInput v-model="form.title" label="Название задачи" :error="form.errors.title" />
+            </div>
+            <StructuredForm class="mt-5" :template="task.form_template" :model-value="form.form_data" :errors="form.errors" />
+        </section>
+
         <TaskFormFields
             :model-value="form"
             :clients="clients"
@@ -82,14 +92,5 @@ function submit() {
             @update:model-value="update"
         />
 
-        <section v-if="hasTemplate" class="surface-card p-5 sm:p-6">
-            <p class="eyebrow">Заявка из шаблона</p>
-            <h2 class="mt-1 text-[15px] font-bold text-ink">{{ task.form_template.name }}</h2>
-            <p class="mt-1 text-[11px] text-muted">Редактируются только поля этого шаблона — обычные поля задачи скрыты.</p>
-            <div class="mt-5">
-                <TextInput v-model="form.title" label="Название задачи" :error="form.errors.title" />
-            </div>
-            <StructuredForm class="mt-5" :template="task.form_template" :model-value="form.form_data" :errors="form.errors" />
-        </section>
     </AdminLayout>
 </template>

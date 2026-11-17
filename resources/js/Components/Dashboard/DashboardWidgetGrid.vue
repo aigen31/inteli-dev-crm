@@ -302,7 +302,7 @@ function endDrag() {
     </section>
 
     <Teleport to="body">
-        <div v-if="catalogOpen" class="fixed inset-0 z-[90] flex justify-end bg-ink/30 backdrop-blur-[2px]" @click.self="catalogOpen = false">
+        <div v-if="catalogOpen" class="fixed inset-0 z-[90] flex justify-end bg-black/30 backdrop-blur-[2px]" @click.self="catalogOpen = false">
             <aside class="flex h-full w-full max-w-[430px] flex-col border-l border-line bg-surface shadow-[-24px_0_70px_rgba(16,13,24,.16)]">
                 <header class="relative overflow-hidden bg-ink px-5 pb-5 pt-5 text-canvas">
                     <div class="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-primary-400/25 blur-2xl"></div>

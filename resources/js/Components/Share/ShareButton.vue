@@ -86,7 +86,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div v-if="open" class="fixed inset-0 z-[70] flex items-end justify-center bg-ink/45 p-3 backdrop-blur-sm sm:items-center sm:p-6" @click.self="close">
+            <div v-if="open" class="fixed inset-0 z-[70] flex items-end justify-center bg-black/45 p-3 backdrop-blur-sm sm:items-center sm:p-6" @click.self="close">
                 <section
                     class="relative w-full max-w-[480px] overflow-hidden rounded-[26px] border border-line bg-surface shadow-[0_28px_90px_rgba(16,13,24,.28)]"
                     role="dialog"

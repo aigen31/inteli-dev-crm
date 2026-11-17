@@ -64,7 +64,7 @@ function hasValue(value) {
                 <div v-if="field.type === 'image' && hasValue(fieldsData[field.key])" class="mt-1">
                     <button type="button" class="group relative overflow-hidden rounded-[12px] border border-line bg-surface-2" @click="openImage(fieldsData[field.key])">
                         <img :src="route('files.preview', fieldsData[field.key])" :alt="field.label" class="h-24 w-32 object-cover transition group-hover:scale-[1.02]" loading="lazy" />
-                        <span class="absolute inset-0 flex items-center justify-center bg-ink/25 opacity-0 transition group-hover:opacity-100">
+                        <span class="absolute inset-0 flex items-center justify-center bg-black/25 opacity-0 transition group-hover:opacity-100">
                             <ArrowsPointingOutIcon class="h-4 w-4 text-white" />
                         </span>
                     </button>
@@ -88,7 +88,7 @@ function hasValue(value) {
                             <p class="text-[9px] font-semibold uppercase tracking-[0.06em] text-muted">{{ field.label }}</p>
                             <button v-if="field.type === 'image' && hasValue(row[field.key])" type="button" class="group relative mt-1 overflow-hidden rounded-[10px] border border-line bg-surface-2" @click="openImage(row[field.key])">
                                 <img :src="route('files.preview', row[field.key])" :alt="field.label" class="h-16 w-20 object-cover transition group-hover:scale-[1.02]" loading="lazy" />
-                                <span class="absolute inset-0 flex items-center justify-center bg-ink/25 opacity-0 transition group-hover:opacity-100">
+                                <span class="absolute inset-0 flex items-center justify-center bg-black/25 opacity-0 transition group-hover:opacity-100">
                                     <ArrowsPointingOutIcon class="h-3.5 w-3.5 text-white" />
                                 </span>
                             </button>
