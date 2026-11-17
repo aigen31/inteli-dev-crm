@@ -38,6 +38,12 @@ Route::get('/locale/{locale}', LocaleController::class)->name('locale.update');
 Route::get('/reset-password/{token}', [Auth\PasswordResetController::class, 'show'])->name('password.reset');
 Route::post('/reset-password', [Auth\PasswordResetController::class, 'store'])->middleware('throttle:10,1')->name('password.reset.store');
 
+// Signed file links for external agents (MCP, DeepSeek Harness): no session.
+Route::get('/files/{file}/shared', [FileController::class, 'shared'])
+    ->middleware('signed')
+    ->whereUuid('file')
+    ->name('files.shared');
+
 // Public brief link: no account, token in the URL.
 Route::group([
     'prefix' => '/b/{token}',

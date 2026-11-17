@@ -31,6 +31,19 @@ class FileController extends Controller
         ], 201);
     }
 
+    /**
+     * Файл по подписанной ссылке: нужен внешним агентам (MCP/DeepSeek Harness),
+     * у которых нет сессии CRM. Ссылка живёт ограниченное время и подписана.
+     */
+    public function shared(FileAttachment $file): StreamedResponse
+    {
+        return Storage::disk('local')->response($file->stored_path, $file->original_name, [
+            'Content-Type' => $file->mime_type,
+            'Cache-Control' => 'private, max-age=300',
+            'X-Robots-Tag' => 'noindex',
+        ]);
+    }
+
     public function preview(FileAttachment $file): StreamedResponse
     {
         $this->authorize('download', $file);

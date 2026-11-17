@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Models\ConsentLog;
+use App\Models\FileAttachment;
 use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskReport;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -215,4 +217,76 @@ test('MCP manages project members and creates an invite', function (): void {
     ]);
     expect($invite['isError'])->toBeFalse();
     expect($invite['structuredContent']['url'])->toContain('/invite/');
+});
+
+test('MCP returns download URLs for screenshots attached to a task', function (): void {
+    Storage::fake('local');
+    Storage::disk('local')->put('shots/mcp.png', 'fake-png');
+
+    $file = FileAttachment::query()->create([
+        'uploaded_by' => $this->client->id,
+        'original_name' => 'screenshot.png',
+        'stored_path' => 'shots/mcp.png',
+        'mime_type' => 'image/png',
+        'size' => 8,
+    ]);
+
+    $task = Task::factory()->create([
+        'client_id' => $this->client->id,
+        'created_by' => $this->admin->id,
+        'project_id' => $this->project->id,
+        'title' => 'С формой и скриншотом',
+        'form_data' => [
+            'fields' => ['task_title' => 'С формой и скриншотом'],
+            'groups' => ['items' => [['description' => 'Скриншот', 'image' => $file->id]]],
+        ],
+    ]);
+
+    $result = mcpCall($this, 'get_task', ['task' => $task->id])['structuredContent'];
+
+    expect($result['screenshots'])->toHaveCount(1)
+        ->and($result['screenshots'][0]['id'])->toBe($file->id)
+        ->and($result['form_data']['groups']['items'][0]['image'])->toBe($file->id);
+
+    $url = $result['screenshots'][0]['url'];
+    expect($url)->toContain('signature=');
+
+    // Ссылка работает без сессии CRM — это и нужно внешнему агенту.
+    $this->get($url)->assertOk()->assertHeader('Content-Type', 'image/png');
+
+    // Подпись нельзя подделать.
+    $this->get($url.'tampered')->assertForbidden();
+});
+
+test('MCP returns signed screenshot links for report items', function (): void {
+    Storage::fake('local');
+    Storage::disk('local')->put('shots/report.png', 'fake-png');
+
+    $file = FileAttachment::query()->create([
+        'uploaded_by' => $this->admin->id,
+        'original_name' => 'report.png',
+        'stored_path' => 'shots/report.png',
+        'mime_type' => 'image/png',
+        'size' => 8,
+    ]);
+
+    $report = TaskReport::query()->create([
+        'author_id' => $this->admin->id,
+        'recipient_id' => $this->client->id,
+        'title' => 'Отчёт со скриншотом',
+        'content' => 'Проверка',
+        'sent_at' => now(),
+    ]);
+
+    $report->items()->create([
+        'content' => 'Проверьте страницу',
+        'test_url' => 'https://example.ru',
+        'screenshot_id' => $file->id,
+    ]);
+
+    $result = mcpCall($this, 'get_report', ['report' => $report->id])['structuredContent'];
+
+    expect($result['items'][0]['screenshot_url'])->toContain('signature=');
+
+    $this->get($result['items'][0]['screenshot_url'])->assertOk()->assertHeader('Content-Type', 'image/png');
 });
