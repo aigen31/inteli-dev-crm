@@ -230,3 +230,83 @@ test('a report can be exported as xlsx and pdf', function (): void {
     $this->actingAs($this->recipient)->get(route('reports.export.pdf', $report))->assertOk();
     $this->actingAs($this->other)->get(route('reports.export.pdf', $report))->assertForbidden();
 });
+
+test('a regular user creates, edits and deletes a report for their own task', function (): void {
+    $client = User::factory()->client()->create();
+    $executor = User::factory()->executor()->create();
+    $task = Task::factory()->create([
+        'client_id' => $client->id,
+        'assignee_id' => $executor->id,
+        'created_by' => $this->admin->id,
+        'title' => 'Задача клиента',
+    ]);
+
+    // Форма создания доступна обычному пользователю и отдаёт только его задачи.
+    $this->actingAs($client)
+        ->get(route('reports.create'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Admin/Reports/Create')
+            ->where('layout', 'client')
+            ->has('recipients'));
+
+    $this->actingAs($client)->post(route('reports.store'), [
+        'task_id' => $task->id,
+        'recipient_id' => $executor->id,
+        'title' => 'Отчёт по задаче',
+        'items' => [
+            ['summary' => 'Сделал работу и проверил результат.'],
+        ],
+    ])->assertRedirect();
+
+    $report = TaskReport::query()->latest()->firstOrFail();
+    expect($report->author_id)->toBe($client->id)
+        ->and($report->recipient_id)->toBe($executor->id);
+
+    // Свои отчёты видны в списке вместе с полученными.
+    $this->actingAs($client)
+        ->get(route('client.reports.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->has('reports.data', 1));
+
+    $this->actingAs($client)->patch(route('reports.update', $report), [
+        'task_id' => $task->id,
+        'recipient_id' => $executor->id,
+        'title' => 'Отчёт обновлён',
+        'items' => [
+            ['id' => $report->items()->first()->id, 'summary' => 'Обновил описание работы.'],
+        ],
+    ])->assertRedirect();
+
+    expect($report->refresh()->title)->toBe('Отчёт обновлён');
+
+    $this->actingAs($client)->delete(route('reports.destroy', $report))->assertRedirect();
+    expect(TaskReport::query()->find($report->id))->toBeNull();
+});
+
+test('a regular user cannot touch a foreign report or a foreign task', function (): void {
+    $stranger = User::factory()->client()->create();
+    $report = TaskReport::query()->create([
+        'author_id' => $this->admin->id,
+        'recipient_id' => $this->recipient->id,
+        'title' => 'Чужой отчёт',
+        'content' => 'Чужая работа',
+        'sent_at' => now(),
+    ]);
+    $report->items()->create(['content' => 'Чужая работа']);
+
+    $foreignTask = Task::factory()->create([
+        'client_id' => $this->other->id,
+        'created_by' => $this->admin->id,
+        'title' => 'Чужая задача',
+    ]);
+
+    $this->actingAs($stranger)->get(route('reports.edit', $report))->assertForbidden();
+    $this->actingAs($stranger)->delete(route('reports.destroy', $report))->assertForbidden();
+
+    $this->actingAs($stranger)->post(route('reports.store'), [
+        'task_id' => $foreignTask->id,
+        'recipient_id' => $this->admin->id,
+        'items' => [['summary' => 'Попытка отчёта по чужой задаче.']],
+    ])->assertForbidden();
+});

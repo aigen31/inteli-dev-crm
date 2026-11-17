@@ -65,6 +65,7 @@ class UpdateTaskRequest extends FormRequest
             'assignee_id' => ['nullable', 'uuid', 'exists:users,id'],
             'starts_at' => ['nullable', 'date'],
             'deadline' => ['nullable', 'date', 'after_or_equal:starts_at'],
+            'form_data' => ['nullable', 'array'],
             'checklist' => ['nullable', 'array', 'max:100'],
             'checklist.*.text' => ['nullable', 'string', 'max:500'],
             'checklist.*.done' => ['sometimes', 'boolean'],

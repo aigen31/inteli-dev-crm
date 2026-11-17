@@ -282,6 +282,11 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'is_active'])->group(function () {
     Route::patch('/sidebar-preferences', [SidebarPreferenceController::class, 'update'])->name('sidebar.update');
     Route::patch('/dashboard-layout', [DashboardLayoutController::class, 'update'])->name('dashboard.layout');
+    Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
+    Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+    Route::get('/reports/{report}/edit', [ReportController::class, 'edit'])->whereUuid('report')->name('reports.edit');
+    Route::patch('/reports/{report}', [ReportController::class, 'update'])->whereUuid('report')->name('reports.update');
+    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->whereUuid('report')->name('reports.destroy');
     Route::get('/reports/{report}', [ReportController::class, 'show'])->whereUuid('report')->name('reports.show');
     Route::get('/reports/{report}/screenshot', [ReportController::class, 'screenshot'])->whereUuid('report')->name('reports.screenshot');
     Route::get('/reports/{report}/export/xlsx', [ReportController::class, 'exportExcel'])->whereUuid('report')->name('reports.export.xlsx');

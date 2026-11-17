@@ -4,6 +4,7 @@ import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import TaskFormFields from '@/Components/Task/TaskFormFields.vue';
+import StructuredForm from '@/Components/FormTemplates/StructuredForm.vue';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -36,7 +37,10 @@ const form = useForm({
     starts_at: props.task?.starts_at || '',
     deadline: props.task?.deadline || '',
     custom_fields: values.value,
+    form_data: props.task?.form_data || { fields: {}, groups: {} },
 });
+
+const hasTemplate = computed(() => Boolean(props.task?.form_template));
 
 function update(next) {
     Object.keys(next).forEach((key) => {
@@ -75,5 +79,12 @@ function submit() {
             :show-status="false"
             @update:model-value="update"
         />
+
+        <section v-if="hasTemplate" class="surface-card mt-5 p-5 sm:p-6">
+            <p class="eyebrow">Структурированная заявка</p>
+            <h2 class="mt-1 text-[15px] font-bold text-ink">{{ task.form_template.name }}</h2>
+            <p class="mt-1 text-[11px] text-muted">Поля шаблона. Изменения сохраняются вместе с задачей.</p>
+            <StructuredForm class="mt-4" :template="task.form_template" :model-value="form.form_data" :errors="form.errors" />
+        </section>
     </AdminLayout>
 </template>
