@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Tasks;
 
+use App\Enums\ProjectType;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Models\Task;
@@ -34,6 +35,13 @@ class TaskStrictControl
     public function canChange(Task $task, User $user, TaskStatus $to): bool
     {
         if ($user->isAdmin()) {
+            return $to !== $task->status;
+        }
+
+        // Self-проект: заказчик — администратор, отдельного «ожидает оценки» нет.
+        if ($task->project?->type === ProjectType::Self
+            && $to === TaskStatus::Completed
+            && ($user->id === $task->assignee_id || $user->id === $task->client_id)) {
             return $to !== $task->status;
         }
 

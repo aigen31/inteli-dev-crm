@@ -14,6 +14,7 @@ const props = defineProps({
 });
 
 const form = useForm({
+    type: props.project.type || 'client',
     name: props.project.name,
     key: props.project.key,
     description: props.project.description || '',

@@ -67,7 +67,7 @@ class TaskController extends Controller
             'types' => Options::taskTypes(),
             'assignees' => User::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'role']),
             'priorities' => Options::priorities(),
-            'clients' => User::query()->where('role', UserRole::Client)->orderBy('name')->get(['id', 'name']),
+            'clients' => User::query()->where('role', '!=', UserRole::Admin)->orderBy('name')->get(['id', 'name']),
             'projects' => Project::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'key', 'name', 'color']),
             'counts' => [
                 'all' => Task::query()->count(),
@@ -296,11 +296,9 @@ class TaskController extends Controller
         return [
             'clients' => User::query()
                 ->where('is_active', true)
-                ->whereIn('role', [UserRole::Client, UserRole::Executor, UserRole::Admin])
                 ->orderBy('name')
                 ->get(['id', 'name', 'email', 'role']),
             'assignees' => User::query()
-                ->whereIn('role', [UserRole::Admin, UserRole::Executor, UserRole::Client])
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'role']),

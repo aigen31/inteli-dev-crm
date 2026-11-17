@@ -76,7 +76,6 @@ class WidgetZoneController extends Controller
         return response()->json([
             'isAdmin' => $isAdmin,
             'team' => $isAdmin ? User::query()
-                ->whereIn('role', [UserRole::Admin, UserRole::Executor])
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'role'])
@@ -88,7 +87,7 @@ class WidgetZoneController extends Controller
                 ->all() : [],
             'currentUserId' => $request->user()->id,
             'counters' => [
-                'clients' => $isAdmin ? User::query()->where('role', 'client')->where('is_active', true)->count() : 0,
+                'clients' => $isAdmin ? User::query()->where('role', '!=', 'admin')->where('is_active', true)->count() : 0,
                 'active_tasks' => Task::query()
                     ->when(! $isAdmin, fn ($q) => $q->where('assignee_id', $user->id))
                     ->whereIn('status', $activeStatuses)

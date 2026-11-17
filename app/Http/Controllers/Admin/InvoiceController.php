@@ -61,7 +61,7 @@ class InvoiceController extends Controller
 
         return Inertia::render('Admin/Invoices/Create', [
             'tasks' => $tasks,
-            'clients' => User::query()->whereIn('role', [UserRole::Client, UserRole::Admin])->orderBy('name')->get(['id', 'name']),
+            'clients' => User::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'selectedTaskId' => $request->query('task_id'),
         ]);
     }

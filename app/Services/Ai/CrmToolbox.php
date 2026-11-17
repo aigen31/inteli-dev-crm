@@ -908,7 +908,7 @@ class CrmToolbox
 
             return [
                 'role' => 'admin',
-                'clients' => User::query()->where('role', 'client')->count(),
+                'clients' => User::query()->where('role', '!=', 'admin')->count(),
                 'tasks_active' => Task::query()->whereIn('status', $active)->count(),
                 'tasks_overdue' => Task::query()
                     ->whereNotNull('deadline')
@@ -951,7 +951,7 @@ class CrmToolbox
     {
         $this->assertAdmin($user);
         $limit = min(max((int) ($arguments['limit'] ?? 20), 1), 50);
-        $query = User::query()->where('role', UserRole::Client);
+        $query = User::query()->where('role', '!=', UserRole::Admin);
 
         if (($search = trim((string) ($arguments['query'] ?? ''))) !== '') {
             $query->where(fn ($q) => $q
@@ -1213,7 +1213,7 @@ class CrmToolbox
             'client_id' => $data['client_id'] ?? ($user->isClient() ? $user->id : null),
             'clients' => $user->isAdmin()
                 ? User::query()
-                    ->where('role', UserRole::Client)
+                    ->where('role', '!=', UserRole::Admin)
                     ->orderBy('name')
                     ->limit(200)
                     ->get(['id', 'name', 'email'])
@@ -1469,7 +1469,7 @@ class CrmToolbox
             'projects' => $this->projectOptions($user),
             'clients' => $user->isAdmin()
                 ? User::query()
-                    ->where('role', UserRole::Client)
+                    ->where('role', '!=', UserRole::Admin)
                     ->orderBy('name')
                     ->limit(200)
                     ->get(['id', 'name', 'email'])
@@ -3371,7 +3371,7 @@ class CrmToolbox
         }
 
         $client = User::query()
-            ->where('role', UserRole::Client)
+            ->where('role', '!=', UserRole::Admin)
             ->where(function ($query) use ($identifier): void {
                 $query->where('email', $identifier);
 

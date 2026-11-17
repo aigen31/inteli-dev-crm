@@ -28,6 +28,7 @@ class User extends Authenticatable
         'messenger_contacts',
         'password',
         'is_active',
+        'balance',
         'locale',
         'theme',
         'features',
@@ -52,6 +53,7 @@ class User extends Authenticatable
             'dashboard_layout' => 'array',
             'widget_zone_layout' => 'array',
             'is_active' => 'boolean',
+            'balance' => 'decimal:2',
         ];
     }
 
@@ -129,6 +131,11 @@ class User extends Authenticatable
         }
 
         return $this->role;
+    }
+
+    public function balanceTransactions(): HasMany
+    {
+        return $this->hasMany(BalanceTransaction::class);
     }
 
     public function clientTasks(): HasMany

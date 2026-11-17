@@ -82,6 +82,7 @@ class TaskController extends Controller
                 ->map(fn (Project $project): array => [
                     'id' => $project->id,
                     'key' => $project->key,
+                    'type' => $project->type?->value ?? 'client',
                     'name' => $project->name,
                     'client_id' => $project->client_id,
                 ])
@@ -97,8 +98,11 @@ class TaskController extends Controller
         FormTemplateService $forms,
         ConsentService $consents,
     ): RedirectResponse {
+        $project = Project::query()->find($request->input('project_id'));
+        $isSelfProject = $project?->type === \App\Enums\ProjectType::Self;
+
         $data = $request->validate([
-            'consent' => ['accepted'],
+            'consent' => $isSelfProject ? ['nullable'] : ['accepted'],
             'project_id' => ['required', 'uuid', 'exists:projects,id'],
             'starts_at' => ['nullable', 'date'],
         ]);
@@ -122,7 +126,9 @@ class TaskController extends Controller
             $request->user(),
         );
 
-        $consents->record($request->user(), 'client-task-form', $request, ['task_id' => $task->id]);
+        if ($request->boolean('consent')) {
+            $consents->record($request->user(), 'client-task-form', $request, ['task_id' => $task->id]);
+        }
 
         return redirect()
             ->route('client.tasks.show', $task)
@@ -150,7 +156,11 @@ class TaskController extends Controller
         $task = $action->execute($data, $user);
 
         $this->customFields->sync($task, $customValues, $user);
-        $consents->record($user, 'client-task', $request, ['task_id' => $task->id]);
+
+        // В self-проектах согласие не спрашиваем: заказчик — сам администратор.
+        if ($request->boolean('consent')) {
+            $consents->record($user, 'client-task', $request, ['task_id' => $task->id]);
+        }
 
         return redirect()->route('client.tasks.show', $task)
             ->with('success', 'Заявка отправлена.');

@@ -60,6 +60,14 @@ function update(key, value) {
 
             <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <SelectInput
+                    :model-value="modelValue.type || 'client'"
+                    label="Тип проекта"
+                    :options="[{ value: 'client', label: 'Клиентский' }, { value: 'self', label: 'Self-проект (внутренний)' }]"
+                    :error="errors.type"
+                    @update:model-value="update('type', $event)"
+                />
+                <SelectInput
+                    v-if="(modelValue.type || 'client') !== 'self'"
                     :model-value="modelValue.client_id || ''"
                     label="Клиент"
                     :options="clientOptions"
@@ -67,6 +75,11 @@ function update(key, value) {
                     :error="errors.client_id"
                     @update:model-value="update('client_id', $event || null)"
                 />
+                <div v-else class="flex items-end">
+                    <p class="rounded-[14px] border border-line bg-surface-2/60 px-3 py-2.5 text-[11px] leading-relaxed text-muted">
+                        Заказчик — администратор. Задачи стартуют сразу в работе, без согласия и статуса «ожидает оценки».
+                    </p>
+                </div>
                 <SelectInput
                     :model-value="modelValue.status"
                     label="Статус"

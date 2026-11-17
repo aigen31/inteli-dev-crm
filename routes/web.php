@@ -142,6 +142,7 @@ Route::middleware('auth')->group(function () {
 
         // Clients
         Route::get('/clients', [Admin\ClientController::class, 'index'])->name('clients.index');
+        Route::post('/clients/{client}/balance', [Admin\ClientController::class, 'adjustBalance'])->name('clients.balance');
         Route::get('/clients/create', [Admin\ClientController::class, 'create'])->name('clients.create');
         Route::post('/clients', [Admin\ClientController::class, 'store'])->name('clients.store');
         Route::get('/clients/{client}', [Admin\ClientController::class, 'show'])->name('clients.show');

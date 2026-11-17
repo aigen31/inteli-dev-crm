@@ -91,7 +91,7 @@ class ProjectInviteService
             }
 
             $user = User::create([
-                'role' => UserRole::Client,
+                'role' => UserRole::User,
                 'name' => trim($data['name']),
                 'email' => $email,
                 'password' => Hash::make($data['password']),
