@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Client;
 
+use App\Enums\ProjectType;
 use App\Enums\TaskPriority;
+use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,9 +19,9 @@ class StoreTaskRequest extends FormRequest
 
     private function isSelfProject(): bool
     {
-        return \App\Models\Project::query()
+        return Project::query()
             ->whereKey($this->input('project_id'))
-            ->where('type', \App\Enums\ProjectType::Self->value)
+            ->where('type', ProjectType::Self->value)
             ->exists();
     }
 

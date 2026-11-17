@@ -87,6 +87,13 @@ class TaskController extends Controller
     {
         return Inertia::render('Admin/Tasks/Create', [
             ...$this->formOptions(),
+            'forms' => FormTemplate::query()
+                ->active()
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->map(fn (FormTemplate $form): array => $form->toLibraryArray())
+                ->values(),
         ]);
     }
 
@@ -139,11 +146,6 @@ class TaskController extends Controller
         $data = $request->validated();
         $customValues = $data['custom_fields'] ?? [];
         unset($data['custom_fields']);
-
-        // Структурированные ответы шаблона админ правит как и клиент.
-        if (array_key_exists('form_data', $data)) {
-            $data['form_data'] = $task->form_template_id === null ? $task->form_data : $data['form_data'];
-        }
 
         if (! empty($data['project_id'])) {
             $this->authorize('createTask', Project::query()->findOrFail($data['project_id']));

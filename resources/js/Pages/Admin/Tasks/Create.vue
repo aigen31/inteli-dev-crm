@@ -1,9 +1,11 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import TaskFormFields from '@/Components/Task/TaskFormFields.vue';
+import StructuredForm from '@/Components/FormTemplates/StructuredForm.vue';
+import FormTemplateCard from '@/Components/FormTemplates/FormTemplateCard.vue';
 import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import TaskDraftNotice from '@/Components/Task/TaskDraftNotice.vue';
@@ -13,6 +15,10 @@ import {
     CalendarDaysIcon,
     CheckCircleIcon,
     ClipboardDocumentCheckIcon,
+    ClipboardDocumentListIcon,
+    ChevronDownIcon,
+    BugAntIcon,
+    SparklesIcon,
     FolderIcon,
     FlagIcon,
     ListBulletIcon,
@@ -29,6 +35,7 @@ const props = defineProps({
     priorities: Array,
     statuses: Array,
     fields: Array,
+    forms: { type: Array, default: () => [] },
 });
 
 const params = new URLSearchParams(window.location.search);
@@ -50,8 +57,63 @@ const form = useForm({
     starts_at: '',
     deadline: '',
     custom_fields: {},
+    form_template_id: null,
+    form_data: { fields: {}, groups: {} },
     consent: false,
 });
+
+const selectedTemplate = computed(() => (props.forms || []).find((template) => template.id === form.form_template_id) || null);
+const templatePickerOpen = ref(false);
+const mainKeys = ['task-description-images', 'bug-report'];
+
+const mainForms = computed(() => mainKeys.map((key) => props.forms.find((candidate) => candidate.key === key)).filter(Boolean));
+const secondaryForms = computed(() => props.forms.filter((candidate) => !mainKeys.includes(candidate.key)));
+
+const mainTitles = {
+    'task-description-images': 'Описание задачи + изображения',
+    'bug-report': 'Баг-репорт',
+};
+
+const mainDescriptions = {
+    'task-description-images': 'Задача своими словами и скриншоты — для нового запроса или правки.',
+    'bug-report': 'Что сломалось, как воспроизвести и что ожидалось.',
+};
+
+const mainIcons = {
+    'task-description-images': ClipboardDocumentListIcon,
+    'bug-report': BugAntIcon,
+};
+
+function emptyFormData(template) {
+    const schema = template?.schema || {};
+    const fields = {};
+    (schema.fields || []).forEach((field) => {
+        fields[field.key] = field.type === 'checkbox' ? false : '';
+    });
+    const groups = {};
+    (schema.groups || []).forEach((group) => {
+        const count = Math.max(Number(group.min || 0), 0);
+        groups[group.key] = Array.from({ length: count }, () => {
+            const row = {};
+            (group.fields || []).forEach((field) => {
+                row[field.key] = field.type === 'checkbox' ? false : '';
+            });
+            return row;
+        });
+    });
+    return { fields, groups };
+}
+
+function chooseTemplate(template) {
+    form.form_template_id = template.id;
+    form.form_data = emptyFormData(template);
+    templatePickerOpen.value = false;
+}
+
+function clearTemplate() {
+    form.form_template_id = null;
+    form.form_data = { fields: {}, groups: {} };
+}
 
 const selectedClient = computed(() => (props.clients || []).find((client) => client.id === form.client_id));
 const selectedProject = computed(() => (props.projects || []).find((project) => project.id === form.project_id));
@@ -135,6 +197,78 @@ function submit() {
 
         <TaskDraftNotice v-if="draft.savedAt || draft.restored" :saved-at="draft.savedAt" :restored="draft.restored" @discard="draft.discard" />
 
+        <section class="surface-card mb-5 overflow-visible p-5 sm:p-6">
+            <div class="flex flex-wrap items-end justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="eyebrow">01 / С чего начнём</p>
+                    <h2 class="mt-1 font-display text-[20px] font-medium tracking-[-0.03em] text-ink">Что нужно сделать?</h2>
+                    <p class="mt-1 max-w-[620px] text-[12px] leading-relaxed text-muted">
+                        Можно взять шаблон — он подставит поля и подсказки, — или создать обычную задачу.
+                    </p>
+                </div>
+                <span class="rounded-full border border-line bg-surface-2/60 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-muted">шаг 1 из 3</span>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <button
+                    v-for="template in mainForms"
+                    :key="template.id"
+                    type="button"
+                    :class="[
+                        'group flex min-h-[132px] flex-col items-start rounded-[18px] border p-4 text-left transition',
+                        form.form_template_id === template.id
+                            ? 'border-primary-400 bg-primary-soft/60 shadow-[0_10px_30px_rgba(109,90,230,.12)]'
+                            : 'border-line bg-surface/70 hover:-translate-y-0.5 hover:border-primary-300',
+                    ]"
+                    @click="chooseTemplate(template)"
+                >
+                    <span :class="['flex h-10 w-10 items-center justify-center rounded-[13px]', form.form_template_id === template.id ? 'bg-primary-600 text-white' : 'bg-surface-2 text-primary-700']">
+                        <component :is="mainIcons[template.key]" class="h-5 w-5" />
+                    </span>
+                    <span class="mt-3 block text-[13px] font-bold text-ink">{{ mainTitles[template.key] || template.name }}</span>
+                    <span class="mt-1 block text-[11px] leading-relaxed text-muted">{{ mainDescriptions[template.key] || template.description }}</span>
+                </button>
+
+                <button
+                    type="button"
+                    :class="[
+                        'flex min-h-[132px] flex-col items-start rounded-[18px] border p-4 text-left transition',
+                        ! form.form_template_id
+                            ? 'border-primary-400 bg-primary-soft/60'
+                            : 'border-dashed border-line-strong bg-surface/50 hover:border-primary-300',
+                    ]"
+                    @click="clearTemplate"
+                >
+                    <span :class="['flex h-10 w-10 items-center justify-center rounded-[13px]', ! form.form_template_id ? 'bg-primary-600 text-white' : 'bg-surface-2 text-primary-700']">
+                        <SparklesIcon class="h-5 w-5" />
+                    </span>
+                    <span class="mt-3 block text-[13px] font-bold text-ink">Обычная задача</span>
+                    <span class="mt-1 block text-[11px] leading-relaxed text-muted">Свободное описание, чек-лист и поля — без шаблона.</span>
+                </button>
+            </div>
+
+            <div v-if="secondaryForms.length" class="mt-4 border-t border-line/70 pt-3">
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-700 transition hover:underline"
+                    @click="templatePickerOpen = ! templatePickerOpen"
+                >
+                    {{ templatePickerOpen ? 'Скрыть другие шаблоны' : 'Другие шаблоны' }}
+                    <span class="font-mono text-[10px] text-faint">{{ secondaryForms.length }}</span>
+                    <ChevronDownIcon :class="['h-3.5 w-3.5 transition', templatePickerOpen ? 'rotate-180' : '']" />
+                </button>
+                <div v-if="templatePickerOpen" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <FormTemplateCard
+                        v-for="template in secondaryForms"
+                        :key="template.id"
+                        :template="template"
+                        :selected="form.form_template_id === template.id"
+                        @select="chooseTemplate"
+                    />
+                </div>
+            </div>
+        </section>
+
         <div class="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
             <div class="min-w-0">
                 <div class="mb-3 flex flex-wrap items-center gap-2">
@@ -158,6 +292,13 @@ function submit() {
                     :errors="form.errors"
                     @update:model-value="update"
                 />
+
+                <section v-if="selectedTemplate" class="surface-card mt-4 p-5 sm:p-6">
+                    <p class="eyebrow">Структурированная заявка</p>
+                    <h2 class="mt-1 text-[15px] font-bold text-ink">{{ selectedTemplate.name }}</h2>
+                    <p class="mt-1 text-[11px] text-muted">Поля шаблона — то же, что заполняет клиент.</p>
+                    <StructuredForm class="mt-4" :template="selectedTemplate" :model-value="form.form_data" :errors="form.errors" />
+                </section>
             </div>
 
             <aside class="space-y-4 xl:sticky xl:top-24">
