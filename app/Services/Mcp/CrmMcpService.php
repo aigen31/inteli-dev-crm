@@ -29,6 +29,7 @@ use App\Models\Brief;
 use App\Models\BriefTemplate;
 use App\Models\CustomField;
 use App\Models\FormTemplate;
+use App\Models\FileAttachment;
 use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\ProjectInvite;
@@ -51,6 +52,7 @@ use App\Services\SettingsService;
 use App\Services\TaskTemplateService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -627,6 +629,8 @@ class CrmMcpService
                 'content' => $comment->content,
                 'created_at' => $comment->created_at?->toIso8601String(),
             ])->all(),
+            'form_data' => $task->form_data,
+            'screenshots' => $this->taskScreenshots($task),
             'reports' => $task->reports->map(fn (TaskReport $report): array => $this->reportSummary($report))->all(),
             'invoices' => $task->invoices->map(fn (Invoice $invoice): array => $this->invoiceSummary($invoice))->all(),
             'url' => route('admin.tasks.show', $task),
@@ -993,7 +997,8 @@ class CrmMcpService
                 'id' => $item->id,
                 'description' => $item->content,
                 'link' => $item->test_url,
-                'screenshot_url' => $item->screenshot_id ? route('reports.screenshot', ['report' => $report, 'item' => $item->id]) : null,
+                'screenshot_id' => $item->screenshot_id,
+                'screenshot_url' => $item->screenshot ? $this->sharedFileUrl($item->screenshot) : null,
             ])->all(),
             'url' => route('reports.show', $report),
         ];
@@ -2184,6 +2189,46 @@ class CrmMcpService
     /**
      * @return array<string, mixed>
      */
+    /**
+     * Скриншоты, приложенные к задаче в форме заявки.
+     *
+     * В `form_data` лежат только id файлов: внешнему агенту нужен URL, который
+     * он может скачать без сессии CRM, поэтому отдаём подписанную ссылку.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function taskScreenshots(Task $task): array
+    {
+        $ids = [];
+        $data = $task->form_data ?? [];
+        array_walk_recursive($data, function (mixed $value) use (&$ids): void {
+            if (is_string($value) && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $value) === 1) {
+                $ids[] = $value;
+            }
+        });
+
+        if ($ids === []) {
+            return [];
+        }
+
+        return FileAttachment::query()
+            ->whereIn('id', array_values(array_unique($ids)))
+            ->get()
+            ->map(fn (FileAttachment $file): array => [
+                'id' => $file->id,
+                'name' => $file->original_name,
+                'mime' => $file->mime_type,
+                'size' => $file->size,
+                'url' => $this->sharedFileUrl($file),
+            ])
+            ->all();
+    }
+
+    private function sharedFileUrl(FileAttachment $file): string
+    {
+        return URL::temporarySignedRoute('files.shared', now()->addHours(6), ['file' => $file->id]);
+    }
+
     private function reportSummary(TaskReport $report): array
     {
         return [

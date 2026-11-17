@@ -59,3 +59,6 @@ cd mcp && npm test
 2. Handler вызывает `api.get/post/...`; не дублируйте бизнес-логику.
 3. Добавьте тест в `mcp/test/tools.test.mjs` (mock endpoint в `helpers.mjs`).
 4. Обновите `mcp/README.md`, `docs/agents/api.md` и матрицу в `docs/agents/ai.md`, если инструмент связан с Кики.
+
+
+Скриншоты задач и отчётов `get_task`/`get_report` отдают подписанной ссылкой `/files/{file}/shared` (живёт 6 часов, подпись проверяется, сессия не нужна). Это позволяет внешнему агенту (DeepSeek Harness) скачать картинку по URL из ответа.
