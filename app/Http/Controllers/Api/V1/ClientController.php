@@ -22,7 +22,7 @@ class ClientController extends Controller
         $user = $request->user();
 
         $clients = User::query()
-            ->where('role', UserRole::Client)
+            ->where('role', '!=', UserRole::Admin)
             ->when($user->isClient(), fn ($query) => $query->whereKey($user->id))
             ->with('customFieldValues.customField')
             ->withCount(['clientTasks', 'invoices'])

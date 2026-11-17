@@ -8,6 +8,7 @@ use App\Enums\TaskStatus;
 use App\Events\Task\TaskStatusChanged;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\BalanceService;
 use App\Services\Tasks\TaskStrictControl;
 use Illuminate\Validation\ValidationException;
 
@@ -15,6 +16,7 @@ class ChangeTaskStatusAction
 {
     public function __construct(
         private readonly TaskStrictControl $control,
+        private readonly BalanceService $balance,
     ) {}
 
     public function execute(Task $task, TaskStatus $newStatus, User $changedBy, ?string $comment = null): Task
@@ -46,6 +48,10 @@ class ChangeTaskStatusAction
         }
 
         $task->save();
+
+        if ($newStatus === TaskStatus::Completed) {
+            $this->balance->settleCompletedTask($task, $changedBy);
+        }
 
         TaskStatusChanged::dispatch($task, $oldStatus, $newStatus, $changedBy, $comment);
 

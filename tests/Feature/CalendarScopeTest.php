@@ -94,13 +94,13 @@ test('the admin dashboard and widget zone expose the employee picker data', func
         ->assertInertia(fn ($page) => $page
             ->component('Admin/Dashboard')
             ->where('currentUserId', $this->admin->id)
-            ->has('team', 3));
+            ->has('team', 4));
 
     $this->actingAs($this->admin)
         ->getJson(route('widget-zone.data'))
         ->assertOk()
         ->assertJsonPath('currentUserId', $this->admin->id)
-        ->assertJsonCount(3, 'team');
+        ->assertJsonCount(4, 'team');
 });
 
 test('completed and rejected tasks do not count as workload', function (): void {

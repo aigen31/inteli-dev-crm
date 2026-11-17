@@ -70,6 +70,27 @@ class ClientController extends Controller
             ->with('success', 'Клиент успешно создан.');
     }
 
+    public function adjustBalance(Request $request, User $client, \App\Services\BalanceService $balance): RedirectResponse
+    {
+        abort_if($client->isAdmin(), 404);
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'between:-1000000,1000000', 'not_in:0'],
+            'description' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $transaction = $balance->adjust(
+            $client,
+            (float) $data['amount'],
+            'manual',
+            $data['description'] ?? null,
+            [],
+            $request->user(),
+        );
+
+        return back()->with('success', 'Баланс обновлён: '.number_format((float) $transaction->balance_after, 2, ',', ' ').' ₽');
+    }
+
     public function show(User $client, CustomFieldService $customFields): Response
     {
         abort_unless($client->isClient(), 404);
@@ -85,6 +106,21 @@ class ClientController extends Controller
             'tasks' => $client->clientTasks,
             'invoices' => $client->invoices,
             'customFields' => $customFields->serializedValues($client),
+            'balance' => (float) $client->balance,
+            'balanceTransactions' => $client->balanceTransactions()
+                ->with('author:id,name')
+                ->latest()
+                ->limit(10)
+                ->get()
+                ->map(fn ($transaction): array => [
+                    'id' => $transaction->id,
+                    'amount' => (float) $transaction->amount,
+                    'balance_after' => (float) $transaction->balance_after,
+                    'reason' => $transaction->reason,
+                    'description' => $transaction->description,
+                    'created_at' => $transaction->created_at?->toIso8601String(),
+                    'author' => $transaction->author?->name,
+                ]),
         ]);
     }
 

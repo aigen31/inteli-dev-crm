@@ -15,6 +15,7 @@ const props = defineProps({
 const params = new URLSearchParams(window.location.search);
 
 const form = useForm({
+    type: 'client',
     name: '',
     key: '',
     description: '',

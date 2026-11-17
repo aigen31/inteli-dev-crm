@@ -88,7 +88,7 @@ class BriefController extends Controller
                 ->get()
                 ->map(fn (BriefTemplate $template): array => $template->toLibraryArray()),
             'clients' => User::query()
-                ->where('role', UserRole::Client)
+                ->where('role', '!=', UserRole::Admin)
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'projects' => Project::query()

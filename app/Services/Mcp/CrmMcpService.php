@@ -28,8 +28,8 @@ use App\Exceptions\AiException;
 use App\Models\Brief;
 use App\Models\BriefTemplate;
 use App\Models\CustomField;
-use App\Models\FormTemplate;
 use App\Models\FileAttachment;
+use App\Models\FormTemplate;
 use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\ProjectInvite;
@@ -473,7 +473,7 @@ class CrmMcpService
         $activeStatuses = [TaskStatus::PendingReview, TaskStatus::Queued, TaskStatus::InProgress, TaskStatus::AwaitingReview, TaskStatus::RejectedByClient];
 
         return [
-            'clients' => User::query()->where('role', UserRole::Client)->where('is_active', true)->count(),
+            'clients' => User::query()->where('role', '!=', UserRole::Admin)->where('is_active', true)->count(),
             'projects' => Project::query()->whereNull('archived_at')->count(),
             'tasks' => [
                 'active' => Task::query()->whereIn('status', $activeStatuses)->count(),
@@ -496,7 +496,7 @@ class CrmMcpService
     private function listClients(array $arguments): array
     {
         $limit = min(max((int) ($arguments['limit'] ?? 20), 1), 100);
-        $query = User::query()->where('role', UserRole::Client)->withCount(['clientTasks', 'invoices'])->latest();
+        $query = User::query()->where('role', '!=', UserRole::Admin)->withCount(['clientTasks', 'invoices'])->latest();
 
         if (array_key_exists('active', $arguments)) {
             $query->where('is_active', (bool) $arguments['active']);
@@ -2073,8 +2073,8 @@ class CrmMcpService
     private function findClient(string $value): User
     {
         $client = Str::isUuid($value)
-            ? User::query()->where('role', UserRole::Client)->find($value)
-            : User::query()->where('role', UserRole::Client)->where('email', $value)->first();
+            ? User::query()->where('role', '!=', UserRole::Admin)->find($value)
+            : User::query()->where('role', '!=', UserRole::Admin)->where('email', $value)->first();
 
         return $client ?? throw (new ModelNotFoundException)->setModel(User::class, [$value]);
     }

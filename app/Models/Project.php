@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\ProjectDelegation;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
+use App\Enums\ProjectType;
 use App\Enums\TaskPriority;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -21,6 +22,7 @@ class Project extends Model
 
     protected $fillable = [
         'key',
+        'type',
         'name',
         'description',
         'client_id',
@@ -40,6 +42,7 @@ class Project extends Model
     protected function casts(): array
     {
         return [
+            'type' => ProjectType::class,
             'status' => ProjectStatus::class,
             'priority' => TaskPriority::class,
             'studied_at' => 'datetime',

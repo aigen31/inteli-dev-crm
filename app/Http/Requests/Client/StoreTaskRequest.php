@@ -15,11 +15,19 @@ class StoreTaskRequest extends FormRequest
         return $this->user()->hasClientDelegation();
     }
 
+    private function isSelfProject(): bool
+    {
+        return \App\Models\Project::query()
+            ->whereKey($this->input('project_id'))
+            ->where('type', \App\Enums\ProjectType::Self->value)
+            ->exists();
+    }
+
     public function rules(): array
     {
         return [
             'project_id' => ['required', 'uuid', 'exists:projects,id'],
-            'consent' => ['accepted'],
+            'consent' => $this->isSelfProject() ? ['nullable'] : ['accepted'],
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'description' => ['nullable', 'string', 'max:60000'],
             'priority' => ['sometimes', Rule::enum(TaskPriority::class)],

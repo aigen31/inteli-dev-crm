@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -59,6 +59,11 @@ function isSelectedForm(key) {
     return ! freeform.value && selectedKey.value === key;
 }
 const selectedProject = computed(() => (props.projects || []).find((project) => project.id === form.project_id));
+const isSelfProject = computed(() => selectedProject.value?.type === 'self');
+
+watch(isSelfProject, (self) => {
+    if (self) form.consent = true;
+});
 const priorityLabel = computed(() => (props.priorities || []).find((priority) => priority.value === form.priority)?.label || form.priority);
 
 function emptyFormData(template) {
@@ -370,10 +375,13 @@ function submit() {
                         </div>
 
                         <div class="mt-4 border-t border-line/70 pt-4">
-                            <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="task-consent" />
+                            <p v-if="isSelfProject" class="flex items-start gap-2 rounded-[12px] bg-surface-2/60 px-3 py-2 text-[11px] leading-relaxed text-muted">
+                                Self-проект: заказчик — администратор, согласие на обработку данных не требуется.
+                            </p>
+                            <ConsentCheckbox v-else v-model="form.consent" :error="form.errors.consent" id="task-consent" />
                         </div>
 
-                        <Button class="mt-4 w-full" :disabled="form.processing || !form.consent || !form.project_id" @click="submit">
+                        <Button class="mt-4 w-full" :disabled="form.processing || ! (form.consent || isSelfProject) || !form.project_id" @click="submit">
                             <CheckCircleIcon class="h-4 w-4" />
                             {{ form.processing ? 'Отправляю…' : 'Отправить заявку' }}
                         </Button>

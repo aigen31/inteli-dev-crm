@@ -73,7 +73,6 @@ class DashboardController extends Controller
 
         return Inertia::render('Admin/Dashboard', [
             'team' => User::query()
-                ->whereIn('role', [UserRole::Admin, UserRole::Executor])
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'role'])
@@ -92,7 +91,7 @@ class DashboardController extends Controller
             'todayTasks' => $todayTasks,
             'recentHistory' => $recentHistory,
             'counters' => [
-                'clients' => User::query()->where('role', 'client')->where('is_active', true)->count(),
+                'clients' => User::query()->where('role', '!=', 'admin')->where('is_active', true)->count(),
                 'active_tasks' => Task::query()->whereIn('status', $activeStatuses)->count(),
                 'overdue' => Task::query()
                     ->whereNotNull('deadline')

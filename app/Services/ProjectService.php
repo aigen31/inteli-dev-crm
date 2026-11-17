@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\ProjectStatus;
+use App\Enums\ProjectType;
 use App\Enums\TaskStatus;
 use App\Models\Project;
 use App\Models\User;
@@ -31,7 +32,10 @@ class ProjectService
             'key' => $this->uniqueKey((string) ($data['key'] ?? ''), (string) $data['name']),
             'name' => trim((string) $data['name']),
             'description' => $data['description'] ?? null,
-            'client_id' => $data['client_id'] ?? null,
+            'type' => $this->typeOf($data)->value,
+            'client_id' => $this->typeOf($data) === ProjectType::Self
+                ? $creator->id
+                : ($data['client_id'] ?? null),
             'status' => $data['status'] ?? ProjectStatus::Active,
             'priority' => $data['priority'] ?? 'medium',
             'color' => $data['color'] ?? 'violet',
@@ -49,12 +53,22 @@ class ProjectService
     /**
      * @param  array<string, mixed>  $data
      */
+    private function typeOf(array $data): ProjectType
+    {
+        $type = $data['type'] ?? ProjectType::Client;
+
+        return $type instanceof ProjectType ? $type : ProjectType::from((string) $type);
+    }
+
     public function update(Project $project, array $data): Project
     {
         $patch = [
             'name' => trim((string) $data['name']),
             'description' => $data['description'] ?? null,
-            'client_id' => $data['client_id'] ?? null,
+            'type' => $this->typeOf($data)->value,
+            'client_id' => $this->typeOf($data) === ProjectType::Self
+                ? $project->client_id
+                : ($data['client_id'] ?? null),
             'status' => $data['status'] ?? $project->status,
             'priority' => $data['priority'] ?? $project->priority,
             'color' => $data['color'] ?? $project->color,

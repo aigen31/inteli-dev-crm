@@ -7,8 +7,10 @@ namespace App\Actions\Task;
 use App\Enums\TaskPriority;
 use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
+use App\Enums\ProjectType;
 use App\Enums\TaskType;
 use App\Events\Task\TaskCreated;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\HtmlSanitizer;
@@ -25,6 +27,9 @@ class CreateTaskAction
 
         $projectId = $data['project_id'] ?? null;
         $projectId = $projectId !== null && $projectId !== '' ? (string) $projectId : null;
+
+        $project = $projectId !== null ? Project::query()->find($projectId) : null;
+        $isSelfProject = $project?->type === ProjectType::Self;
 
         $number = null;
 
@@ -47,9 +52,8 @@ class CreateTaskAction
             'checklist' => $checklist,
             'type' => $data['type'] ?? TaskType::OneTime,
             'source' => $data['source'] ?? ($creator->hasClientDelegation() ? TaskSource::Client : TaskSource::Manual),
-            'status' => $creator->hasClientDelegation()
-                ? TaskStatus::PendingReview
-                : ($data['status'] ?? TaskStatus::PendingReview),
+            // В self-проекте заявка сразу в работу: заказчик и есть администратор.
+            'status' => $data['status'] ?? ($isSelfProject ? TaskStatus::Queued : TaskStatus::PendingReview),
             'priority' => $data['priority'] ?? TaskPriority::Medium,
             'strict_control' => $data['strict_control'] ?? null,
             'estimated_minutes' => $data['estimated_minutes'] ?? null,

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ProjectDelegation;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
+use App\Enums\ProjectType;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
@@ -51,7 +52,7 @@ class ProjectController extends Controller
             'projects' => $projects,
             'filters' => $request->only('status', 'client_id', 'q', 'archived'),
             'statuses' => $this->statusOptions(),
-            'clients' => User::query()->where('role', 'client')->orderBy('name')->get(['id', 'name']),
+            'clients' => User::query()->where('role', '!=', 'admin')->orderBy('name')->get(['id', 'name']),
             'counts' => [
                 'all' => Project::query()->whereNull('archived_at')->count(),
                 'active' => Project::query()->where('status', ProjectStatus::Active)->whereNull('archived_at')->count(),
@@ -111,7 +112,7 @@ class ProjectController extends Controller
                 'value' => $priority->value,
                 'label' => $priority->label(),
             ]),
-            'clients' => User::query()->where('role', 'client')->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'clients' => User::query()->where('role', '!=', 'admin')->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'assignees' => User::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'role']),
             'types' => collect(TaskType::cases())->map(fn (TaskType $type): array => ['value' => $type->value, 'label' => $type->label()]),
             'taskStatuses' => collect(TaskStatus::cases())->map(fn (TaskStatus $status): array => ['value' => $status->value, 'label' => $status->label()]),
@@ -432,6 +433,7 @@ class ProjectController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:120'],
             'key' => ['nullable', 'string', 'max:8', 'regex:/^[A-Za-z0-9_-]+$/'],
+            'type' => ['nullable', Rule::enum(ProjectType::class)],
             'description' => ['nullable', 'string', 'max:5000'],
             'client_id' => ['nullable', 'uuid', 'exists:users,id'],
             'status' => ['required', Rule::enum(ProjectStatus::class)],
@@ -451,7 +453,7 @@ class ProjectController extends Controller
     private function formOptions(): array
     {
         return [
-            'clients' => User::query()->where('role', 'client')->where('is_active', true)->orderBy('name')->get(['id', 'name', 'email']),
+            'clients' => User::query()->where('role', '!=', 'admin')->where('is_active', true)->orderBy('name')->get(['id', 'name', 'email']),
             'statuses' => $this->statusOptions(),
             'priorities' => collect(TaskPriority::cases())->map(fn (TaskPriority $priority): array => [
                 'value' => $priority->value,

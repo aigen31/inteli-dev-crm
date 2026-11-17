@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -17,7 +17,20 @@ const props = defineProps({
     tasks: Array,
     invoices: Array,
     customFields: Array,
+    balance: { type: Number, default: 0 },
+    balanceTransactions: { type: Array, default: () => [] },
 });
+
+const balanceForm = useForm({ amount: '', description: '' });
+
+function adjustBalance() {
+    balanceForm.post(route('admin.clients.balance', props.client.id), {
+        preserveScroll: true,
+        onSuccess: () => balanceForm.reset(),
+    });
+}
+
+const balanceTone = computed(() => (props.balance < 0 ? 'text-danger-ink' : 'text-ink'));
 
 const fieldForm = useForm({
     fields: Object.fromEntries((props.customFields || []).map((field) => [field.key, field.value ?? null])),
@@ -76,6 +89,44 @@ function deactivate() {
                 <div><p class="font-display text-[20px] font-medium text-ink">{{ activeTasks.length }}</p><p class="text-[10px] text-muted">в работе</p></div>
                 <div><p class="font-display text-[20px] font-medium text-ink">{{ invoices?.length || 0 }}</p><p class="text-[10px] text-muted">счетов</p></div>
             </div>
+        </section>
+
+        <section class="surface-card mb-5 p-5">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <p class="eyebrow">Баланс</p>
+                    <p :class="['mt-1 font-display text-[24px] tracking-[-0.02em]', balanceTone]">{{ formatMoney(balance) }}</p>
+                    <p class="mt-1 text-[10px] text-muted">Может уходить в минус: списание за завершённые задачи и ручные корректировки.</p>
+                </div>
+                <form class="flex flex-wrap items-end gap-2" @submit.prevent="adjustBalance">
+                    <input
+                        v-model="balanceForm.amount"
+                        type="number"
+                        step="0.01"
+                        placeholder="+ / − сумма"
+                        class="w-[130px] rounded-[12px] border border-line bg-surface px-3 py-2 text-[12px] text-ink outline-none focus:border-primary-400"
+                    />
+                    <input
+                        v-model="balanceForm.description"
+                        placeholder="Комментарий"
+                        class="w-[170px] rounded-[12px] border border-line bg-surface px-3 py-2 text-[12px] text-ink outline-none focus:border-primary-400"
+                    />
+                    <Button size="sm" type="submit" :disabled="balanceForm.processing || ! balanceForm.amount">Изменить</Button>
+                </form>
+            </div>
+            <p v-if="balanceForm.errors.amount" class="mt-2 text-[11px] text-danger-ink">{{ balanceForm.errors.amount }}</p>
+
+            <ul v-if="balanceTransactions.length" class="mt-4 divide-y divide-line/60 border-t border-line/60 pt-1">
+                <li v-for="transaction in balanceTransactions" :key="transaction.id" class="flex items-center justify-between gap-3 py-2 text-[11px]">
+                    <span class="min-w-0">
+                        <span :class="['font-mono font-semibold', transaction.amount < 0 ? 'text-danger-ink' : 'text-success']">
+                            {{ transaction.amount > 0 ? '+' : '' }}{{ formatMoney(transaction.amount) }}
+                        </span>
+                        <span class="ml-2 text-muted">{{ transaction.description || (transaction.reason === 'manual' ? 'Ручная корректировка' : 'Списание за задачу') }}</span>
+                    </span>
+                    <span class="shrink-0 font-mono text-[10px] text-faint">{{ transaction.created_at ? formatDateTime(transaction.created_at) : '' }}</span>
+                </li>
+            </ul>
         </section>
 
         <section class="surface-card mb-5 flex flex-wrap items-center justify-between gap-4 px-5 py-4">
