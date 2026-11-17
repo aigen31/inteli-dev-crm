@@ -19,6 +19,7 @@ use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
+use App\Enums\ProjectType;
 use App\Enums\RecurringInterval;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
@@ -40,6 +41,7 @@ use App\Models\TaskReport;
 use App\Models\TaskTemplate;
 use App\Models\User;
 use App\Services\Ai\KernelClient;
+use App\Services\BalanceService;
 use App\Services\Briefs\BriefFormatter;
 use App\Services\Briefs\BriefService;
 use App\Services\ConsentService;
@@ -84,6 +86,7 @@ class CrmMcpService
         private readonly KernelClient $kernel,
         private readonly BriefService $briefs,
         private readonly BriefFormatter $briefFormatter,
+        private readonly BalanceService $balance,
     ) {}
 
     private ?User $actor = null;
@@ -138,9 +141,18 @@ class CrmMcpService
             $this->tool('get_report', 'Full report with description/link groups and screenshot links.', [
                 'report' => ['type' => 'string'],
             ], ['report'], true),
-            $this->tool('list_users', 'Active CRM users with ids, emails and roles.', [
-                'role' => ['type' => 'string', 'enum' => ['admin', 'client']],
+            $this->tool('list_users', 'Active CRM users with ids, emails, roles and balance. Role filter: admin or user.', [
+                'role' => ['type' => 'string', 'enum' => ['admin', 'user']],
             ], [], true),
+            $this->tool('get_balance', 'User balance and the latest balance transactions. Use UUID or email.', [
+                'user' => ['type' => 'string', 'description' => 'User UUID or email.'],
+            ], ['user'], true),
+            $this->tool('adjust_balance', 'Change a user balance by a signed amount (positive tops up, negative charges; balance may go below zero). Money action: requires confirm=true.', [
+                'user' => ['type' => 'string', 'description' => 'User UUID or email.'],
+                'amount' => ['type' => 'number', 'description' => 'Signed amount, e.g. 1500 or -500.'],
+                'description' => ['type' => 'string', 'description' => 'Why the balance changed.'],
+                'confirm' => ['type' => 'boolean'],
+            ], ['user', 'amount', 'confirm']),
             $this->tool('list_forms', 'Form templates available to clients, with field schema.', [
                 'active_only' => ['type' => 'boolean'],
             ], [], true),
@@ -407,6 +419,8 @@ class CrmMcpService
             'list_reports' => $this->listReports($arguments),
             'get_report' => $this->getReport($arguments),
             'list_users' => $this->listUsers($arguments),
+            'get_balance' => $this->getBalance($arguments),
+            'adjust_balance' => $this->adjustBalance($arguments, $request),
             'list_forms' => $this->listForms($arguments),
             'list_task_templates' => $this->listTaskTemplates($arguments),
             'update_client' => $this->updateClientByName($arguments),
@@ -1013,14 +1027,17 @@ class CrmMcpService
         $query = User::query()->where('is_active', true)->orderBy('name')->limit(100);
 
         if (filled($arguments['role'] ?? null)) {
-            $query->where('role', $arguments['role']);
+            // После объединения ролей «client»/«executor» — это обычный user.
+            $role = in_array($arguments['role'], ['client', 'executor'], true) ? UserRole::User->value : $arguments['role'];
+            $query->where('role', $role);
         }
 
-        return ['users' => $query->get(['id', 'name', 'email', 'role'])->map(fn (User $user): array => [
+        return ['users' => $query->get(['id', 'name', 'email', 'role', 'balance'])->map(fn (User $user): array => [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role->value,
+            'balance' => (float) $user->balance,
         ])->all()];
     }
 
@@ -1121,6 +1138,7 @@ class CrmMcpService
         $data = Validator::make($arguments, [
             'name' => ['required', 'string', 'min:2', 'max:255'],
             'key' => ['nullable', 'string', 'max:12'],
+            'type' => ['sometimes', Rule::enum(ProjectType::class)],
             'client_id' => ['nullable', 'uuid', 'exists:users,id'],
             'description' => ['nullable', 'string', 'max:20000'],
             'site_url' => ['nullable', 'url', 'max:500'],
@@ -1481,6 +1499,7 @@ class CrmMcpService
         $data = Validator::make($payload, [
             'name' => ['required', 'string', 'min:2', 'max:255'],
             'key' => ['nullable', 'string', 'max:12'],
+            'type' => ['sometimes', Rule::enum(ProjectType::class)],
             'client_id' => ['nullable', 'uuid', 'exists:users,id'],
             'description' => ['nullable', 'string', 'max:20000'],
             'site_url' => ['nullable', 'url', 'max:500'],
@@ -2061,6 +2080,63 @@ class CrmMcpService
     /**
      * @param  array<string, mixed>  $arguments
      */
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function getBalance(array $arguments): array
+    {
+        $user = $this->findClient((string) ($arguments['user'] ?? ''));
+        $user->load(['balanceTransactions' => fn ($query) => $query->latest()->limit(10)]);
+
+        return [
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+            'balance' => (float) $user->balance,
+            'transactions' => $user->balanceTransactions->map(fn ($transaction): array => [
+                'id' => $transaction->id,
+                'amount' => (float) $transaction->amount,
+                'balance_after' => (float) $transaction->balance_after,
+                'reason' => $transaction->reason,
+                'description' => $transaction->description,
+                'created_at' => $transaction->created_at?->toIso8601String(),
+            ])->all(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function adjustBalance(array $arguments, Request $request): array
+    {
+        $this->confirm($arguments, 'Изменение баланса');
+
+        $data = Validator::make($arguments, [
+            'amount' => ['required', 'numeric', 'between:-1000000,1000000', 'not_in:0'],
+            'description' => ['nullable', 'string', 'max:200'],
+        ])->validate();
+
+        $user = $this->findClient((string) ($arguments['user'] ?? ''));
+        $transaction = $this->balance->adjust(
+            $user,
+            (float) $data['amount'],
+            'manual',
+            $data['description'] ?? null,
+            [],
+            $request->user(),
+        );
+
+        return [
+            'user' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],
+            'amount' => (float) $transaction->amount,
+            'balance' => (float) $transaction->balance_after,
+        ];
+    }
+
     private function confirm(array $arguments, string $action): void
     {
         if (($arguments['confirm'] ?? false) !== true) {
@@ -2119,6 +2195,7 @@ class CrmMcpService
             'email' => $client->email,
             'phone' => $client->phone,
             'is_active' => $client->is_active,
+            'balance' => (float) $client->balance,
             'tasks_count' => $client->clientTasks_count ?? $client->clientTasks()->count(),
             'invoices_count' => $client->invoices_count ?? $client->invoices()->count(),
             'url' => route('admin.clients.show', $client),
