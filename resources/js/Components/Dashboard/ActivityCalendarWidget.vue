@@ -120,12 +120,29 @@ function moveMonth(delta) { view.value = new Date(view.value.getFullYear(), view
 watch(() => props.assigneeId, () => { counts.value = {}; closeTasks(); load(); });
 
 function dateKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
+const isDarkTheme = () => typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark';
+
+const LOAD_TONES = {
+    light: [
+        { background: 'transparent', color: 'inherit' },
+        { background: '#E8F3EC', color: '#2F8F62' },
+        { background: '#FBF0D9', color: '#B7791F' },
+        { background: '#F6D8C4', color: '#A96120' },
+        { background: '#F2C7C1', color: '#A33A33' },
+    ],
+    dark: [
+        { background: 'transparent', color: 'inherit' },
+        { background: '#1d2a22', color: '#7fd2a7' },
+        { background: '#2f2818', color: '#e5c07b' },
+        { background: '#33231a', color: '#e8a87c' },
+        { background: '#3a1e1e', color: '#f1998f' },
+    ],
+};
+
 function tone(load) {
-    if (!load) return { background: 'transparent', color: 'inherit' };
-    if (load === 1) return { background: '#E8F3EC', color: '#2F8F62' };
-    if (load === 2) return { background: '#FBF0D9', color: '#B7791F' };
-    if (load === 3) return { background: '#F6D8C4', color: '#A96120' };
-    return { background: '#F2C7C1', color: '#A33A33' };
+    const palette = isDarkTheme() ? LOAD_TONES.dark : LOAD_TONES.light;
+
+    return palette[Math.min(Number(load) || 0, 4)];
 }
 function formatDay(key) { const [y,m,d] = key.split('-').map(Number); return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(new Date(y, m-1, d)); }
 onMounted(() => {
@@ -155,10 +172,10 @@ onBeforeUnmount(() => {
             <button v-for="cell in cells" :key="cell.key" type="button" :class="['relative flex items-center justify-center rounded-[5px] font-mono transition hover:ring-1 hover:ring-primary-300 h-[20px] text-[8px]', !cell.current && 'opacity-30', cell.today && 'ring-1 ring-primary-300']" :style="tone(cell.load)" :aria-label="`${cell.day}, задач: ${cell.load}`" :title="`${cell.day}: ${cell.load} задач`" @click="selectDay(cell)">{{ cell.day }}</button>
         </div>
         <div v-if="!compact" class="mt-1.5 flex items-center gap-1 text-[7px] text-faint">
-            <span class="h-2 w-2 rounded-[2px]" style="background:#E8F3EC"></span><span>спокойно</span>
-            <span class="h-2 w-2 rounded-[2px]" style="background:#FBF0D9"></span>
-            <span class="h-2 w-2 rounded-[2px]" style="background:#F6D8C4"></span>
-            <span class="h-2 w-2 rounded-[2px]" style="background:#F2C7C1"></span><span>пик</span>
+            <span class="h-2 w-2 rounded-[2px]" :style="{ background: tone(1).background }"></span><span>спокойно</span>
+            <span class="h-2 w-2 rounded-[2px]" :style="{ background: tone(2).background }"></span>
+            <span class="h-2 w-2 rounded-[2px]" :style="{ background: tone(3).background }"></span>
+            <span class="h-2 w-2 rounded-[2px]" :style="{ background: tone(4).background }"></span><span>пик</span>
         </div>
 
     </div>

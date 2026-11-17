@@ -5,6 +5,7 @@
  * html[data-theme="dark"] so the light and Windows XP themes are untouched.
  */
 html[data-theme="dark"] {
+    color-scheme: dark;
     --font-sans: Manrope, ui-sans-serif, system-ui, sans-serif;
     --font-display: Manrope, ui-sans-serif, system-ui, sans-serif;
     --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
@@ -222,7 +223,8 @@ html[data-theme="dark"] select {
 }
 html[data-theme="dark"] input[type="checkbox"],
 html[data-theme="dark"] input[type="radio"],
-html[data-theme="dark"] input[type="checkbox"] { accent-color: #9b86f5; }
+html[data-theme="dark"] input[type="checkbox"],
+html[data-theme="dark"] input[type="radio"] { accent-color: #9b86f5; }
 html[data-theme="dark"] option { background: #15121d; color: #f5f1fb; }
 
 /* Buttons */
@@ -406,4 +408,19 @@ html[data-theme="dark"] body select {
     background-size: 5px 5px, 5px 5px !important;
     background-repeat: no-repeat, no-repeat !important;
     padding-right: 22px !important;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: #6d5ae6;
+}
+
+/* Светлые полупрозрачные подложки (bg-white/xx) в тёмной теме заменяем
+   на поверхность темы: иначе карточки, чипы и поля светятся белым. */
+html[data-theme="dark"] [class*="bg-white/"] {
+    background-color: rgba(33, 28, 43, 0.55) !important;
+}
+
+html[data-theme="dark"] [class*="border-white/"] {
+    border-color: rgba(255, 255, 255, 0.08) !important;
 }

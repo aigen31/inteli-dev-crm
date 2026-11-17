@@ -58,14 +58,16 @@ function submit() {
                     <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div class="sm:col-span-2"><TextInput v-model="form.title" label="Название" :error="form.errors.title" /></div>
                         <SelectInput v-model="form.project_id" label="Проект" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Без проекта" :error="form.errors.project_id" />
-                        <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" :error="form.errors.priority" />
-                        <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :task-id="task.id" :error="form.errors.starts_at" />
-                        <TaskDateCalendar v-model="form.deadline" label="Дедлайн" :task-id="task.id" :error="form.errors.deadline" />
+                        <template v-if="! hasTemplate">
+                            <SelectInput v-model="form.priority" label="Приоритет" :options="priorities" :error="form.errors.priority" />
+                            <TaskDateCalendar v-model="form.starts_at" label="Старт работ" :task-id="task.id" :error="form.errors.starts_at" />
+                            <TaskDateCalendar v-model="form.deadline" label="Дедлайн" :task-id="task.id" :error="form.errors.deadline" />
+                        </template>
                     </div>
                 </section>
 
                 <section v-if="hasTemplate" class="surface-card p-5 sm:p-6">
-                    <p class="eyebrow">Шаблон заявки</p>
+                    <p class="eyebrow">Заявка из шаблона</p>
                     <h2 class="mt-1 text-[14px] font-bold text-ink">{{ task.form_template.name }}</h2>
                     <StructuredForm class="mt-5" :template="task.form_template" :model-value="form.form_data" :errors="form.errors" />
                 </section>
