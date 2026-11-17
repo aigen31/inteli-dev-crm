@@ -1,8 +1,8 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ArrowTopRightOnSquareIcon, PlusIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon, PlusIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import ChatThread from '@/Components/Assistant/ChatThread.vue';
 import Composer from '@/Components/Assistant/Composer.vue';
@@ -10,9 +10,30 @@ import { useAssistant } from '@/Composables/useAssistant';
 import { useAssistantChat } from '@/Composables/useAssistantChat';
 
 const page = usePage();
-const { state, close } = useAssistant();
+const { state, close, setSize } = useAssistant();
 
 const booted = ref(false);
+const isFullscreen = computed(() => state.size === 'fullscreen');
+const sizeKey = computed(() => `assistant-size:${page.props.auth?.user?.id || 'anon'}`);
+
+function toggleSize() {
+    const next = isFullscreen.value ? 'compact' : 'fullscreen';
+    setSize(next);
+    try {
+        window.localStorage.setItem(sizeKey.value, next);
+    } catch {
+        // приватный режим — размер просто не запомнится
+    }
+}
+
+onMounted(() => {
+    try {
+        const saved = window.localStorage.getItem(sizeKey.value);
+        if (saved === 'fullscreen' || saved === 'compact') setSize(saved);
+    } catch {
+        // ignore
+    }
+});
 const composer = ref(null);
 
 const {
@@ -53,12 +74,6 @@ watch(
             reset();
         }
     },
-);
-
-const fullPageUrl = computed(() =>
-    conversationId.value
-        ? `${route('assistant.index')}?c=${encodeURIComponent(conversationId.value)}`
-        : route('assistant.index'),
 );
 
 async function load() {
@@ -129,7 +144,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             <div class="pointer-events-auto absolute inset-0 bg-ink/25 backdrop-blur-[2px] lg:hidden" @click="close"></div>
 
             <aside
-                class="pointer-events-auto absolute inset-x-0 bottom-0 top-0 flex flex-col overflow-hidden border-line bg-surface shadow-[0_30px_90px_rgba(28,24,35,0.28)] lg:inset-y-3 lg:left-auto lg:right-3 lg:w-[440px] lg:rounded-[30px] lg:border"
+                :class="[
+                    'pointer-events-auto absolute flex flex-col overflow-hidden border-line bg-surface shadow-[0_30px_90px_rgba(28,24,35,0.28)]',
+                    isFullscreen
+                        ? 'inset-0 lg:inset-3 lg:rounded-[30px] lg:border'
+                        : 'inset-x-0 bottom-0 top-0 lg:inset-y-3 lg:left-auto lg:right-3 lg:w-[440px] lg:rounded-[30px] lg:border',
+                ]"
             >
                 <header class="relative shrink-0 overflow-hidden border-b border-line px-4 pb-3 pt-3.5">
                     <div class="absolute inset-0 bg-gradient-to-br from-primary-50 via-surface to-surface"></div>
@@ -149,14 +169,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                             <button type="button" class="rounded-xl p-2 text-muted transition hover:bg-ink/[0.05] hover:text-ink" title="Новый диалог" @click="newChat">
                                 <PlusIcon class="h-4 w-4" />
                             </button>
-                            <Link
-                                :href="fullPageUrl"
+                            <button
+                                type="button"
                                 class="rounded-xl p-2 text-muted transition hover:bg-ink/[0.05] hover:text-ink"
-                                title="Открыть на весь экран"
-                                @click="close"
+                                :title="isFullscreen ? 'Свернуть в панель' : 'Развернуть на весь экран'"
+                                :aria-label="isFullscreen ? 'Свернуть ассистента' : 'Развернуть ассистента'"
+                                @click="toggleSize"
                             >
-                                <ArrowTopRightOnSquareIcon class="h-4 w-4" />
-                            </Link>
+                                <ArrowsPointingInIcon v-if="isFullscreen" class="h-4 w-4" />
+                                <ArrowsPointingOutIcon v-else class="h-4 w-4" />
+                            </button>
                             <button type="button" class="rounded-xl p-2 text-muted transition hover:bg-ink/[0.05] hover:text-ink" title="Свернуть" @click="close">
                                 <XMarkIcon class="h-5 w-5" />
                             </button>
