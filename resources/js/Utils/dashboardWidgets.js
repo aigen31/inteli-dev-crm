@@ -2,7 +2,6 @@ export const defaultWidgetLayout = [
     { id: 'clients', w: 1, h: 1 },
     { id: 'active_tasks', w: 1, h: 1 },
     { id: 'revenue', w: 1, h: 1 },
-    { id: 'templates', w: 1, h: 1 },
     { id: 'focus', w: 2, h: 2 },
     { id: 'activity', w: 2, h: 2 },
     { id: 'deadlines', w: 2, h: 1 },

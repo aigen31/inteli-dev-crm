@@ -274,7 +274,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                     <div class="ml-auto flex items-center gap-1">
                         <button
                             type="button"
-                            class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/60 px-2.5 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:border-primary-300 hover:text-primary-700"
+                            class="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2/70 px-2.5 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:border-primary-300 hover:text-primary-700"
                             title="Новый диалог"
                             @click="newChat"
                         >

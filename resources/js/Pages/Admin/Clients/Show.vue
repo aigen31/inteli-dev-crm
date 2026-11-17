@@ -46,7 +46,6 @@ function deactivate() {
                     Задача
                 </Button>
             </Link>
-            <ResetPasswordButton :action="route('admin.users.password-reset', client.id)" :user-name="client.name" />
             <Link :href="route('admin.clients.edit', client.id)">
                 <Button variant="secondary">
                     <PencilSquareIcon class="h-4 w-4" />
@@ -77,6 +76,14 @@ function deactivate() {
                 <div><p class="font-display text-[20px] font-medium text-ink">{{ activeTasks.length }}</p><p class="text-[10px] text-muted">в работе</p></div>
                 <div><p class="font-display text-[20px] font-medium text-ink">{{ invoices?.length || 0 }}</p><p class="text-[10px] text-muted">счетов</p></div>
             </div>
+        </section>
+
+        <section class="surface-card mb-5 flex flex-wrap items-center justify-between gap-4 px-5 py-4">
+            <div class="min-w-0">
+                <p class="text-[12px] font-semibold text-ink">Доступ к кабинету</p>
+                <p class="mt-0.5 text-[10px] leading-relaxed text-muted">Одноразовая ссылка для смены пароля. Действует 60 минут и срабатывает один раз.</p>
+            </div>
+            <ResetPasswordButton :action="route('admin.users.password-reset', client.id)" :user-name="client.name" />
         </section>
 
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_.9fr]">

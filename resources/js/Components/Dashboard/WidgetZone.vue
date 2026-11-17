@@ -74,9 +74,9 @@ onBeforeUnmount(() => {
 
     <Teleport to="body">
         <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-            <div v-if="open" class="fixed inset-0 z-[75] overflow-y-auto bg-[#f4f0e8]" role="dialog" aria-modal="true" aria-label="Панель виджетов">
-                <div class="pointer-events-none fixed inset-x-0 top-0 h-[420px] bg-gradient-to-b from-primary-100/50 via-[#f4f0e8]/60 to-transparent"></div>
-                <header class="sticky top-0 z-20 border-b border-line/60 bg-[#f4f0e8]/85 backdrop-blur-xl">
+            <div v-if="open" class="fixed inset-0 z-[75] overflow-y-auto bg-canvas" role="dialog" aria-modal="true" aria-label="Панель виджетов">
+                <div class="pointer-events-none fixed inset-x-0 top-0 h-[420px] bg-gradient-to-b from-primary-100/50 via-canvas/60 to-transparent"></div>
+                <header class="sticky top-0 z-20 border-b border-line/60 bg-canvas/85 backdrop-blur-xl">
                     <div class="mx-auto flex max-w-[1320px] items-start justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
                         <div class="flex items-start gap-3">
                             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-ink text-canvas shadow-sm"><Squares2X2Icon class="h-5 w-5" /></span>

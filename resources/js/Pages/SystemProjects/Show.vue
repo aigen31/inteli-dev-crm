@@ -194,8 +194,8 @@ function updateStatus(item, event) {
                 </span>
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="rounded-full border border-line bg-white/60 px-2.5 py-1 font-mono text-[9px] tracking-[0.1em] text-muted">{{ project.code }}</span>
-                        <span class="rounded-full border border-white/70 bg-white/45 px-2.5 py-1 text-[9px] font-semibold text-ink-soft">доступно всем</span>
+                        <span class="rounded-full border border-line bg-surface-2/70 px-2.5 py-1 font-mono text-[9px] tracking-[0.1em] text-muted">{{ project.code }}</span>
+                        <span class="rounded-full border border-line/70 bg-surface-2/50 px-2.5 py-1 text-[9px] font-semibold text-ink-soft">доступно всем</span>
                     </div>
                     <h1 class="mt-3 font-display text-[28px] font-medium leading-[1.08] tracking-[-0.04em] text-ink sm:text-[34px]">{{ project.name }}</h1>
                     <p class="mt-2 max-w-[650px] text-[13px] leading-relaxed text-ink-soft">{{ project.description }}</p>
@@ -203,15 +203,15 @@ function updateStatus(item, event) {
             </div>
 
             <div class="relative mt-6 grid grid-cols-3 gap-2 sm:max-w-[460px]">
-                <div class="rounded-[16px] border border-white/70 bg-white/50 px-3 py-2.5">
+                <div class="rounded-[16px] border border-line/70 bg-surface-2/50 px-3 py-2.5">
                     <p class="font-mono text-[8px] uppercase tracking-[0.12em] text-muted">Открыто</p>
                     <p class="mt-1 text-[20px] font-semibold text-ink">{{ stats.open }}</p>
                 </div>
-                <div class="rounded-[16px] border border-white/70 bg-white/50 px-3 py-2.5">
+                <div class="rounded-[16px] border border-line/70 bg-surface-2/50 px-3 py-2.5">
                     <p class="font-mono text-[8px] uppercase tracking-[0.12em] text-muted">В планах</p>
                     <p class="mt-1 text-[20px] font-semibold text-ink">{{ stats.planned }}</p>
                 </div>
-                <div class="rounded-[16px] border border-white/70 bg-white/50 px-3 py-2.5">
+                <div class="rounded-[16px] border border-line/70 bg-surface-2/50 px-3 py-2.5">
                     <p class="font-mono text-[8px] uppercase tracking-[0.12em] text-muted">Сделано</p>
                     <p class="mt-1 text-[20px] font-semibold text-ink">{{ stats.done }}</p>
                 </div>
@@ -229,7 +229,7 @@ function updateStatus(item, event) {
                             'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition',
                             (filters.status || '') === chip.value
                                 ? 'border-ink bg-ink text-canvas'
-                                : 'border-line bg-white/50 text-muted hover:border-line-strong hover:text-ink',
+                                : 'border-line bg-surface-2/50 text-muted hover:border-line-strong hover:text-ink',
                         ]"
                         @click="setStatus(chip.value)"
                     >
@@ -240,7 +240,7 @@ function updateStatus(item, event) {
                         <button type="button" :class="['rounded-full px-2.5 py-1 text-[9px] font-semibold', filters.sort !== 'new' ? 'bg-ink text-canvas' : 'text-muted']" @click="filter({ sort: 'top' })">Топ</button>
                         <button type="button" :class="['rounded-full px-2.5 py-1 text-[9px] font-semibold', filters.sort === 'new' ? 'bg-ink text-canvas' : 'text-muted']" @click="filter({ sort: 'new' })">Новые</button>
                     </span>
-                    <button v-if="canManage" type="button" :class="['inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[9px] font-semibold transition', filters.archived ? 'border-ink bg-ink text-canvas' : 'border-line bg-white/50 text-muted hover:text-ink']" @click="filter({ archived: !filters.archived })"><ArchiveBoxIcon class="h-3 w-3" />{{ filters.archived ? 'К активным' : 'Архив' }}</button>
+                    <button v-if="canManage" type="button" :class="['inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[9px] font-semibold transition', filters.archived ? 'border-ink bg-ink text-canvas' : 'border-line bg-surface-2/50 text-muted hover:text-ink']" @click="filter({ archived: !filters.archived })"><ArchiveBoxIcon class="h-3 w-3" />{{ filters.archived ? 'К активным' : 'Архив' }}</button>
                 </div>
 
                 <form class="relative mb-4" @submit.prevent="search">

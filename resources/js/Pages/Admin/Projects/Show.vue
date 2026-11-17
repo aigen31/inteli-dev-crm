@@ -163,12 +163,14 @@ function archive() {
                         </div>
                     </div>
 
-                    <div v-else class="px-5 py-8 text-center">
-                        <p class="text-[11px] text-muted">{{ status ? 'Нет задач с таким статусом.' : 'В проекте пока нет задач.' }}</p>
-                        <button v-if="status" type="button" class="mt-2 text-[10px] font-semibold text-primary-700 hover:underline" @click="setStatus('')">Сбросить фильтр</button>
-                        <Link :href="route('admin.tasks.create', { project_id: project.id })" class="mt-2 inline-block">
-                            <Button size="sm" variant="secondary"><PlusIcon class="h-3.5 w-3.5" />Добавить первую</Button>
-                        </Link>
+                    <div v-else class="flex flex-col items-center gap-3 px-5 py-10 text-center">
+                        <p class="text-[11px] leading-relaxed text-muted">{{ status ? 'Нет задач с таким статусом.' : 'В проекте пока нет задач.' }}</p>
+                        <div class="flex flex-wrap items-center justify-center gap-2">
+                            <button v-if="status" type="button" class="text-[10px] font-semibold text-primary-700 hover:underline" @click="setStatus('')">Сбросить фильтр</button>
+                            <Link :href="route('admin.tasks.create', { project_id: project.id })">
+                                <Button size="sm" variant="secondary"><PlusIcon class="h-3.5 w-3.5" />Добавить первую</Button>
+                            </Link>
+                        </div>
                     </div>
                 </section>
 

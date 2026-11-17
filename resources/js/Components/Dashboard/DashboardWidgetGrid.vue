@@ -38,7 +38,6 @@ const catalog = [
     { id: 'clients', title: 'Клиенты', description: 'Активные аккаунты', icon: UserGroupIcon, w: 1, h: 1 },
     { id: 'active_tasks', title: 'Задачи в работе', description: 'Активные задачи и просрочки', icon: ClockIcon, w: 1, h: 1 },
     { id: 'revenue', title: 'Доход за месяц', description: 'Оплаченные счета за месяц', icon: BanknotesIcon, w: 1, h: 1 },
-    { id: 'templates', title: 'Шаблоны', description: 'Активные шаблоны заявок', icon: Squares2X2Icon, w: 1, h: 1 },
     { id: 'focus', title: 'Фокус', description: 'Сегодняшние и ближайшие задачи', icon: CheckCircleIcon, w: 2, h: 2 },
     { id: 'activity', title: 'Движение', description: 'Последние изменения задач', icon: ClockIcon, w: 2, h: 2 },
     { id: 'deadlines', title: 'Дедлайны', description: 'Ближайшие сроки', icon: ClockIcon, w: 2, h: 1 },
