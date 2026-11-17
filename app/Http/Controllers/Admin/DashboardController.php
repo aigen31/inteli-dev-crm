@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\InvoiceStatus;
 use App\Enums\TaskStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\FormTemplate;
 use App\Models\Invoice;
@@ -13,12 +14,13 @@ use App\Models\Task;
 use App\Models\TaskStatusHistory;
 use App\Models\User;
 use App\Services\TaskService;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(TaskService $taskService): Response
+    public function index(Request $request, TaskService $taskService): Response
     {
         $taskStats = $taskService->getDashboardStats();
 
@@ -70,6 +72,18 @@ class DashboardController extends Controller
             ->get();
 
         return Inertia::render('Admin/Dashboard', [
+            'team' => User::query()
+                ->whereIn('role', [UserRole::Admin, UserRole::Executor])
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'role'])
+                ->map(fn (User $user): array => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role->value,
+                ])
+                ->all(),
+            'currentUserId' => $request->user()->id,
             'taskStats' => $taskStats,
             'pendingTasks' => $pendingTasks,
             'pendingInvoices' => $pendingInvoices,

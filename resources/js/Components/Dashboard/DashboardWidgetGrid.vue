@@ -1,7 +1,8 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import ActivityCalendarWidget from '@/Components/Dashboard/ActivityCalendarWidget.vue';
+import UserWorkloadWidget from '@/Components/Dashboard/UserWorkloadWidget.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import { taskStatusLabels } from '@/Utils/constants.js';
@@ -19,6 +20,8 @@ const props = defineProps({
     recentHistory: Array,
     pendingInvoices: Array,
     upcomingDeadlines: Array,
+    users: { type: Array, default: () => [] },
+    currentUserId: { type: String, default: null },
     heading: { type: String, default: 'Рабочий стол' },
     hint: { type: String, default: 'Перетаскивайте виджеты, меняйте размер и собирайте свой обзор.' },
 });
@@ -40,8 +43,12 @@ const catalog = [
     { id: 'activity', title: 'Движение', description: 'Последние изменения задач', icon: ClockIcon, w: 2, h: 2 },
     { id: 'deadlines', title: 'Дедлайны', description: 'Ближайшие сроки', icon: ClockIcon, w: 2, h: 1 },
     { id: 'quick_links', title: 'Быстрые ссылки', description: 'Клиенты, проекты и шаблоны', icon: UserGroupIcon, w: 2, h: 1 },
-    { id: 'activity_calendar', title: 'Календарь активности', description: 'Нагрузка по задачам', icon: ClockIcon, w: 2, h: 2 },
+    { id: 'activity_calendar', title: 'Календарь активности', description: 'Мои задачи по датам', icon: ClockIcon, w: 2, h: 3 },
+    { id: 'user_workload', title: 'Нагрузка сотрудника', description: 'Календарь конкретного сотрудника', icon: UserGroupIcon, w: 2, h: 3, roles: ['admin'] },
 ];
+const page = usePage();
+const role = computed(() => page.props.auth?.user?.role ?? 'admin');
+const availableCatalog = computed(() => catalog.filter((item) => !item.roles || item.roles.includes(role.value)));
 const meta = (id) => catalog.find((item) => item.id === id) || catalog[0];
 const activeIds = computed(() => props.layout.map((item) => item.id));
 const compact = (widget) => Number(widget.w) === 1;
@@ -270,6 +277,12 @@ function endDrag() {
                         <p v-else class="mt-3 text-[10px] text-muted">Ближайших дедлайнов нет.</p>
                     </div>
                     <ActivityCalendarWidget v-else-if="widget.id === 'activity_calendar'" :compact="short(widget)" />
+                    <UserWorkloadWidget
+                        v-else-if="widget.id === 'user_workload'"
+                        :users="users"
+                        :current-user-id="currentUserId"
+                        :compact="short(widget)"
+                    />
                     <div v-else-if="widget.id === 'quick_links'" class="flex h-full flex-col justify-center gap-1.5">
                         <Link :href="route('admin.clients.index')" class="flex items-center gap-2 rounded-[9px] px-2 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:bg-primary-soft/40"><UserGroupIcon class="h-3.5 w-3.5 text-primary-500" />Клиенты и заявки <ArrowUpRightIcon class="ml-auto h-3 w-3 text-faint" /></Link>
                         <Link :href="route('admin.projects.index')" class="flex items-center gap-2 rounded-[9px] px-2 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:bg-primary-soft/40"><Squares2X2Icon class="h-3.5 w-3.5 text-sky" />Проекты <ArrowUpRightIcon class="ml-auto h-3 w-3 text-faint" /></Link>
@@ -297,7 +310,7 @@ function endDrag() {
                     <div class="relative flex items-start gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-[13px] bg-white/10"><Squares2X2Icon class="h-5 w-5" /></span><div class="flex-1"><p class="font-mono text-[8px] uppercase tracking-[0.16em] text-canvas/55">Каталог</p><h2 class="mt-1 font-display text-[20px] font-medium tracking-[-0.03em]">Виджеты обзора</h2><p class="mt-1 text-[10px] text-canvas/55">Добавьте нужное — размер можно изменить после.</p></div><button type="button" class="rounded-full p-1.5 text-canvas/55 hover:bg-white/10 hover:text-canvas" aria-label="Закрыть каталог" @click="catalogOpen = false"><XMarkIcon class="h-4 w-4" /></button></div>
                 </header>
                 <div class="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
-                    <div v-for="item in catalog" :key="item.id" :class="['flex items-center gap-3 rounded-[15px] border p-3', activeIds.includes(item.id) ? 'border-line/60 bg-surface-2/45 opacity-65' : 'border-line bg-white/45']">
+                    <div v-for="item in availableCatalog" :key="item.id" :class="['flex items-center gap-3 rounded-[15px] border p-3', activeIds.includes(item.id) ? 'border-line/60 bg-surface-2/45 opacity-65' : 'border-line bg-white/45']">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] bg-primary-soft text-primary-700"><component :is="item.icon" class="h-4 w-4" /></span>
                         <div class="min-w-0 flex-1"><p class="text-[11px] font-bold text-ink">{{ item.title }}</p><p class="mt-0.5 text-[9px] leading-relaxed text-muted">{{ item.description }}</p></div>
                         <span v-if="activeIds.includes(item.id)" class="shrink-0 text-[8px] font-semibold uppercase tracking-[0.08em] text-faint">Добавлен</span>

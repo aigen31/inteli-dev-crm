@@ -1,12 +1,15 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { Link } from '@inertiajs/vue3';
 import { ArrowUpRightIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate } from '@/Utils/formatters.js';
 
-const props = defineProps({ compact: { type: Boolean, default: false } });
+const props = defineProps({
+    compact: { type: Boolean, default: false },
+    assigneeId: { type: String, default: null },
+});
 const root = ref(null);
 const view = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 const counts = ref({});
@@ -49,7 +52,9 @@ const cells = computed(() => {
 async function load() {
     loading.value = true;
     try {
-        const { data } = await axios.get(route('calendar.activity'), { params: { month: monthKey.value } });
+        const { data } = await axios.get(route('calendar.activity'), {
+            params: { month: monthKey.value, assignee_id: props.assigneeId || undefined },
+        });
         counts.value = data.days || {};
     } catch {
         counts.value = {};
@@ -68,7 +73,9 @@ async function selectDay(cell) {
     selectedTasks.value = [];
     tasksLoading.value = true;
     try {
-        const { data } = await axios.get(route('calendar.tasks'), { params: { all: 1, date: cell.key } });
+        const { data } = await axios.get(route('calendar.tasks'), {
+            params: { date: cell.key, assignee_id: props.assigneeId || undefined },
+        });
         selectedTasks.value = data.tasks || [];
     } catch {
         selectedTasks.value = [];
@@ -110,6 +117,8 @@ function onKeydown(event) {
     if (event.key === 'Escape' && selectedDay.value) closeTasks();
 }
 function moveMonth(delta) { view.value = new Date(view.value.getFullYear(), view.value.getMonth() + delta, 1); load(); }
+watch(() => props.assigneeId, () => { counts.value = {}; closeTasks(); load(); });
+
 function dateKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 function tone(load) {
     if (!load) return { background: 'transparent', color: 'inherit' };

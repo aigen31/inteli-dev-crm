@@ -20,6 +20,8 @@ const props = defineProps({
     todayTasks: Array,
     recentHistory: Array,
     counters: Object,
+    team: { type: Array, default: () => [] },
+    currentUserId: { type: String, default: null },
     navigation: { type: Object, default: () => ({ recent: [] }) },
 });
 
@@ -80,6 +82,8 @@ function reset() {
             :recent-history="recentHistory"
             :pending-invoices="pendingInvoices"
             :upcoming-deadlines="upcomingDeadlines"
+            :users="team"
+            :current-user-id="currentUserId"
             @update:layout="save"
             @reset="reset"
         />

@@ -21,17 +21,12 @@ class CalendarIntervalController extends Controller
         ]);
 
         $user = $request->user();
-        $assigneeId = $data['assignee_id'] ?? null;
 
         if (! empty($data['task_id'])) {
             $task = Task::query()->visibleTo($user)->findOrFail($data['task_id']);
             $assigneeId = $task->assignee_id;
-        } elseif (! $user->isAdmin()) {
-            abort(403);
-        }
-
-        if ($assigneeId === null) {
-            return response()->json(['intervals' => []]);
+        } else {
+            $assigneeId = $this->assignee($user, $data['assignee_id'] ?? null);
         }
 
         $intervals = Task::query()
@@ -57,32 +52,26 @@ class CalendarIntervalController extends Controller
         ]);
 
         $user = $request->user();
-        $assigneeId = $data['assignee_id'] ?? null;
-        $all = $request->boolean('all') && $user->isAdmin();
 
         if (! empty($data['task_id'])) {
             $context = Task::query()->visibleTo($user)->findOrFail($data['task_id']);
             $assigneeId = $context->assignee_id;
-        } elseif (! $user->isAdmin()) {
-            abort(403);
-        }
-
-        if ($assigneeId === null && ! $all) {
-            return response()->json(['tasks' => []]);
+        } else {
+            $assigneeId = $this->assignee($user, $data['assignee_id'] ?? null);
         }
 
         $date = $data['date'];
         $tasks = Task::query()
             ->visibleTo($user)
-            ->when(! $all, fn ($query) => $query->where('assignee_id', $assigneeId))
+            ->where('assignee_id', $assigneeId)
             ->where(function ($query) use ($date): void {
                 $query->where(function ($query) use ($date): void {
                     $query->whereNotNull('starts_at')->whereNotNull('deadline')
-                        ->where('starts_at', '<=', $date)->where('deadline', '>=', $date);
+                        ->whereDate('starts_at', '<=', $date)->whereDate('deadline', '>=', $date);
                 })->orWhere(function ($query) use ($date): void {
-                    $query->whereNotNull('starts_at')->whereNull('deadline')->where('starts_at', $date);
+                    $query->whereNotNull('starts_at')->whereNull('deadline')->whereDate('starts_at', $date);
                 })->orWhere(function ($query) use ($date): void {
-                    $query->whereNull('starts_at')->whereNotNull('deadline')->where('deadline', $date);
+                    $query->whereNull('starts_at')->whereNotNull('deadline')->whereDate('deadline', $date);
                 });
             })
             ->orderBy('starts_at')
@@ -100,6 +89,22 @@ class CalendarIntervalController extends Controller
         return response()->json(['tasks' => $tasks]);
     }
 
+    /**
+     * Чей календарь показываем: по умолчанию свой, админ может выбрать сотрудника.
+     */
+    private function assignee(User $user, ?string $requested): string
+    {
+        if ($requested === null || $requested === '') {
+            return (string) $user->id;
+        }
+
+        if ($requested !== $user->id && ! $user->isAdmin()) {
+            abort(403);
+        }
+
+        return $requested;
+    }
+
     private function taskUrl(User $user, Task $task): string
     {
         if ($user->isAdmin()) {
@@ -115,17 +120,19 @@ class CalendarIntervalController extends Controller
 
     public function activity(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $data = $request->validate([
             'month' => ['required', 'date_format:Y-m'],
+            'assignee_id' => ['nullable', 'uuid', 'exists:users,id'],
         ]);
+
+        $assigneeId = $this->assignee($request->user(), $data['assignee_id'] ?? null);
 
         $start = Carbon::createFromFormat('Y-m-d', $data['month'].'-01')->startOfMonth();
         $end = $start->copy()->endOfMonth();
         $counts = [];
 
         $tasks = Task::query()
+            ->where('assignee_id', $assigneeId)
             ->where(fn ($query) => $query->whereNotNull('starts_at')->orWhereNotNull('deadline'))
             ->get(['starts_at', 'deadline']);
 
