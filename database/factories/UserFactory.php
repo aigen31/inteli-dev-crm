@@ -38,6 +38,13 @@ class UserFactory extends Factory
         ]);
     }
 
+    public function user(): static
+    {
+        return $this->state(fn () => [
+            'role' => UserRole::User,
+        ]);
+    }
+
     public function client(): static
     {
         return $this->state(fn () => [

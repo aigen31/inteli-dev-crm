@@ -71,7 +71,9 @@ class StoreTaskRequest extends FormRequest
             'starts_at' => ['nullable', 'date'],
             'deadline' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'custom_fields' => ['nullable', 'array'],
-            'consent' => ['accepted'],
+            'form_template_id' => ['nullable', 'uuid', 'exists:form_templates,id'],
+            'form_data' => ['nullable', 'array'],
+            'consent' => ['sometimes', 'accepted'],
         ];
     }
 }
