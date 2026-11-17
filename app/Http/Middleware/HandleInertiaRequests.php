@@ -65,7 +65,7 @@ class HandleInertiaRequests extends Middleware
                     return 'default';
                 }
 
-                return in_array($theme, ['default', 'dark', 'xp'], true) ? $theme : 'default';
+                return in_array($theme, ['default', 'dark', 'xp', 'system'], true) ? $theme : 'default';
             })(),
             'features' => $user?->features ?? [],
             'locales' => [

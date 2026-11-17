@@ -32,7 +32,7 @@ class SecretFeatureController extends Controller
     public function theme(Request $request, SecretFeatureService $features): RedirectResponse
     {
         $data = $request->validate([
-            'theme' => ['required', Rule::in(['default', 'dark', 'xp'])],
+            'theme' => ['required', Rule::in(['default', 'dark', 'xp', 'system'])],
         ]);
 
         if ($data['theme'] === 'xp') {

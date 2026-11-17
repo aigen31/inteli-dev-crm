@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     AdjustmentsHorizontalIcon,
+    ArrowLeftIcon,
     ArrowRightOnRectangleIcon,
     BanknotesIcon,
     Bars3Icon,
@@ -192,6 +193,38 @@ const secondary = computed(() => [
     { label: 'Обратная связь', href: route('feedback.index'), icon: ChatBubbleLeftRightIcon, active: path.value.startsWith('/feedback') || path.value.startsWith('/projects/system') },
     { label: 'Помощь', href: route('help.index'), icon: QuestionMarkCircleIcon, active: path.value.startsWith('/help') },
 ]);
+
+const breadcrumbParent = computed(() => {
+    const item = navigation.value.find((entry) => entry.active);
+
+    if (!item?.href) return null;
+
+    let hrefPath = String(item.href).split('?')[0];
+
+    try {
+        hrefPath = new URL(hrefPath, window.location.origin).pathname;
+    } catch {
+        // leave as is for unusual hrefs
+    }
+
+    return hrefPath === path.value ? null : { label: item.label, href: item.href };
+});
+
+const isRootPage = computed(() => {
+    const roots = ['/admin/dashboard', '/executor/dashboard', '/dashboard', '/assistant'];
+
+    return roots.includes(path.value);
+});
+
+function goBack() {
+    if (window.history.length > 1) {
+        window.history.back();
+
+        return;
+    }
+
+    router.visit(isAdmin.value ? route('admin.dashboard') : isExecutor.value ? route('executor.dashboard') : route('client.dashboard'));
+}
 
 const sectionLabel = computed(() => {
     if (path.value.startsWith('/admin/settings')) return 'Настройки';
@@ -397,10 +430,31 @@ function logout() {
         <div class="relative z-10 lg:pl-[236px]">
             <!-- Desktop top strip -->
             <div v-if="!bare" class="mx-auto hidden max-w-[1280px] items-center gap-4 px-8 pt-6 lg:flex">
-                <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-                    <span>inteli dev</span>
-                    <span class="text-faint">/</span>
-                    <span class="text-ink-soft">{{ sectionLabel }}</span>
+                <div class="flex min-w-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+                    <button
+                        v-if="!isRootPage"
+                        type="button"
+                        class="hidden shrink-0 items-center justify-center rounded-full border border-line bg-surface-2/60 p-1.5 text-muted transition hover:border-line-strong hover:text-ink sm:inline-flex"
+                        aria-label="Назад"
+                        title="Назад"
+                        @click="goBack"
+                    >
+                        <ArrowLeftIcon class="h-3.5 w-3.5" />
+                    </button>
+                    <nav class="flex min-w-0 items-center gap-2" aria-label="Хлебные крошки">
+                        <span class="hidden shrink-0 text-faint sm:inline">inteli dev</span>
+                        <span class="hidden shrink-0 text-faint sm:inline">/</span>
+                        <Link
+                            v-if="breadcrumbParent"
+                            :href="breadcrumbParent.href"
+                            class="shrink-0 text-muted transition hover:text-ink"
+                        >{{ breadcrumbParent.label }}</Link>
+                        <span v-else class="shrink-0 text-ink-soft">{{ sectionLabel }}</span>
+                        <template v-if="breadcrumbParent && title">
+                            <span class="shrink-0 text-faint">/</span>
+                            <span class="truncate text-[11px] normal-case tracking-normal text-ink-soft" :title="title">{{ title }}</span>
+                        </template>
+                    </nav>
                 </div>
                 <ReturnPill :items="page.props.navigation?.recent || []" class="ml-3 hidden sm:flex" />
                 <div class="ml-auto flex items-center gap-2">

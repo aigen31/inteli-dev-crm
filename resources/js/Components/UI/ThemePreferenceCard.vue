@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { CheckIcon, MoonIcon, SparklesIcon, SunIcon } from '@heroicons/vue/24/outline';
+import { CheckIcon, ComputerDesktopIcon, MoonIcon, SparklesIcon, SunIcon } from '@heroicons/vue/24/outline';
 
 const page = usePage();
 const features = computed(() => page.props.features || {});
@@ -15,6 +15,13 @@ const options = computed(() => {
             description: 'Тёплая бумага, мягкий фиолетовый акцент.',
             icon: SunIcon,
             preview: 'light',
+        },
+        {
+            value: 'system',
+            label: 'Как в системе',
+            description: 'Светлая или тёмная — по настройке ОС, переключается автоматически.',
+            icon: ComputerDesktopIcon,
+            preview: 'system',
         },
         {
             value: 'dark',
@@ -78,6 +85,7 @@ function choose(theme) {
                     :class="[
                         'theme-preview relative mb-2.5 h-[62px] overflow-hidden rounded-[9px] border',
                         option.preview === 'dark' ? 'border-[#392f4a] bg-[#14111b]' : '',
+                        option.preview === 'system' ? 'border-line bg-gradient-to-br from-[#f6f1e8] to-[#14111b]' : '',
                         option.preview === 'light' ? 'border-[#e2dbea] bg-[#f6f1e8]' : '',
                         option.preview === 'xp' ? 'border-[#0831d9] bg-[#ece9d8]' : '',
                     ]"
