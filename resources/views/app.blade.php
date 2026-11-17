@@ -7,10 +7,19 @@
         $interfaceTheme = 'default';
     }
 
-    $interfaceTheme = in_array($interfaceTheme, ['default', 'dark', 'xp'], true) ? $interfaceTheme : 'default';
+    $interfaceTheme = in_array($interfaceTheme, ['default', 'dark', 'xp', 'system'], true) ? $interfaceTheme : 'default';
 @endphp
-<html lang="ru" data-theme="{{ $interfaceTheme }}">
+<html lang="ru" data-theme="{{ in_array($interfaceTheme, ['dark', 'xp'], true) ? $interfaceTheme : 'default' }}">
 <head>
+    <script>
+        (function () {
+            var theme = @json($interfaceTheme);
+            if (theme === 'system') {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
+            }
+            document.documentElement.dataset.theme = theme;
+        })();
+    </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#F6F3EC">
