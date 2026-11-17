@@ -255,9 +255,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/projects/{project}', [Client\ProjectController::class, 'show'])->name('client.projects.show');
 
         Route::get('/briefs', [Client\BriefController::class, 'index'])->name('client.briefs.index');
+        Route::get('/briefs/create', [Client\BriefController::class, 'create'])->name('client.briefs.create');
+        Route::post('/briefs', [Client\BriefController::class, 'store'])->name('client.briefs.store');
         Route::get('/briefs/{brief}', [Client\BriefController::class, 'show'])->whereUuid('brief')->name('client.briefs.show');
         Route::patch('/briefs/{brief}', [Client\BriefController::class, 'save'])->whereUuid('brief')->name('client.briefs.save');
         Route::post('/briefs/{brief}/submit', [Client\BriefController::class, 'submit'])->whereUuid('brief')->name('client.briefs.submit');
+        Route::patch('/briefs/{brief}/title', [Client\BriefController::class, 'rename'])->whereUuid('brief')->name('client.briefs.rename');
+        Route::delete('/briefs/{brief}', [Client\BriefController::class, 'destroy'])->whereUuid('brief')->name('client.briefs.destroy');
 
         Route::get('/tasks', [Client\TaskController::class, 'index'])->name('client.tasks.index');
         Route::get('/tasks/create', [Client\TaskController::class, 'create'])->name('client.tasks.create');

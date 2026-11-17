@@ -17,6 +17,7 @@ import {
     CheckCircleIcon,
     CloudArrowUpIcon,
     ExclamationTriangleIcon,
+    TrashIcon,
 } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -166,6 +167,12 @@ async function submit() {
     );
 }
 
+function removeBrief() {
+    if (! window.confirm('Удалить бриф? Ответы будут потеряны.')) return;
+
+    router.delete(route('client.briefs.destroy', props.brief.id));
+}
+
 onBeforeUnmount(() => {
     clearTimeout(saveTimer);
     if (editable.value && savingState.value !== 'saved') save();
@@ -178,6 +185,9 @@ onBeforeUnmount(() => {
             <Link :href="route('client.briefs.index')">
                 <Button variant="ghost" size="sm"><ArrowLeftIcon class="h-4 w-4" />К списку</Button>
             </Link>
+            <Button v-if="editable" variant="ghost" size="sm" @click="removeBrief">
+                <TrashIcon class="h-4 w-4" />Удалить
+            </Button>
         </template>
 
         <!-- Отправленный бриф: читаемый вид -->
