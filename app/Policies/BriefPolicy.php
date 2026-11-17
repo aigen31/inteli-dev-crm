@@ -28,11 +28,11 @@ class BriefPolicy
 
     public function update(User $user, Brief $brief): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || ($brief->client_id === $user->id && $brief->isEditable());
     }
 
     public function delete(User $user, Brief $brief): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || ($brief->client_id === $user->id && $brief->isEditable());
     }
 }

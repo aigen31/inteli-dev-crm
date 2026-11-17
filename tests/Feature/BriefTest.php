@@ -704,3 +704,50 @@ test('MCP renames a brief', function (): void {
 
     expect($this->brief->refresh()->title)->toBe('Из MCP');
 });
+
+test('a client creates and deletes their own brief', function (): void {
+    $template = BriefTemplate::query()->where('slug', 'test-brief')->firstOrFail();
+
+    $this->actingAs($this->client)
+        ->post(route('client.briefs.store'), [
+            'brief_template_id' => $template->id,
+            'title' => 'Мой бриф',
+        ])
+        ->assertRedirect();
+
+    $brief = Brief::query()->where('title', 'Мой бриф')->firstOrFail();
+    expect($brief->client_id)->toBe($this->client->id);
+
+    $this->actingAs($this->client)
+        ->patch(route('client.briefs.rename', $brief), ['title' => 'Новое имя'])
+        ->assertRedirect();
+    expect($brief->refresh()->title)->toBe('Новое имя');
+
+    $this->actingAs($this->client)
+        ->delete(route('client.briefs.destroy', $brief))
+        ->assertRedirect();
+    expect(Brief::query()->find($brief->id))->toBeNull();
+});
+
+test('a client cannot delete a submitted brief or someone else brief', function (): void {
+    $this->brief->forceFill(['status' => 'submitted', 'submitted_at' => now()])->save();
+
+    $this->actingAs($this->client)
+        ->delete(route('client.briefs.destroy', $this->brief))
+        ->assertForbidden();
+
+    $foreign = Brief::query()->create([
+        'brief_template_id' => $this->template->id,
+        'template_version' => 1,
+        'client_id' => User::factory()->client()->create()->id,
+        'created_by' => $this->admin->id,
+        'title' => 'Чужой бриф',
+        'status' => 'draft',
+        'data' => [],
+        'progress' => 0,
+    ]);
+
+    $this->actingAs($this->client)
+        ->delete(route('client.briefs.destroy', $foreign))
+        ->assertForbidden();
+});

@@ -5,7 +5,7 @@ import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import { formatDate } from '@/Utils/formatters.js';
-import { ArrowRightIcon, ClipboardDocumentListIcon, ClockIcon } from '@heroicons/vue/24/outline';
+import { ArrowRightIcon, ClipboardDocumentListIcon, ClockIcon, PlusIcon } from '@heroicons/vue/24/outline';
 
 defineProps({
     briefs: { type: Array, default: () => [] },
@@ -15,6 +15,11 @@ defineProps({
 
 <template>
     <ClientLayout title="Брифы">
+        <template #actions>
+            <Link :href="route('client.briefs.create')">
+                <Button size="sm"><PlusIcon class="h-4 w-4" />Создать бриф</Button>
+            </Link>
+        </template>
         <div class="mb-5">
             <p class="eyebrow">Вводные по проекту</p>
             <p class="mt-2 max-w-[640px] text-[12px] leading-relaxed text-muted">
