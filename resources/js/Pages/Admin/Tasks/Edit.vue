@@ -80,7 +80,7 @@ function submit() {
 
         <div class="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
             <div class="min-w-0">
-        <section v-if="hasTemplate" class="surface-card p-5 sm:p-6">
+        <section v-if="hasTemplate" class="surface-card mb-5 p-5 sm:p-6">
             <p class="eyebrow">Заявка из шаблона</p>
             <h2 class="mt-1 text-[15px] font-bold text-ink">{{ task.form_template.name }}</h2>
             <p class="mt-1 text-[11px] text-muted">Редактируются только поля этого шаблона — обычные поля задачи скрыты.</p>
