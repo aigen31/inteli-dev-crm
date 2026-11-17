@@ -53,7 +53,9 @@ class CreateTaskAction
             'type' => $data['type'] ?? TaskType::OneTime,
             'source' => $data['source'] ?? ($creator->hasClientDelegation() ? TaskSource::Client : TaskSource::Manual),
             // В self-проекте заявка сразу в работу: заказчик и есть администратор.
-            'status' => $data['status'] ?? ($isSelfProject ? TaskStatus::Queued : TaskStatus::PendingReview),
+            'status' => $isSelfProject && ($data['status'] ?? TaskStatus::PendingReview) === TaskStatus::PendingReview
+                ? TaskStatus::Queued
+                : ($data['status'] ?? TaskStatus::PendingReview),
             'priority' => $data['priority'] ?? TaskPriority::Medium,
             'strict_control' => $data['strict_control'] ?? null,
             'estimated_minutes' => $data['estimated_minutes'] ?? null,

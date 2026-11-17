@@ -308,7 +308,7 @@ class TaskController extends Controller
             'priorities' => Options::priorities(),
             'statuses' => Options::taskStatuses(),
             'fields' => $this->customFields->serializedDefinitions(CustomFieldEntity::Task),
-            'projects' => Project::query()->whereNull('archived_at')->with(['members:id,project_id,user_id,delegation'])->orderBy('name')->get(['id', 'key', 'name', 'color', 'client_id']),
+            'projects' => Project::query()->whereNull('archived_at')->with(['members:id,project_id,user_id,delegation'])->orderBy('name')->get(['id', 'key', 'name', 'color', 'client_id', 'type']),
         ];
     }
 }

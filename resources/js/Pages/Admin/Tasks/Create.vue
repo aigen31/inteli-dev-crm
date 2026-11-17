@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -117,6 +117,11 @@ function clearTemplate() {
 
 const selectedClient = computed(() => (props.clients || []).find((client) => client.id === form.client_id));
 const selectedProject = computed(() => (props.projects || []).find((project) => project.id === form.project_id));
+const isSelfProject = computed(() => selectedProject.value?.type === 'self');
+
+watch(isSelfProject, (self) => {
+    if (self && form.status === 'pending_review') form.status = 'queued';
+});
 const selectedAssignee = computed(() => (props.assignees || []).find((assignee) => assignee.id === form.assignee_id));
 const typeLabel = computed(() => (props.types || []).find((type) => type.value === form.type)?.label || form.type);
 const priorityLabel = computed(() => (props.priorities || []).find((priority) => priority.value === form.priority)?.label || form.priority);
@@ -159,6 +164,8 @@ const draft = useTaskDraft({
 });
 
 function submit() {
+    if (isSelfProject.value) form.consent = true;
+
     form.post(route('admin.tasks.store'), { onSuccess: () => draft.clear() });
 }
 </script>
@@ -359,10 +366,13 @@ function submit() {
                         </div>
 
                         <div class="mt-4 border-t border-line/70 pt-4">
-                            <ConsentCheckbox v-model="form.consent" :error="form.errors.consent" id="admin-task-consent" variant="contract" />
+                            <p v-if="isSelfProject" class="rounded-[12px] bg-surface-2/60 px-3 py-2 text-[11px] leading-relaxed text-muted">
+                                Self-проект: заказчик — администратор, подтверждение клиента не требуется.
+                            </p>
+                            <ConsentCheckbox v-else v-model="form.consent" :error="form.errors.consent" id="admin-task-consent" variant="contract" />
                         </div>
 
-                        <Button class="mt-4 w-full" :disabled="form.processing || !form.consent || !form.project_id" @click="submit">
+                        <Button class="mt-4 w-full" :disabled="form.processing || (!form.consent && !isSelfProject) || !form.project_id" @click="submit">
                             <CheckCircleIcon class="h-4 w-4" />
                             {{ form.processing ? 'Создаю…' : 'Создать задачу' }}
                         </Button>
