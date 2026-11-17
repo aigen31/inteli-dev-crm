@@ -41,6 +41,10 @@ class TaskReportPolicy
             return true;
         }
 
-        return $task instanceof Task && $task->assignee_id === $user->id;
+        if (! $task instanceof Task) {
+            return true;
+        }
+
+        return $task->assignee_id === $user->id || $task->client_id === $user->id;
     }
 }

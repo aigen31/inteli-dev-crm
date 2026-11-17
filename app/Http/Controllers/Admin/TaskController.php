@@ -140,6 +140,11 @@ class TaskController extends Controller
         $customValues = $data['custom_fields'] ?? [];
         unset($data['custom_fields']);
 
+        // Структурированные ответы шаблона админ правит как и клиент.
+        if (array_key_exists('form_data', $data)) {
+            $data['form_data'] = $task->form_template_id === null ? $task->form_data : $data['form_data'];
+        }
+
         if (! empty($data['project_id'])) {
             $this->authorize('createTask', Project::query()->findOrFail($data['project_id']));
         }
@@ -185,7 +190,7 @@ class TaskController extends Controller
     public function edit(Task $task): Response
     {
         return Inertia::render('Admin/Tasks/Edit', [
-            'task' => $task->load('assignee'),
+            'task' => $task->load(['assignee', 'formTemplate']),
             'customFields' => $this->customFields->serializedValues($task),
             ...$this->formOptions(),
         ]);
@@ -196,6 +201,11 @@ class TaskController extends Controller
         $data = $request->validated();
         $customValues = $data['custom_fields'] ?? [];
         unset($data['custom_fields']);
+
+        // Структурированные ответы шаблона админ правит как и клиент.
+        if (array_key_exists('form_data', $data)) {
+            $data['form_data'] = $task->form_template_id === null ? $task->form_data : $data['form_data'];
+        }
 
         if (array_key_exists('description', $data)) {
             $data['description'] = $this->sanitizer->sanitize($data['description']);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Models\FileAttachment;
 use App\Models\Task;
 use App\Models\TaskReport;
@@ -27,7 +28,7 @@ class ReportController extends Controller
 
         $reports = TaskReport::query()
             ->with(['author:id,name', 'recipient:id,name,email', 'task:id,title,project_id', 'task.project:id,key,name', 'screenshot', 'items.screenshot'])
-            ->when(! $user->isAdmin(), fn ($query) => $query->where('recipient_id', $user->id))
+            ->when(! $user->isAdmin(), fn ($query) => $query->where(fn ($q) => $q->where('recipient_id', $user->id)->orWhere('author_id', $user->id)))
             ->when($user->isAdmin() && $request->input('recipient_id'), fn ($query, $id) => $query->where('recipient_id', $id))
             ->when($request->input('task_id'), fn ($query, $id) => $query->where('task_id', $id))
             ->when($request->boolean('unread'), fn ($query) => $query->whereNull('read_at'))
@@ -59,19 +60,13 @@ class ReportController extends Controller
     {
         $this->authorize('create', TaskReport::class);
 
+        $user = $request->user();
+
         return Inertia::render('Admin/Reports/Create', [
-            'tasks' => Task::query()
-                ->with('project:id,key,name')
-                ->latest()
-                ->limit(200)
-                ->get(['id', 'title', 'project_id', 'number'])
-                ->map(fn (Task $task): array => [
-                    'id' => $task->id,
-                    'title' => $task->title,
-                    'reference' => $task->project ? $task->project->key.'-'.$task->number : null,
-                ]),
-            'recipients' => User::query()->where('is_active', true)->orderBy('role')->orderBy('name')->get(['id', 'name', 'email', 'role']),
+            'tasks' => $this->availableTasks($user),
+            'recipients' => $this->availableRecipients($user),
             'preselectedTask' => $request->query('task_id'),
+            'layout' => $this->layoutFor($request->user()),
         ]);
     }
 
@@ -89,6 +84,8 @@ class ReportController extends Controller
             'items.*.screenshot' => ['nullable', 'image', 'max:10240'],
         ]);
 
+        $this->assertTaskAccess($request->user(), $data['task_id'] ?? null);
+
         $report = app(ReportService::class)->create($request->user(), $data);
 
         return redirect()->route('reports.show', $report)
@@ -104,13 +101,10 @@ class ReportController extends Controller
 
         return Inertia::render('Admin/Reports/Create', [
             'report' => $payload,
-            'tasks' => Task::query()->with('project:id,key,name')->latest()->limit(200)->get(['id', 'title', 'project_id', 'number'])->map(fn (Task $task): array => [
-                'id' => $task->id,
-                'title' => $task->title,
-                'reference' => $task->project ? $task->project->key.'-'.$task->number : null,
-            ]),
-            'recipients' => User::query()->where('is_active', true)->orderBy('role')->orderBy('name')->get(['id', 'name', 'email', 'role']),
+            'tasks' => $this->availableTasks($request->user()),
+            'recipients' => $this->availableRecipients($request->user()),
             'preselectedTask' => null,
+            'layout' => $this->layoutFor($request->user()),
         ]);
     }
 
@@ -129,6 +123,8 @@ class ReportController extends Controller
             'items.*.screenshot' => ['nullable', 'image', 'max:10240'],
         ]);
 
+        $this->assertTaskAccess($request->user(), $data['task_id'] ?? null);
+
         app(ReportService::class)->update($report, $request->user(), $data);
 
         return redirect()->route('reports.show', $report)->with('success', 'Отчёт обновлён.');
@@ -139,7 +135,13 @@ class ReportController extends Controller
         $this->authorize('delete', $report);
         app(ReportService::class)->delete($report);
 
-        return redirect()->route('admin.reports.index')->with('success', 'Отчёт удалён.');
+        return redirect()
+            ->route(match (true) {
+                $request->user()->isAdmin() => 'admin.reports.index',
+                $request->user()->role === UserRole::Executor => 'executor.reports.index',
+                default => 'client.reports.index',
+            })
+            ->with('success', 'Отчёт удалён.');
     }
 
     public function show(Request $request, TaskReport $report): Response
@@ -216,6 +218,74 @@ class ReportController extends Controller
     /**
      * @return array<string, mixed>
      */
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function availableTasks(User $user): array
+    {
+        return Task::query()
+            ->when(! $user->isAdmin(), fn ($query) => $query->where(fn ($q) => $q->where('assignee_id', $user->id)->orWhere('client_id', $user->id)))
+            ->with('project:id,key,name')
+            ->latest()
+            ->limit(200)
+            ->get(['id', 'title', 'project_id', 'number'])
+            ->map(fn (Task $task): array => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'reference' => $task->project ? $task->project->key.'-'.$task->number : null,
+            ])
+            ->all();
+    }
+
+    /**
+     * Получатели отчёта: админ видит всех, обычный пользователь — админов
+     * и вторую сторону своих задач.
+     *
+     * @return \Illuminate\Support\Collection<int, User>
+     */
+    private function availableRecipients(User $user)
+    {
+        $query = User::query()->where('is_active', true);
+
+        if (! $user->isAdmin()) {
+            $partnerIds = Task::query()
+                ->where(fn ($q) => $q->where('assignee_id', $user->id)->orWhere('client_id', $user->id))
+                ->get(['client_id', 'assignee_id'])
+                ->flatMap(fn (Task $task): array => [$task->client_id, $task->assignee_id])
+                ->filter(fn (?string $id): bool => $id !== null && $id !== $user->id)
+                ->unique()
+                ->values()
+                ->all();
+
+            $query->where(fn ($q) => $q->whereIn('id', $partnerIds)->orWhere('role', 'admin'));
+        }
+
+        return $query->orderBy('name')->get(['id', 'name', 'email', 'role']);
+    }
+
+    private function layoutFor(User $user): string
+    {
+        return match (true) {
+            $user->isAdmin() => 'admin',
+            $user->role === UserRole::Executor => 'executor',
+            default => 'client',
+        };
+    }
+
+    private function assertTaskAccess(User $user, ?string $taskId): void
+    {
+        if ($user->isAdmin() || $taskId === null) {
+            return;
+        }
+
+        $task = Task::query()->find($taskId);
+
+        abort_if(
+            $task === null || ($task->assignee_id !== $user->id && $task->client_id !== $user->id),
+            403,
+        );
+    }
+
     public function payload(TaskReport $report): array
     {
         $items = $report->relationLoaded('items')
@@ -228,6 +298,9 @@ class ReportController extends Controller
 
         return [
             'id' => $report->id,
+            'author_id' => $report->author_id,
+            'recipient_id' => $report->recipient_id,
+            'can_edit' => request()->user()?->can('update', $report) ?? false,
             'title' => $report->title,
             'display_title' => $report->title ?: ($sentAt ? 'Отчёт от '.$sentAt->format('d.m.Y') : 'Отчёт'),
             'summary' => $first?->content ?? $report->content,

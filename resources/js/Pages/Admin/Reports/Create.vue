@@ -3,6 +3,8 @@ import { computed } from 'vue';
 import { validationMessage } from '@/Utils/validation';
 import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
+import ClientLayout from '@/Components/Layout/ClientLayout.vue';
+import ExecutorLayout from '@/Components/Layout/ExecutorLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
@@ -14,6 +16,14 @@ const props = defineProps({
     recipients: Array,
     preselectedTask: String,
     report: { type: Object, default: null },
+    layout: { type: String, default: 'admin' },
+});
+
+const layoutComponent = computed(() => {
+    if (props.layout === 'client') return ClientLayout;
+    if (props.layout === 'executor') return ExecutorLayout;
+
+    return AdminLayout;
 });
 
 const isEditing = !!props.report;
@@ -69,7 +79,7 @@ function submit() {
 </script>
 
 <template>
-    <AdminLayout :title="isEditing ? 'Редактировать отчёт' : 'Новый отчёт'">
+    <component :is="layoutComponent" :title="isEditing ? 'Редактировать отчёт' : 'Новый отчёт'">
         <template #actions>
             <Link :href="route('admin.reports.index')"><Button variant="ghost" size="sm"><ArrowLeftIcon class="h-4 w-4" />Назад</Button></Link>
             <Button size="sm" :disabled="form.processing" @click="submit">{{ isEditing ? 'Сохранить' : 'Отправить' }}</Button>
@@ -165,5 +175,5 @@ function submit() {
                 </section>
             </aside>
         </div>
-    </AdminLayout>
+    </component>
 </template>
