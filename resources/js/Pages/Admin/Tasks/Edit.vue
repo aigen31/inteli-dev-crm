@@ -1,6 +1,9 @@
 <script setup>
 import { computed } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
+import Card from '@/Components/UI/Card.vue';
+import SelectInput from '@/Components/Form/SelectInput.vue';
+import TextArea from '@/Components/Form/TextArea.vue';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import TaskFormFields from '@/Components/Task/TaskFormFields.vue';
@@ -19,6 +22,7 @@ const props = defineProps({
     priorities: Array,
     statuses: Array,
     fields: Array,
+    allowedTransitions: { type: Array, default: () => [] },
 });
 
 const values = computed(() => Object.fromEntries((props.customFields || []).map((field) => [field.key, field.value ?? null])));
@@ -49,6 +53,14 @@ function update(next) {
     });
 }
 
+const statusForm = useForm({ status: '', comment: '' });
+
+function changeStatus() {
+    if (! statusForm.status) return;
+
+    statusForm.patch(route('admin.tasks.status', props.task.id), { onSuccess: () => statusForm.reset() });
+}
+
 function submit() {
     form.put(route('admin.tasks.update', props.task.id));
 }
@@ -66,6 +78,8 @@ function submit() {
             <Button size="sm" :disabled="form.processing" @click="submit">Сохранить</Button>
         </template>
 
+        <div class="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div class="min-w-0">
         <section v-if="hasTemplate" class="surface-card p-5 sm:p-6">
             <p class="eyebrow">Заявка из шаблона</p>
             <h2 class="mt-1 text-[15px] font-bold text-ink">{{ task.form_template.name }}</h2>
@@ -91,6 +105,22 @@ function submit() {
             :details-only="hasTemplate"
             @update:model-value="update"
         />
+            </div>
 
+            <aside class="space-y-4 xl:sticky xl:top-24">
+                <Card v-if="allowedTransitions.length" title="Сменить статус">
+                    <form class="space-y-3" @submit.prevent="changeStatus">
+                        <SelectInput v-model="statusForm.status" :options="allowedTransitions" placeholder="Выберите статус" :error="statusForm.errors.status" />
+                        <TextArea v-model="statusForm.comment" placeholder="Комментарий (необязательно)" :rows="2" :error="statusForm.errors.comment" />
+                        <Button type="submit" class="w-full" size="sm" :disabled="statusForm.processing || !statusForm.status">Применить</Button>
+                    </form>
+                </Card>
+
+                <Card title="Сохранение">
+                    <p class="text-[11px] leading-relaxed text-muted">Изменения полей задачи применяются кнопкой «Сохранить».</p>
+                    <Button class="mt-3 w-full" size="sm" :disabled="form.processing" @click="submit">Сохранить изменения</Button>
+                </Card>
+            </aside>
+        </div>
     </AdminLayout>
 </template>

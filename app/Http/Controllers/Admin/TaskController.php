@@ -189,11 +189,12 @@ class TaskController extends Controller
         ]);
     }
 
-    public function edit(Task $task): Response
+    public function edit(Request $request, Task $task): Response
     {
         return Inertia::render('Admin/Tasks/Edit', [
             'task' => $task->load(['assignee', 'formTemplate']),
             'customFields' => $this->customFields->serializedValues($task),
+            'allowedTransitions' => collect($this->strictControl->allowed($task, $request->user()))->values(),
             ...$this->formOptions(),
         ]);
     }
