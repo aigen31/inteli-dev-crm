@@ -12,7 +12,7 @@ import TaskDateCalendar from '@/Components/Form/TaskDateCalendar.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import TaskDraftNotice from '@/Components/Task/TaskDraftNotice.vue';
 import { useTaskDraft } from '@/Composables/useTaskDraft';
-import { ArrowLeftIcon, ArrowRightIcon, CalendarDaysIcon, CheckCircleIcon, ClipboardDocumentListIcon, FolderIcon, RectangleStackIcon, SparklesIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, ArrowRightIcon, BugAntIcon, CalendarDaysIcon, CheckCircleIcon, ChevronDownIcon, ClipboardDocumentListIcon, FolderIcon, RectangleStackIcon, SparklesIcon } from '@heroicons/vue/24/outline';
 import { useAssistant } from '@/Composables/useAssistant';
 import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 
@@ -31,6 +31,33 @@ const selectedKey = ref(preferredForm?.key || null);
 const freeform = ref(props.forms.length === 0);
 const pickerOpen = ref(false);
 const selected = computed(() => props.forms.find((form) => form.key === selectedKey.value) || null);
+
+const mainKeys = ['task-description-images', 'bug-report'];
+const mainForms = computed(() =>
+    mainKeys.map((key) => props.forms.find((candidate) => candidate.key === key)).filter(Boolean));
+const secondaryForms = computed(() => props.forms.filter((candidate) => !mainKeys.includes(candidate.key)));
+
+const mainTitles = {
+    'task-description-images': 'Описание задачи + изображения',
+    'bug-report': 'Баг-репорт',
+    free: 'Свободная заявка',
+};
+
+const mainDescriptions = {
+    'task-description-images': 'Задача своими словами и скриншоты — для нового запроса или правки.',
+    'bug-report': 'Что сломалось, как воспроизвести и что ожидалось.',
+    free: 'Пустая заявка без полей: опишите словами, я уточню.',
+};
+
+const mainIcons = {
+    'task-description-images': ClipboardDocumentListIcon,
+    'bug-report': BugAntIcon,
+    free: SparklesIcon,
+};
+
+function isSelectedForm(key) {
+    return ! freeform.value && selectedKey.value === key;
+}
 const selectedProject = computed(() => (props.projects || []).find((project) => project.id === form.project_id));
 const priorityLabel = computed(() => (props.priorities || []).find((priority) => priority.value === form.priority)?.label || form.priority);
 
@@ -56,7 +83,7 @@ function emptyFormData(template) {
 }
 
 const form = useForm({
-    title: preferredForm?.name || '',
+    title: '',
     description: '',
     project_id: new URLSearchParams(window.location.search).get('project_id') || '',
     consent: false,
@@ -70,7 +97,6 @@ function choose(template) {
     freeform.value = false;
     pickerOpen.value = false;
     selectedKey.value = template.key;
-    form.title = template.name;
     form.form_data = emptyFormData(template);
     form.clearErrors();
 }
@@ -159,81 +185,84 @@ function submit() {
 
         <TaskDraftNotice v-if="draft.savedAt || draft.restored" :saved-at="draft.savedAt" :restored="draft.restored" @discard="draft.discard" />
 
-        <div class="mb-5 flex flex-wrap items-center gap-2">
-            <div class="flex rounded-full border border-line bg-white/50 p-1">
-                <span class="rounded-full bg-ink px-3 py-1.5 text-[11px] font-semibold text-canvas">Шаблоны заявок</span>
-            </div>
-            <button type="button" class="ml-auto inline-flex items-center gap-1.5 text-[10px] font-semibold text-primary-700 hover:underline" @click="startFree">
-                Свободная заявка
-                <ArrowRightIcon class="h-3 w-3" />
-            </button>
-        </div>
-
-        <section class="surface-card mb-5 p-4 sm:p-5">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                    <p class="eyebrow">01 / Шаблон</p>
-                    <h2 class="mt-1 text-[14px] font-bold text-ink">С чего начнём?</h2>
+        <section class="surface-card mb-5 overflow-visible p-5 sm:p-6">
+            <div class="flex flex-wrap items-end justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="eyebrow">01 / С чего начнём</p>
+                    <h2 class="mt-1 font-display text-[20px] font-medium tracking-[-0.03em] text-ink">Что нужно сделать?</h2>
+                    <p class="mt-1 max-w-[620px] text-[12px] leading-relaxed text-muted">
+                        Три основных сценария. Название задачи вы придумываете сами — шаблон подставит только поля и подсказки.
+                    </p>
                 </div>
-                <span class="font-mono text-[9px] text-faint">{{ forms.length }} {{ $t('шаблонов') }}</span>
+                <span class="rounded-full border border-line bg-surface-2/60 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-muted">шаг 1 из 3</span>
             </div>
 
-            <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-line/70 pt-3">
-                <span class="shrink-0 text-[10px] font-semibold text-ink-soft">{{ $t('Можно сменить в любой момент:') }}</span>
-                <div class="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5">
-                    <button
-                        v-for="template in forms"
-                        :key="template.key"
-                        type="button"
-                        :class="[
-                            'shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition',
-                            !freeform && selectedKey === template.key
-                                ? 'border-primary-500 bg-primary-600 text-white shadow-sm'
-                                : 'border-line bg-white/55 text-ink-soft hover:border-primary-300 hover:text-primary-700',
-                        ]"
-                        @click="choose(template)"
-                    >
-                        {{ template.name }}
-                    </button>
-                    <button
-                        type="button"
-                        :class="[
-                            'shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition',
-                            freeform ? 'border-primary-500 bg-primary-600 text-white shadow-sm' : 'border-dashed border-line-strong bg-transparent text-muted hover:border-primary-300 hover:text-primary-700',
-                        ]"
-                        @click="startFree"
-                    >
-                        {{ $t('Свободная заявка') }}
-                    </button>
-                </div>
-                <button type="button" class="shrink-0 text-[10px] font-semibold text-primary-700 hover:underline" @click="pickerOpen = !pickerOpen">
-                    {{ pickerOpen ? $t('Скрыть') : $t('Все шаблоны') }}
-                </button>
-            </div>
-
-            <div v-if="pickerOpen" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                <FormTemplateCard
-                    v-for="template in forms"
+            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <button
+                    v-for="template in mainForms"
                     :key="template.key"
-                    :template="template"
-                    :selected="!freeform && selectedKey === template.key"
-                    @select="choose"
-                />
+                    type="button"
+                    :class="[
+                        'group flex min-h-[136px] flex-col items-start rounded-[18px] border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40',
+                        isSelectedForm(template.key)
+                            ? 'border-primary-400 bg-primary-soft/60 shadow-[0_10px_30px_rgba(109,90,230,.12)]'
+                            : 'border-line bg-surface/70 hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-[0_10px_24px_rgba(28,24,35,.06)]',
+                    ]"
+                    :aria-pressed="isSelectedForm(template.key)"
+                    @click="choose(template)"
+                >
+                    <span :class="['flex h-10 w-10 items-center justify-center rounded-[13px]', isSelectedForm(template.key) ? 'bg-primary-600 text-white' : 'bg-surface-2 text-primary-700']">
+                        <component :is="mainIcons[template.key]" class="h-5 w-5" />
+                    </span>
+                    <span class="mt-3 block text-[13px] font-bold text-ink">{{ mainTitles[template.key] || template.name }}</span>
+                    <span class="mt-1 block text-[11px] leading-relaxed text-muted">{{ mainDescriptions[template.key] || template.description }}</span>
+                    <span v-if="isSelectedForm(template.key)" class="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-primary-700">
+                        <CheckCircleIcon class="h-3.5 w-3.5" />Выбрано
+                    </span>
+                </button>
 
                 <button
                     type="button"
                     :class="[
-                        'flex min-h-[92px] items-center gap-3 rounded-[20px] border px-4 py-3 text-left transition',
-                        freeform ? 'border-primary-300 bg-primary-50/50' : 'border-line bg-white/35 hover:border-line-strong',
+                        'group flex min-h-[136px] flex-col items-start rounded-[18px] border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40',
+                        freeform
+                            ? 'border-primary-400 bg-primary-soft/60 shadow-[0_10px_30px_rgba(109,90,230,.12)]'
+                            : 'border-dashed border-line-strong bg-surface/50 hover:-translate-y-0.5 hover:border-primary-300',
                     ]"
+                    :aria-pressed="freeform"
                     @click="startFree"
                 >
-                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-surface-2 text-muted"><SparklesIcon class="h-4 w-4" /></span>
-                    <span class="min-w-0">
-                        <span class="block text-[12px] font-semibold text-ink">Свободная заявка</span>
-                        <span class="mt-0.5 block text-[10px] leading-relaxed text-muted">Опишите словами, если готового шаблона нет.</span>
+                    <span :class="['flex h-10 w-10 items-center justify-center rounded-[13px]', freeform ? 'bg-primary-600 text-white' : 'bg-surface-2 text-primary-700']">
+                        <SparklesIcon class="h-5 w-5" />
+                    </span>
+                    <span class="mt-3 block text-[13px] font-bold text-ink">{{ mainTitles.free }}</span>
+                    <span class="mt-1 block text-[11px] leading-relaxed text-muted">{{ mainDescriptions.free }}</span>
+                    <span v-if="freeform" class="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-primary-700">
+                        <CheckCircleIcon class="h-3.5 w-3.5" />Выбрано
                     </span>
                 </button>
+            </div>
+
+            <div v-if="secondaryForms.length" class="mt-4 border-t border-line/70 pt-3">
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-700 transition hover:underline"
+                    :aria-expanded="pickerOpen"
+                    @click="pickerOpen = !pickerOpen"
+                >
+                    {{ pickerOpen ? 'Скрыть другие шаблоны' : 'Другие шаблоны' }}<span class="ml-1 font-mono text-[10px] text-faint">{{ secondaryForms.length }}</span>
+                    <ChevronDownIcon :class="['h-3.5 w-3.5 transition', pickerOpen ? 'rotate-180' : '']" />
+                </button>
+
+                <div v-if="pickerOpen" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <FormTemplateCard
+                        v-for="template in secondaryForms"
+                        :key="template.key"
+                        :template="template"
+                        :selected="isSelectedForm(template.key)"
+                        @select="choose"
+                    />
+                </div>
             </div>
         </section>
 

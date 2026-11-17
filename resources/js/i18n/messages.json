@@ -7154,5 +7154,41 @@
   "нагрузка": {
     "en": "workload",
     "zh": "负荷"
+  },
+  "01 / С чего начнём": {
+    "en": "01 / Where to start",
+    "zh": "01 / 从哪里开始"
+  },
+  "Что нужно сделать?": {
+    "en": "What needs to be done?",
+    "zh": "需要做什么？"
+  },
+  "Три основных сценария. Название задачи вы придумываете сами — шаблон подставит только поля и подсказки.": {
+    "en": "Three main scenarios. You name the task yourself — the template only fills in fields and hints.",
+    "zh": "三种主要场景。任务名称由你决定——模板只填充字段和提示。"
+  },
+  "шаг 1 из 3": {
+    "en": "step 1 of 3",
+    "zh": "第 1 步，共 3 步"
+  },
+  "Другие шаблоны": {
+    "en": "Other templates",
+    "zh": "其他模板"
+  },
+  "Скрыть другие шаблоны": {
+    "en": "Hide other templates",
+    "zh": "隐藏其他模板"
+  },
+  "Задача своими словами и скриншоты — для нового запроса или правки.": {
+    "en": "Task in your own words plus screenshots — for a new request or a fix.",
+    "zh": "用你自己的话描述任务并附上截图——用于新请求或修改。"
+  },
+  "Что сломалось, как воспроизвести и что ожидалось.": {
+    "en": "What broke, how to reproduce it and what you expected.",
+    "zh": "出了什么问题、如何复现以及期望的结果。"
+  },
+  "Пустая заявка без полей: опишите словами, я уточню.": {
+    "en": "An empty request: describe it in words, I'll ask for details.",
+    "zh": "空白请求：用文字描述，我会进一步询问。"
   }
 }
