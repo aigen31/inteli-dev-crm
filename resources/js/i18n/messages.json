@@ -7190,5 +7190,465 @@
   "Пустая заявка без полей: опишите словами, я уточню.": {
     "en": "An empty request: describe it in words, I'll ask for details.",
     "zh": "空白请求：用文字描述，我会进一步询问。"
+  },
+  "Ссылка для сброса пароля": {
+    "en": "Password reset link",
+    "zh": "密码重置链接"
+  },
+  "Сброс пароля": {
+    "en": "Reset password",
+    "zh": "重置密码"
+  },
+  "Для": {
+    "en": "For",
+    "zh": "对于"
+  },
+  "Передайте ссылку пользователю. Она действует 60 минут и сработает один раз.": {
+    "en": "Send the link to the user. It is valid for 60 minutes and works once.",
+    "zh": "将链接发送给用户。链接有效期为 60 分钟，且只能使用一次。"
+  },
+  "Открыть форму сброса →": {
+    "en": "Open reset form →",
+    "zh": "打开重置表单 →"
+  },
+  "Пользователь введёт новый пароль на этой странице. Старый пароль перестанет действовать сразу.": {
+    "en": "The user sets a new password on this page. The old password stops working immediately.",
+    "zh": "用户将在此页面设置新密码，旧密码立即失效。"
+  },
+  "Пока нет диалогов": {
+    "en": "No conversations yet",
+    "zh": "还没有对话"
+  },
+  "символов": {
+    "en": "characters",
+    "zh": "个字符"
+  },
+  "Ход работы ·": {
+    "en": "Work log ·",
+    "zh": "工作记录 ·"
+  },
+  "· до МБ": {
+    "en": "· up to MB",
+    "zh": "· 最高 MB"
+  },
+  "Предыдущий месяц": {
+    "en": "Previous month",
+    "zh": "上个月"
+  },
+  "Следующий месяц": {
+    "en": "Next month",
+    "zh": "下个月"
+  },
+  "Задачи на день": {
+    "en": "Tasks for the day",
+    "zh": "当天任务"
+  },
+  "Закрыть задачи дня": {
+    "en": "Close day tasks",
+    "zh": "关闭当天任务"
+  },
+  "День ·": {
+    "en": "Day ·",
+    "zh": "日期 ·"
+  },
+  "На эту дату задач нет": {
+    "en": "No tasks on this date",
+    "zh": "这一天没有任务"
+  },
+  "Выберите другой день с заполненной шкалой нагрузки.": {
+    "en": "Pick another day with a filled workload scale.",
+    "zh": "请选择另一个有负荷刻度的日期。"
+  },
+  "Закрыть каталог": {
+    "en": "Close catalog",
+    "zh": "关闭目录"
+  },
+  "Виджеты": {
+    "en": "Widgets",
+    "zh": "小组件"
+  },
+  "На сегодня задач нет.": {
+    "en": "No tasks for today.",
+    "zh": "今天没有任务。"
+  },
+  "Ближайших дедлайнов нет.": {
+    "en": "No upcoming deadlines.",
+    "zh": "没有即将到期的任务。"
+  },
+  "на столе": {
+    "en": "on the board",
+    "zh": "在工作台上"
+  },
+  "Открыть панель виджетов": {
+    "en": "Open widget panel",
+    "zh": "打开小组件面板"
+  },
+  "Панель виджетов": {
+    "en": "Widget panel",
+    "zh": "小组件面板"
+  },
+  "Закрыть панель виджетов": {
+    "en": "Close widget panel",
+    "zh": "关闭小组件面板"
+  },
+  "Личный холст": {
+    "en": "Personal canvas",
+    "zh": "个人画布"
+  },
+  "Любой виджет из каталога, свободная сетка и доступ из любого раздела. Раскладка сохраняется отдельно от обзора.": {
+    "en": "Any widget from the catalog, a free grid and access from any section. The layout is saved separately from the overview.",
+    "zh": "目录中的任意小组件、自由网格，并可从任何分区访问。布局与概览分开保存。"
+  },
+  "Не удалось загрузить виджеты": {
+    "en": "Failed to load widgets",
+    "zh": "无法加载小组件"
+  },
+  "Проверьте соединение и попробуйте открыть зону снова.": {
+    "en": "Check your connection and try opening the panel again.",
+    "zh": "请检查连接并重新打开面板。"
+  },
+  "Очистить дату": {
+    "en": "Clear date",
+    "zh": "清除日期"
+  },
+  "Закрыть задачи": {
+    "en": "Close tasks",
+    "zh": "关闭任务"
+  },
+  "Загружаю…": {
+    "en": "Loading…",
+    "zh": "加载中…"
+  },
+  "Нет доступных задач на эту дату.": {
+    "en": "No available tasks on this date.",
+    "zh": "这一天没有可用的任务。"
+  },
+  "≈ мин": {
+    "en": "≈ min",
+    "zh": "≈ 分钟"
+  },
+  "Хлебные крошки": {
+    "en": "Breadcrumbs",
+    "zh": "面包屑"
+  },
+  "Перетащите разделы, чтобы изменить порядок. Глаз скрывает или возвращает пункт.": {
+    "en": "Drag sections to reorder. The eye hides or restores an item.",
+    "zh": "拖动分区以更改顺序。眼睛图标可隐藏或恢复条目。"
+  },
+  "скрыто": {
+    "en": "hidden",
+    "zh": "已隐藏"
+  },
+  "Нажмите, чтобы сменить доступ": {
+    "en": "Click to change access",
+    "zh": "点击更改访问权限"
+  },
+  "Заказчик — администратор. Задачи стартуют сразу в работе, без согласия и статуса «ожидает оценки».": {
+    "en": "The client is the administrator. Tasks start in progress, without consent or the “awaiting review” status.",
+    "zh": "客户即管理员。任务会直接进入进行中，无需同意，也没有“等待评审”状态。"
+  },
+  "Короткий латинский префикс. Он попадёт в каждую задачу проекта и в поиск. Менять можно, но ссылки": {
+    "en": "A short Latin prefix. It appears in every project task and in search. You can change it, but links",
+    "zh": "简短的拉丁前缀。它会出现在项目的每个任务和搜索中。可以修改，但链接"
+  },
+  "в задачах останутся читаемыми.": {
+    "en": "in tasks will stay readable.",
+    "zh": "在任务中仍保持可读。"
+  },
+  "до": {
+    "en": "to",
+    "zh": "至"
+  },
+  "· для всех": {
+    "en": "· for everyone",
+    "zh": "· 所有人可见"
+  },
+  "· от": {
+    "en": "· from",
+    "zh": "· 来自"
+  },
+  "· для": {
+    "en": "· for",
+    "zh": "· 用于"
+  },
+  "группа из": {
+    "en": "group of",
+    "zh": "分组，共"
+  },
+  "Скачать Excel": {
+    "en": "Download Excel",
+    "zh": "下载 Excel"
+  },
+  "Скачать PDF": {
+    "en": "Download PDF",
+    "zh": "下载 PDF"
+  },
+  "Поделиться": {
+    "en": "Share",
+    "zh": "分享"
+  },
+  "Передать клиенту": {
+    "en": "Hand to client",
+    "zh": "交给客户"
+  },
+  "Для клиента:": {
+    "en": "For the client:",
+    "zh": "给客户："
+  },
+  "Открыть как клиент": {
+    "en": "Open as client",
+    "zh": "以客户身份打开"
+  },
+  "Поделиться…": {
+    "en": "Share…",
+    "zh": "分享…"
+  },
+  "после входа": {
+    "en": "after sign-in",
+    "zh": "登录后"
+  },
+  "Ссылка ведёт в личный кабинет клиента. Клиент увидит после входа в CRM. Права доступа проверяются при открытии.": {
+    "en": "The link opens the client account. The client sees it after signing in to the CRM. Access rights are checked on open.",
+    "zh": "链接会打开客户账户。客户登录 CRM 后可见。打开时会检查访问权限。"
+  },
+  "Выберите проект": {
+    "en": "Select a project",
+    "zh": "选择项目"
+  },
+  "Можно оставить пустым": {
+    "en": "Can be left empty",
+    "zh": "可以留空"
+  },
+  "Влияет на переход «Ожидает оценки» → «Завершено». Пустое значение наследует настройку CRM.": {
+    "en": "Affects the “Awaiting review” → “Completed” transition. An empty value inherits the CRM setting.",
+    "zh": "影响“等待评审”→“已完成”的转换。留空则继承 CRM 设置。"
+  },
+  "Пакетное редактирование задач": {
+    "en": "Bulk task editing",
+    "zh": "批量编辑任务"
+  },
+  "Выбрано · название и описание не меняются": {
+    "en": "Selected · title and description stay unchanged",
+    "zh": "已选择 · 标题和描述不变"
+  },
+  "Windows XP разблокирована. Выберите её в блоке": {
+    "en": "Windows XP is unlocked. Select it in the",
+    "zh": "Windows XP 已解锁。请在"
+  },
+  "«Тема оформления»": {
+    "en": "“Appearance theme” block",
+    "zh": "“外观主题”中选择"
+  },
+  "Шаблоны брифов": {
+    "en": "Brief templates",
+    "zh": "简报模板"
+  },
+  "К брифам": {
+    "en": "Back to briefs",
+    "zh": "返回简报"
+  },
+  "Новый пользователь": {
+    "en": "New user",
+    "zh": "新用户"
+  },
+  "Создать пользователя": {
+    "en": "Create user",
+    "zh": "创建用户"
+  },
+  "Пользователи": {
+    "en": "Users",
+    "zh": "用户"
+  },
+  "В работе задач, просрочено. Соберите обзор из виджетов ниже.": {
+    "en": "tasks in progress, overdue. Build your overview from the widgets below.",
+    "zh": "个任务进行中，已逾期。用下方小组件构建概览。"
+  },
+  "Настройки /": {
+    "en": "Settings /",
+    "zh": "设置 /"
+  },
+  "Новый исполнитель": {
+    "en": "New assignee",
+    "zh": "新执行者"
+  },
+  "К команде": {
+    "en": "Back to team",
+    "zh": "返回团队"
+  },
+  "Добавить исполнителя": {
+    "en": "Add assignee",
+    "zh": "添加执行者"
+  },
+  "Придумайте новый пароль": {
+    "en": "Create a new password",
+    "zh": "设置新密码"
+  },
+  "После сохранения старый пароль перестанет действовать. Ссылка сработает один раз.": {
+    "en": "After saving, the old password stops working. The link works once.",
+    "zh": "保存后旧密码立即失效。链接只能使用一次。"
+  },
+  "Вернуться ко входу": {
+    "en": "Back to sign in",
+    "zh": "返回登录"
+  },
+  "Здравствуйте, .": {
+    "en": "Hello, .",
+    "zh": "你好，。"
+  },
+  "/ задач": {
+    "en": "/ tasks",
+    "zh": "/ 任务"
+  },
+  "После сохранения — «На рассмотрении»": {
+    "en": "After saving — “Under review”",
+    "zh": "保存后 — “审核中”"
+  },
+  "Группа": {
+    "en": "Group",
+    "zh": "分组"
+  },
+  "Пока нет назначенных задач": {
+    "en": "No assigned tasks yet",
+    "zh": "还没有分配的任务"
+  },
+  "Рабочее место": {
+    "en": "Workspace",
+    "zh": "工作区"
+  },
+  "Задачи, в которых вы участвуете": {
+    "en": "Tasks you are involved in",
+    "zh": "你参与的任务"
+  },
+  "Здесь только ваша работа: назначенные задачи, чек-листы и отчёты клиенту. Клиенты, счета и чужие задачи остаются вне этого экрана.": {
+    "en": "Only your work here: assigned tasks, checklists and reports to the client. Clients, invoices and other people's tasks stay out of this screen.",
+    "zh": "这里只有你的工作：分配的任务、清单和给客户的报告。客户、发票和他人的任务不在此页面。"
+  },
+  "сейчас у вас": {
+    "en": "you currently have",
+    "zh": "你当前有"
+  },
+  "отправлены клиенту": {
+    "en": "sent to the client",
+    "zh": "已发送给客户"
+  },
+  "срок уже прошёл": {
+    "en": "already overdue",
+    "zh": "已逾期"
+  },
+  "Что делать дальше": {
+    "en": "What to do next",
+    "zh": "接下来做什么"
+  },
+  "Мои отчёты": {
+    "en": "My reports",
+    "zh": "我的报告"
+  },
+  "Ритм": {
+    "en": "Rhythm",
+    "zh": "节奏"
+  },
+  "Двигайте статус, когда задача действительно меняет состояние. Отчёт отправляется клиенту сразу после сохранения.": {
+    "en": "Move the status only when the task really changes state. The report is sent to the client right after saving.",
+    "zh": "仅当任务确实改变状态时才移动状态。保存后报告会立即发送给客户。"
+  },
+  "Отчёты, которые вы отправили клиентам. Новый отчёт создаётся из карточки назначенной задачи.": {
+    "en": "Reports you sent to clients. A new report is created from an assigned task card.",
+    "zh": "你发送给客户的报告。新报告从指派任务卡片创建。"
+  },
+  "Справочник обновляется вместе с CRM · версия": {
+    "en": "The reference is updated with the CRM · version",
+    "zh": "参考随 CRM 一起更新 · 版本"
+  },
+  "Проект « »": {
+    "en": "Project « »",
+    "zh": "项目 « »"
+  },
+  "+ / − сумма": {
+    "en": "+ / − amount",
+    "zh": "+ / − 金额"
+  },
+  "Self-проект: заказчик — администратор, подтверждение клиента не требуется.": {
+    "en": "Self project: the client is the administrator, no client confirmation needed.",
+    "zh": "Self 项目：客户即管理员，无需客户确认。"
+  },
+  "Баланс": {
+    "en": "Balance",
+    "zh": "余额"
+  },
+  "Доступ к кабинету": {
+    "en": "Account access",
+    "zh": "账户访问"
+  },
+  "Заявка из шаблона": {
+    "en": "Request from template",
+    "zh": "来自模板的申请"
+  },
+  "Изменения полей задачи применяются кнопкой «Сохранить».": {
+    "en": "Task field changes are applied with the “Save” button.",
+    "zh": "任务字段的更改通过“保存”按钮应用。"
+  },
+  "Комментарий": {
+    "en": "Comment",
+    "zh": "评论"
+  },
+  "Может уходить в минус: списание за завершённые задачи и ручные корректировки.": {
+    "en": "It can go negative: charges for completed tasks and manual adjustments.",
+    "zh": "可能为负：已完成任务的扣费和手动调整。"
+  },
+  "Можно взять шаблон — он подставит поля и подсказки, — или создать обычную задачу.": {
+    "en": "Take a template — it fills in fields and hints — or create a plain task.",
+    "zh": "可以选择模板（会填充字段和提示），或创建普通任务。"
+  },
+  "Обычная задача": {
+    "en": "Plain task",
+    "zh": "普通任务"
+  },
+  "Одноразовая ссылка для смены пароля. Действует 60 минут и срабатывает один раз.": {
+    "en": "One-time password reset link. Valid for 60 minutes and works once.",
+    "zh": "一次性密码重置链接。有效期 60 分钟，仅可使用一次。"
+  },
+  "Поля шаблона — то же, что заполняет клиент.": {
+    "en": "Template fields — the same ones the client fills in.",
+    "zh": "模板字段——与客户填写的相同。"
+  },
+  "Редактируются только поля этого шаблона — обычные поля задачи скрыты.": {
+    "en": "Only this template's fields are editable — the usual task fields are hidden.",
+    "zh": "仅可编辑此模板的字段——常规任务字段已隐藏。"
+  },
+  "Свободное описание, чек-лист и поля — без шаблона.": {
+    "en": "Free description, checklist and fields — without a template.",
+    "zh": "自由描述、清单和字段——不使用模板。"
+  },
+  "Сохранение": {
+    "en": "Saving",
+    "zh": "保存"
+  },
+  "Сохранить изменения": {
+    "en": "Save changes",
+    "zh": "保存更改"
+  },
+  "Формы": {
+    "en": "Forms",
+    "zh": "表单"
+  },
+  "Прикрепить скриншот": {
+    "en": "Attach screenshot",
+    "zh": "附加截图"
+  },
+  "Добавить шаг": {
+    "en": "Add step",
+    "zh": "添加步骤"
+  },
+  "Контроль приёмки": {
+    "en": "Acceptance control",
+    "zh": "验收控制"
+  },
+  "Как в CRM — по умолчанию": {
+    "en": "As in CRM — default",
+    "zh": "与 CRM 相同 — 默认"
+  },
+  "Блокер": {
+    "en": "Blocker",
+    "zh": "阻塞"
   }
 }

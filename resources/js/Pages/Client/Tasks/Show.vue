@@ -135,7 +135,7 @@ function addComment() {
             </div>
 
             <aside class="space-y-5">
-                <Card title="Иншаблонция">
+                <Card title="Информация">
                     <dl class="space-y-3 text-[12px]">
                         <div class="flex items-center justify-between"><dt class="text-muted">Статус</dt><dd><Badge :status="task.status" type="task">{{ taskStatusLabels[task.status] }}</Badge></dd></div>
                         <div class="flex items-center justify-between"><dt class="text-muted">Приоритет</dt><dd>{{ taskPriorityLabels[task.priority] }}</dd></div>
