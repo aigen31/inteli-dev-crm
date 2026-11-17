@@ -245,7 +245,7 @@ function submit() {
                     <span class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/50 px-2.5 py-1 text-[10px] font-semibold text-ink-soft"><span class="font-mono text-[9px] text-primary-600">03</span> Проверка</span>
                 </div>
 
-                <section class="surface-card overflow-hidden">
+                <section class="surface-card overflow-visible">
                     <div class="border-b border-line/80 bg-surface-2/40 px-5 py-4">
                         <div class="flex items-start justify-between gap-3">
                             <div>

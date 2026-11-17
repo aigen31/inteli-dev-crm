@@ -8,7 +8,7 @@ defineEmits(['update:modelValue']);
 </script>
 
 <template>
-    <div class="inline-flex flex-wrap items-center gap-1 rounded-full border border-line bg-white/50 p-1">
+    <div class="inline-flex flex-wrap items-center gap-1 rounded-full border border-line bg-surface-2/60 p-1">
         <button
             v-for="option in options"
             :key="option.value"

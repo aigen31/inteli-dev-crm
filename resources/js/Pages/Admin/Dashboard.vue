@@ -63,7 +63,6 @@ function reset() {
                 <p class="mt-3 text-[13px] leading-relaxed text-ink-soft">В работе {{ counters?.active_tasks ?? 0 }} задач, {{ counters?.overdue ?? 0 }} просрочено. Соберите обзор из виджетов ниже.</p>
                 <div class="mt-5 flex flex-wrap gap-2">
                     <Link :href="route('admin.tasks.create')"><Button size="md"><PlusIcon class="h-4 w-4" />Новая задача</Button></Link>
-                    <Link :href="route('admin.forms.index')"><Button variant="secondary" size="md"><Squares2X2Icon class="h-4 w-4" />Шаблоны</Button></Link>
                     <Button variant="ghost" size="md" @click="open"><SparklesIcon class="h-4 w-4 text-primary-600" />Спросить Кики</Button>
                 </div>
             </div>

@@ -29,7 +29,6 @@ const local = reactive({
     q: props.filters?.q || '',
     status: props.filters?.status || '',
     type: props.filters?.type || '',
-    client_id: props.filters?.client_id || '',
     project_id: props.filters?.project_id || '',
 });
 
@@ -80,7 +79,6 @@ function apply(extra = {}) {
             ...extra,
             status: local.status || undefined,
             type: local.type || undefined,
-            client_id: local.client_id || undefined,
             project_id: local.project_id || undefined,
             q: local.q || undefined,
         },
@@ -134,7 +132,6 @@ function setStatus(value) {
                     />
                 </form>
                 <SelectInput v-model="local.type" :options="types" placeholder="Все типы" @update:model-value="apply()" />
-                <SelectInput v-model="local.client_id" :options="clients.map((c) => ({ value: c.id, label: c.name }))" placeholder="Все клиенты" @update:model-value="apply()" />
                 <SelectInput v-model="local.project_id" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Все проекты" @update:model-value="apply()" />
             </div>
         </div>

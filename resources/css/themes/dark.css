@@ -221,7 +221,8 @@ html[data-theme="dark"] select {
     background-image: linear-gradient(45deg, transparent 50%, #b8afc8 50%), linear-gradient(135deg, #b8afc8 50%, transparent 50%) !important;
 }
 html[data-theme="dark"] input[type="checkbox"],
-html[data-theme="dark"] input[type="radio"] { accent-color: #9b86f5; }
+html[data-theme="dark"] input[type="radio"],
+html[data-theme="dark"] input[type="checkbox"] { accent-color: #9b86f5; }
 html[data-theme="dark"] option { background: #15121d; color: #f5f1fb; }
 
 /* Buttons */

@@ -162,13 +162,13 @@ function submit() {
 
             <aside class="space-y-4 xl:sticky xl:top-24">
                 <section class="surface-card overflow-hidden">
-                    <div class="relative overflow-hidden border-b border-line/70 bg-ink px-5 py-4 text-canvas">
+                    <div class="relative overflow-hidden border-b border-line/70 bg-surface-2 px-5 py-4 text-ink">
                         <div class="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary-400/30 blur-2xl"></div>
                         <div class="relative flex items-center gap-3">
                             <KikiAvatar variant="face" fit="contain" :size="34" />
                             <div class="min-w-0">
-                                <p class="font-mono text-[8px] uppercase tracking-[0.14em] text-canvas/60">Черновик</p>
-                                <p class="mt-0.5 truncate text-[12px] font-semibold text-canvas">Проверьте перед созданием</p>
+                                <p class="font-mono text-[8px] uppercase tracking-[0.14em] text-muted">Черновик</p>
+                                <p class="mt-0.5 truncate text-[12px] font-semibold text-ink">Проверьте перед созданием</p>
                             </div>
                         </div>
                     </div>
