@@ -424,3 +424,49 @@ html[data-theme="dark"] [class*="bg-white/"] {
 html[data-theme="dark"] [class*="border-white/"] {
     border-color: rgba(255, 255, 255, 0.08) !important;
 }
+
+/* Чекбоксы: нативный вид в тёмной теме остаётся светлым даже с
+   color-scheme, поэтому рисуем их сами. */
+html[data-theme="dark"] input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #211c2b;
+    border: 1px solid #4b405e;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+html[data-theme="dark"] input[type="checkbox"]:hover {
+    border-color: #6d5ae6;
+}
+
+html[data-theme="dark"] input[type="checkbox"]:checked,
+html[data-theme="dark"] input[type="checkbox"]:indeterminate {
+    background-color: #6d5ae6;
+    border-color: #6d5ae6;
+}
+
+html[data-theme="dark"] input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: 0.52rem;
+    height: 0.3rem;
+    border-left: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+html[data-theme="dark"] input[type="checkbox"]:indeterminate::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.5rem;
+    height: 2px;
+    background: #ffffff;
+    transform: translate(-50%, -50%);
+}

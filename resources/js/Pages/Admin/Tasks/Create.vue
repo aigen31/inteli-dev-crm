@@ -5,6 +5,7 @@ import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import TaskFormFields from '@/Components/Task/TaskFormFields.vue';
 import StructuredForm from '@/Components/FormTemplates/StructuredForm.vue';
+import TextInput from '@/Components/Form/TextInput.vue';
 import FormTemplateCard from '@/Components/FormTemplates/FormTemplateCard.vue';
 import ConsentCheckbox from '@/Components/Legal/ConsentCheckbox.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
@@ -297,6 +298,7 @@ function submit() {
                     :statuses="statuses"
                     :fields="fields"
                     :errors="form.errors"
+                    :details-only="Boolean(form.form_template_id)"
                     @update:model-value="update"
                 />
 
@@ -304,6 +306,9 @@ function submit() {
                     <p class="eyebrow">Структурированная заявка</p>
                     <h2 class="mt-1 text-[15px] font-bold text-ink">{{ selectedTemplate.name }}</h2>
                     <p class="mt-1 text-[11px] text-muted">Поля шаблона — то же, что заполняет клиент.</p>
+                    <div class="mt-4">
+                        <TextInput v-model="form.title" label="Название задачи" :error="form.errors.title" placeholder="Коротко: что нужно сделать" />
+                    </div>
                     <StructuredForm class="mt-4" :template="selectedTemplate" :model-value="form.form_data" :errors="form.errors" />
                 </section>
             </div>

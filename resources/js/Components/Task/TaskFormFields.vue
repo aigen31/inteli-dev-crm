@@ -20,6 +20,7 @@ const props = defineProps({
     fields: { type: Array, default: () => [] },
     errors: { type: Object, default: () => ({}) },
     showStatus: { type: Boolean, default: true },
+    detailsOnly: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -108,7 +109,7 @@ const statusOptions = computed(() =>
 
 <template>
     <div class="space-y-5">
-        <section class="surface-card p-5 sm:p-6">
+        <section v-if="! detailsOnly" class="surface-card p-5 sm:p-6">
             <p class="eyebrow">Суть</p>
             <div class="mt-4 space-y-4">
                 <TextInput :model-value="modelValue.title" label="Название" :error="error('title')" placeholder="Что нужно сделать" @update:model-value="update('title', $event)" />
@@ -219,7 +220,7 @@ const statusOptions = computed(() =>
             </div>
         </section>
 
-        <section class="surface-card p-5 sm:p-6">
+        <section v-if="! detailsOnly" class="surface-card p-5 sm:p-6">
             <div class="flex items-center justify-between gap-3">
                 <div>
                     <p class="eyebrow">Чек-лист</p>
@@ -250,7 +251,7 @@ const statusOptions = computed(() =>
             </div>
         </section>
 
-        <section v-if="fields.length" class="surface-card p-5 sm:p-6">
+        <section v-if="fields.length && ! detailsOnly" class="surface-card p-5 sm:p-6">
             <p class="eyebrow">Поля</p>
             <div class="mt-4">
                 <CustomFieldsForm

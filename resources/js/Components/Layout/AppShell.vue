@@ -64,28 +64,16 @@ const baseNavigation = computed(() => {
         ];
     }
 
-    if (isExecutor.value) {
-        // Исполнитель пользуется тем же рабочим пространством, что и клиент:
-        // разделы не должны исчезать при переходе в «Назначено мне».
-        return [
-            { key: 'executor.dashboard', label: 'Обзор', href: route('executor.dashboard'), icon: HomeIcon, active: path.value === '/executor/dashboard' },
-            { key: 'client.projects', label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') && !path.value.startsWith('/projects/system') },
-            { key: 'client.tasks', label: 'Задачи', href: route('client.tasks.index'), icon: RectangleStackIcon, active: path.value.startsWith('/tasks') },
-            { key: 'executor.tasks', label: 'Назначено мне', href: route('executor.tasks.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/executor/tasks') },
-            { key: 'client.briefs', label: 'Брифы', href: route('client.briefs.index'), icon: ClipboardDocumentListIcon, active: path.value.startsWith('/briefs') },
-            { key: 'client.invoices', label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
-            { key: 'client.reports', label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') || path.value.startsWith('/executor/reports') },
-        ];
-    }
-
+    // У обычного пользователя один набор разделов — и в клиентском,
+    // и в исполнительском лейауте. Никаких ветвлений по роли.
     return [
-        { key: 'client.dashboard', label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' },
+        { key: 'client.dashboard', label: 'Обзор', href: route('client.dashboard'), icon: HomeIcon, active: path.value === '/dashboard' || path.value === '/executor/dashboard' },
         { key: 'client.projects', label: 'Проекты', href: route('client.projects.index'), icon: FolderIcon, active: path.value.startsWith('/projects') && !path.value.startsWith('/projects/system') },
         { key: 'client.tasks', label: 'Задачи', href: route('client.tasks.index'), icon: CheckCircleIcon, active: path.value.startsWith('/tasks') },
-        ...(hasExecutorDelegation.value ? [{ key: 'executor.tasks', label: 'Назначено мне', href: route('executor.tasks.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/executor/tasks') }] : []),
+        { key: 'executor.tasks', label: 'Назначено мне', href: route('executor.tasks.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/executor/tasks') },
         { key: 'client.briefs', label: 'Брифы', href: route('client.briefs.index'), icon: ClipboardDocumentListIcon, active: path.value.startsWith('/briefs') },
         { key: 'client.invoices', label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
-        { key: 'client.reports', label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') },
+        { key: 'client.reports', label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') || path.value.startsWith('/executor/reports') },
     ];
 });
 
