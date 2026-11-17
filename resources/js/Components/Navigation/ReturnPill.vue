@@ -2,7 +2,6 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
-import { formatRelativeTime } from '@/Utils/formatters.js';
 
 const props = defineProps({
     items: { type: Array, default: () => [] },
@@ -25,7 +24,6 @@ const colorDot = {
 
 const dotClass = computed(() => colorDot[primary.value?.project?.color] || colorDot.violet);
 const label = computed(() => primary.value?.reference || primary.value?.title || 'Назад');
-const relative = computed(() => (primary.value ? formatRelativeTime(primary.value.visited_at, 'short') : ''));
 
 function goBack() {
     if (window.history.length > 1) {
@@ -46,7 +44,6 @@ function goBack() {
         <ArrowLeftIcon class="h-3.5 w-3.5 shrink-0 transition group-hover:-translate-x-0.5 group-hover:text-primary-600" />
         <span :class="['h-1.5 w-1.5 shrink-0 rounded-full', dotClass]"></span>
         <span class="max-w-[110px] shrink-0 truncate text-[11px] font-semibold text-ink">{{ label }}</span>
-        <span v-if="relative" class="shrink-0 font-mono text-[9px] text-faint group-hover:hidden">{{ relative }}</span>
         <span v-if="primary" class="hidden truncate text-[11px] font-medium text-ink-soft group-hover:inline">{{ primary.title }}</span>
     </button>
 </template>

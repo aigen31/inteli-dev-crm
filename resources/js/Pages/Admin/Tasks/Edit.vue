@@ -67,7 +67,6 @@ function submit() {
         </template>
 
         <TaskFormFields
-            v-if="! hasTemplate"
             :model-value="form"
             :clients="clients"
             :projects="projects"
@@ -79,6 +78,7 @@ function submit() {
             :fields="fields"
             :errors="form.errors"
             :show-status="false"
+            :details-only="hasTemplate"
             @update:model-value="update"
         />
 
