@@ -11,7 +11,12 @@ const open = ref(false);
 const loading = ref(false);
 const failed = ref(false);
 const data = ref(null);
-const layout = ref(normalizeWidgetLayout(page.props.auth?.user?.widget_zone_layout));
+const isAdmin = page.props.auth?.user?.role === 'admin';
+const adminOnlyWidgets = ['clients', 'revenue', 'quick_links', 'user_workload'];
+const layout = ref(
+    normalizeWidgetLayout(page.props.auth?.user?.widget_zone_layout)
+        .filter((item) => isAdmin || !adminOnlyWidgets.includes(item.id)),
+);
 const closeButton = ref(null);
 let saveTimer = null;
 
@@ -28,7 +33,7 @@ async function openZone() {
     loading.value = true;
     failed.value = false;
     try {
-        const response = await axios.get(route('admin.widget-zone.data'));
+        const response = await axios.get(route('widget-zone.data'));
         data.value = response.data;
     } catch {
         failed.value = true;
@@ -46,7 +51,7 @@ function save(next) {
     layout.value = next;
     window.clearTimeout(saveTimer);
     saveTimer = window.setTimeout(() => {
-        axios.patch(route('admin.widget-zone.layout'), { widgets: layout.value }).catch(() => {});
+        axios.patch(route('widget-zone.layout'), { widgets: layout.value }).catch(() => {});
     }, 500);
 }
 

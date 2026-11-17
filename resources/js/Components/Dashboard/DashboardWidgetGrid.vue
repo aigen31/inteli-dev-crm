@@ -35,13 +35,13 @@ const columns = ref(4);
 const resizing = ref(null);
 
 const catalog = [
-    { id: 'clients', title: 'Клиенты', description: 'Активные аккаунты', icon: UserGroupIcon, w: 1, h: 1 },
+    { id: 'clients', title: 'Клиенты', description: 'Активные аккаунты', icon: UserGroupIcon, w: 1, h: 1, roles: ['admin'] },
     { id: 'active_tasks', title: 'Задачи в работе', description: 'Активные задачи и просрочки', icon: ClockIcon, w: 1, h: 1 },
-    { id: 'revenue', title: 'Доход за месяц', description: 'Оплаченные счета за месяц', icon: BanknotesIcon, w: 1, h: 1 },
+    { id: 'revenue', title: 'Доход за месяц', description: 'Оплаченные счета за месяц', icon: BanknotesIcon, w: 1, h: 1, roles: ['admin'] },
     { id: 'focus', title: 'Фокус', description: 'Сегодняшние и ближайшие задачи', icon: CheckCircleIcon, w: 2, h: 2 },
     { id: 'activity', title: 'Движение', description: 'Последние изменения задач', icon: ClockIcon, w: 2, h: 2 },
     { id: 'deadlines', title: 'Дедлайны', description: 'Ближайшие сроки', icon: ClockIcon, w: 2, h: 1 },
-    { id: 'quick_links', title: 'Быстрые ссылки', description: 'Клиенты, проекты и шаблоны', icon: UserGroupIcon, w: 2, h: 1 },
+    { id: 'quick_links', title: 'Быстрые ссылки', description: 'Клиенты, проекты и шаблоны', icon: UserGroupIcon, w: 2, h: 1, roles: ['admin'] },
     { id: 'activity_calendar', title: 'Календарь активности', description: 'Мои задачи по датам', icon: ClockIcon, w: 2, h: 3 },
     { id: 'user_workload', title: 'Нагрузка сотрудника', description: 'Календарь конкретного сотрудника', icon: UserGroupIcon, w: 2, h: 3, roles: ['admin'] },
 ];

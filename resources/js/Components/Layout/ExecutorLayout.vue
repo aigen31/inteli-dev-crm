@@ -1,5 +1,6 @@
 <script setup>
 import AppShell from '@/Components/Layout/AppShell.vue';
+import WidgetZone from '@/Components/Dashboard/WidgetZone.vue';
 
 defineProps({
     title: { type: String, default: null },
@@ -16,5 +17,6 @@ defineProps({
             <slot name="actions" />
         </template>
         <slot />
+        <WidgetZone />
     </AppShell>
 </template>
