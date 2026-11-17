@@ -20,6 +20,16 @@ class StoreTaskRequest extends FormRequest
         return $this->user()->isAdmin();
     }
 
+    protected function prepareForValidation(): void
+    {
+        // Self-проект: заказчик всегда администратор проекта.
+        $project = Project::query()->find($this->input('project_id'));
+
+        if ($project?->type === \App\Enums\ProjectType::Self) {
+            $this->merge(['client_id' => $project->client_id]);
+        }
+    }
+
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {

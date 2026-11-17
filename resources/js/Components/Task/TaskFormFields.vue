@@ -26,6 +26,7 @@ const emit = defineEmits(['update:modelValue']);
 
 const checklist = computed(() => props.modelValue.checklist || []);
 const selectedProject = computed(() => props.projects.find((project) => project.id === props.modelValue.project_id) || null);
+const isSelfProject = computed(() => selectedProject.value?.type === 'self');
 
 function allowedForProject(user, delegation) {
     if (!selectedProject.value || !selectedProject.value.members?.length) return true;
@@ -123,6 +124,7 @@ const statusOptions = computed(() =>
             <p class="eyebrow">Детали</p>
             <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <SelectInput
+                    v-if="! isSelfProject"
                     :model-value="modelValue.client_id"
                     label="Клиент"
                     :options="clientOptions"
