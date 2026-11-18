@@ -243,8 +243,26 @@ class TaskController extends Controller
             'task' => $task,
             'canReview' => $canReview,
             'canEdit' => $request->user()->can('update', $task),
+            'allowedTransitions' => $request->user()->can('changeStatus', $task)
+                ? collect(app(\App\Services\Tasks\TaskStrictControl::class)->allowed($task, $request->user()))->values()
+                : [],
             'customFields' => $this->customFields->serializedValues($task),
         ]);
+    }
+
+    public function updateStatus(Request $request, Task $task, ChangeTaskStatusAction $action): RedirectResponse
+    {
+        $this->authorize('changeStatus', $task);
+
+        $data = $request->validate([
+            'status' => ['required', \Illuminate\Validation\Rule::enum(TaskStatus::class)],
+            'comment' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $newStatus = TaskStatus::from($data['status']);
+        $action->execute($task, $newStatus, $request->user(), $data['comment'] ?? null);
+
+        return back()->with('success', "Статус изменён на «{$newStatus->label()}».");
     }
 
     public function review(ReviewTaskRequest $request, Task $task, ChangeTaskStatusAction $action): RedirectResponse

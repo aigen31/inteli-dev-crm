@@ -268,6 +268,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/tasks/{task}/edit', [Client\TaskController::class, 'edit'])->whereUuid('task')->name('client.tasks.edit');
         Route::put('/tasks/{task}', [Client\TaskController::class, 'update'])->whereUuid('task')->name('client.tasks.update');
         Route::get('/tasks/{task}', [Client\TaskController::class, 'show'])->name('client.tasks.show');
+        Route::patch('/tasks/{task}/status', [Client\TaskController::class, 'updateStatus'])->whereUuid('task')->name('client.tasks.status');
         Route::patch('/tasks/{task}/review', [Client\TaskController::class, 'review'])->name('client.tasks.review');
         Route::post('/tasks/{task}/comments', [Client\TaskCommentController::class, 'store'])->name('client.tasks.comments.store');
 

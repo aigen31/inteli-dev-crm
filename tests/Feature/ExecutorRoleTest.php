@@ -239,3 +239,33 @@ test('an executor and an admin can return a task from awaiting review to work', 
         ->assertRedirect();
     expect($task->fresh()->status)->toBe(TaskStatus::InProgress);
 });
+
+test('an assignee can open the client task page and change status there', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = User::factory()->client()->create();
+    $executor = User::factory()->executor()->create();
+    $task = Task::factory()->create([
+        'client_id' => $client->id,
+        'assignee_id' => $executor->id,
+        'created_by' => $admin->id,
+        'status' => 'queued',
+    ]);
+
+    $this->actingAs($executor)
+        ->get(route('client.tasks.show', $task))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Client/Tasks/Show')
+            ->has('allowedTransitions'));
+
+    $this->actingAs($executor)
+        ->patch(route('client.tasks.status', $task), ['status' => 'in_progress'])
+        ->assertRedirect();
+
+    expect($task->refresh()->status->value)->toBe('in_progress');
+
+    // Клиент (заказчик) не может двигать статус по этой ручке.
+    $this->actingAs($client)
+        ->patch(route('client.tasks.status', $task), ['status' => 'awaiting_review'])
+        ->assertForbidden();
+});
