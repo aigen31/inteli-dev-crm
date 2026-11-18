@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import ExecutorLayout from '@/Components/Layout/ExecutorLayout.vue';
+import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import ActivityCalendarWidget from '@/Components/Dashboard/ActivityCalendarWidget.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -18,7 +18,7 @@ defineProps({
 </script>
 
 <template>
-    <ExecutorLayout title="Обзор">
+    <ClientLayout title="Обзор">
         <section class="relative mb-5 overflow-hidden rounded-[28px] border border-line bg-gradient-to-br from-[#fbf7ef] via-[#f5f0fb] to-[#ece5fa] px-5 py-6 sm:px-7">
             <div class="pointer-events-none absolute -right-12 -top-20 h-56 w-56 rounded-full bg-primary-500/10 blur-3xl"></div>
             <div class="relative flex flex-wrap items-center gap-5">
@@ -88,5 +88,5 @@ defineProps({
                 </section>
             </aside>
         </div>
-    </ExecutorLayout>
+    </ClientLayout>
 </template>

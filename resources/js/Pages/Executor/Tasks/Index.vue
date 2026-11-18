@@ -1,7 +1,7 @@
 <script setup>
 import { reactive } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import ExecutorLayout from '@/Components/Layout/ExecutorLayout.vue';
+import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
@@ -32,7 +32,7 @@ function setStatus(value) {
 </script>
 
 <template>
-    <ExecutorLayout title="Мои задачи">
+    <ClientLayout title="Мои задачи">
         <template #actions>
             <Link :href="route('executor.dashboard')"><Button variant="ghost" size="sm">Обзор</Button></Link>
         </template>
@@ -66,5 +66,5 @@ function setStatus(value) {
             </div>
             <Pagination :links="tasks" />
         </div>
-    </ExecutorLayout>
+    </ClientLayout>
 </template>

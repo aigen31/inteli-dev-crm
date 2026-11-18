@@ -46,7 +46,6 @@ const mobileMenu = ref(false);
 const path = computed(() => page.url.split('?')[0]);
 const user = computed(() => page.props.auth?.user);
 const isAdmin = computed(() => props.role === 'admin');
-const isExecutor = computed(() => props.role === 'executor');
 const hasClientDelegation = computed(() => page.props.auth?.user?.has_client_delegation === true);
 const hasExecutorDelegation = computed(() => page.props.auth?.user?.has_executor_delegation === true);
 
@@ -176,9 +175,7 @@ const mobileNavigation = computed(() => navigation.value.filter((item) => !item.
 const secondary = computed(() => [
     ...(isAdmin.value
         ? [{ label: 'Настройки', href: route('admin.settings.edit'), icon: Cog6ToothIcon, active: path.value.startsWith('/admin/settings') }]
-        : isExecutor.value
-          ? []
-          : [{ label: 'Профиль', href: route('client.profile.edit'), icon: UserIcon, active: path.value.startsWith('/profile') }]),
+        : [{ label: 'Профиль', href: route('client.profile.edit'), icon: UserIcon, active: path.value.startsWith('/profile') }]),
     { label: 'Обратная связь', href: route('feedback.index'), icon: ChatBubbleLeftRightIcon, active: path.value.startsWith('/feedback') || path.value.startsWith('/projects/system') },
     { label: 'Помощь', href: route('help.index'), icon: QuestionMarkCircleIcon, active: path.value.startsWith('/help') },
 ]);
@@ -343,7 +340,7 @@ function logout() {
                     </span>
                     <span class="min-w-0 flex-1">
                         <span class="block truncate text-[12px] font-semibold text-ink">{{ user?.name }}</span>
-                        <span class="block text-[10px] text-muted">{{ isAdmin ? 'Владелец' : (isExecutor ? 'Исполнитель' : 'Клиент') }}</span>
+                        <span class="block text-[10px] text-muted">{{ isAdmin ? 'Владелец' : 'Пользователь' }}</span>
                     </span>
                     <button type="button" class="text-muted transition hover:text-danger" title="Выйти" @click="logout">
                         <ArrowRightOnRectangleIcon class="h-[18px] w-[18px]" />
@@ -432,7 +429,6 @@ function logout() {
                     </button>
                     <LocaleSwitcher />
                     <Link
-                        v-if="!isExecutor"
                         :href="isAdmin ? route('admin.settings.edit') : route('client.profile.edit')"
                         class="rounded-full border border-line bg-white/50 p-2 text-muted transition hover:border-line-strong hover:text-ink"
                     >

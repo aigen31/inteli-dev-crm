@@ -1,9 +1,10 @@
 <script setup>
 import { computed } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
-import ExecutorLayout from '@/Components/Layout/ExecutorLayout.vue';
+import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
+import TaskStatusCard from '@/Components/Task/TaskStatusCard.vue';
 import Card from '@/Components/UI/Card.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
@@ -20,7 +21,6 @@ const props = defineProps({
 
 const checklist = computed(() => props.task.checklist || []);
 const commentForm = useForm({ content: '', attachments: null });
-const statusForm = useForm({ status: '', comment: '' });
 const reportForm = useForm({ title: '', content: '', test_url: '', screenshot: null });
 
 function toggleChecklist(index) {
@@ -30,10 +30,6 @@ function toggleChecklist(index) {
 
 function addComment() {
     commentForm.post(route('executor.tasks.comments.store', props.task.id), { onSuccess: () => commentForm.reset() });
-}
-
-function changeStatus() {
-    statusForm.patch(route('executor.tasks.status', props.task.id), { preserveScroll: true, onSuccess: () => statusForm.reset() });
 }
 
 function sendReport() {
@@ -46,7 +42,7 @@ function sendReport() {
 </script>
 
 <template>
-    <ExecutorLayout :title="task.title">
+    <ClientLayout :title="task.title">
         <template #actions>
             <Link :href="route('executor.tasks.index')"><Button variant="ghost" size="sm"><ArrowLeftIcon class="h-4 w-4" />Мои задачи</Button></Link>
         </template>
@@ -123,20 +119,25 @@ function sendReport() {
             </div>
 
             <aside class="space-y-5">
-                <Card title="Статус">
-                    <form v-if="allowedTransitions.length" class="space-y-3" @submit.prevent="changeStatus">
-                        <SelectInput v-model="statusForm.status" :options="allowedTransitions" placeholder="Новый статус" :error="statusForm.errors.status" />
-                        <TextArea v-model="statusForm.comment" placeholder="Комментарий к переходу (необязательно)" :rows="2" :error="statusForm.errors.comment" />
-                        <Button type="submit" class="w-full" size="sm" :disabled="statusForm.processing || !statusForm.status">Применить</Button>
-                    </form>
-                    <p v-else class="text-[11px] leading-relaxed text-muted">Сейчас статус меняет клиент или администратор.</p>
-                    <p v-if="!strictControl.active && task.status === 'awaiting_review'" class="mt-2 rounded-[10px] bg-surface-2 px-3 py-2 text-[10px] leading-relaxed text-muted">
-                        Мягкий режим: задачу можно закрыть без подтверждения клиента.
-                    </p>
-                    <p v-else-if="strictControl.active && task.status === 'awaiting_review'" class="mt-2 text-[10px] leading-relaxed text-faint">
-                        Строгий контроль: закрыть задачу может только клиент.
-                    </p>
-                </Card>
+                <TaskStatusCard
+                    :task-id="task.id"
+                    :transitions="allowedTransitions"
+                    action="executor.tasks.status"
+                    title="Статус"
+                    placeholder="Новый статус"
+                >
+                    <template #empty>
+                        <p class="text-[11px] leading-relaxed text-muted">Сейчас статус меняет клиент или администратор.</p>
+                    </template>
+                    <template #footer>
+                        <p v-if="! strictControl.active && task.status === 'awaiting_review'" class="mt-2 rounded-[10px] bg-surface-2 px-3 py-2 text-[10px] leading-relaxed text-muted">
+                            Мягкий режим: задачу можно закрыть без подтверждения клиента.
+                        </p>
+                        <p v-else-if="strictControl.active && task.status === 'awaiting_review'" class="mt-2 text-[10px] leading-relaxed text-faint">
+                            Строгий контроль: закрыть задачу может только клиент.
+                        </p>
+                    </template>
+                </TaskStatusCard>
 
                 <Card title="Информация">
                     <dl class="space-y-3 text-[12px]">
@@ -160,5 +161,5 @@ function sendReport() {
                 </Card>
             </aside>
         </div>
-    </ExecutorLayout>
+    </ClientLayout>
 </template>

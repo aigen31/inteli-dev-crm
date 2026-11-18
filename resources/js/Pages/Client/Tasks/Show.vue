@@ -4,9 +4,8 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
+import TaskStatusCard from '@/Components/Task/TaskStatusCard.vue';
 import Card from '@/Components/UI/Card.vue';
-import TextArea from '@/Components/Form/TextArea.vue';
-import SelectInput from '@/Components/Form/SelectInput.vue';
 import CustomFieldsView from '@/Components/CustomFields/CustomFieldsView.vue';
 import StructuredFormSummary from '@/Components/FormTemplates/StructuredFormSummary.vue';
 import { invoiceStatusLabels, taskPriorityLabels, taskStatusLabels } from '@/Utils/constants.js';
@@ -23,14 +22,6 @@ const props = defineProps({
 
 const page = usePage();
 const isAssignee = computed(() => props.task.assignee_id === page.props.auth?.user?.id && props.task.client_id !== page.props.auth?.user?.id);
-const statusForm = useForm({ status: '', comment: '' });
-
-function changeStatus() {
-    if (! statusForm.status) return;
-
-    statusForm.patch(route('client.tasks.status', props.task.id), { onSuccess: () => statusForm.reset() });
-}
-
 const reviewForm = useForm({ status: '', comment: '' });
 const commentForm = useForm({ content: '', attachments: null });
 
@@ -157,13 +148,7 @@ function addComment() {
                     </dl>
                 </Card>
 
-                <Card v-if="isAssignee && allowedTransitions.length" title="Сменить статус">
-                    <form class="space-y-3" @submit.prevent="changeStatus">
-                        <SelectInput v-model="statusForm.status" :options="allowedTransitions" placeholder="Выберите статус" :error="statusForm.errors.status" />
-                        <TextArea v-model="statusForm.comment" placeholder="Комментарий (необязательно)" :rows="2" :error="statusForm.errors.comment" />
-                        <Button type="submit" class="w-full" size="sm" :disabled="statusForm.processing || !statusForm.status">Применить</Button>
-                    </form>
-                </Card>
+                <TaskStatusCard :task-id="task.id" :transitions="allowedTransitions" action="client.tasks.status" />
 
                 <Card v-if="customFields?.length" title="Поля">
                     <CustomFieldsView :fields="customFields" />
