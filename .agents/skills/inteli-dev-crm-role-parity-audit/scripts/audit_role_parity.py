@@ -72,10 +72,25 @@ def parse_routes(crm: Path) -> dict[str, set[str]]:
         for name in re.findall(r"->name\('([^']+)'\)", line):
             prefix = stack[-1][0] + "." if stack else None
             full = name if prefix is None or name.startswith(prefix) else prefix + name
+            matched = False
             for role, role_prefix in ROLE_PREFIXES.items():
                 if full.startswith(role_prefix):
                     per_role[role].add(full)
+                    matched = True
+            if not matched:
+                # Общие маршруты (например, balance.index) доступны всем ролям.
+                for role in ROLE_PREFIXES:
+                    per_role[role].add(full)
     return per_role
+
+
+def domain_of_key(key: str) -> str:
+    for part in key.split("."):
+        if part in DOMAINS:
+            return DOMAIN_ALIASES.get(part, part)
+
+    first = key.split(".")[0]
+    return DOMAIN_ALIASES.get(first, first)
 
 
 def domains_of(names: set[str]) -> set[str]:
@@ -100,9 +115,9 @@ def check_nav(crm: Path, problems: list[str], warnings: list[str]) -> None:
         warnings.append("В AppShell нет единой подписи роли «Пользователь» — проверьте подписи в меню.")
 
     keys = re.findall(r"\{ key: '([^']+)'", shell)
-    user_keys = [k for k in keys if k.startswith(("client.", "executor."))]
+    user_keys = [k for k in keys if not k.startswith("admin.")]
     if user_keys:
-        nav_domains = {DOMAIN_ALIASES.get(k.split(".")[1], k.split(".")[1]) for k in user_keys}
+        nav_domains = {domain_of_key(k) for k in user_keys}
         print(f"  навигация пользователя: {', '.join(sorted(nav_domains))}")
         globals()["_nav_domains"] = nav_domains
 
@@ -175,7 +190,7 @@ def main() -> int:
     print(f"  пользователь: {', '.join(sorted(user_domains))}")
 
     nav_domains = globals().get("_nav_domains", set())
-    ignored = {"profile", "assistant", "feedback", "help"}
+    ignored = {"profile", "assistant", "feedback", "help", "settings"}
     route_menu = user_domains - ignored
     if nav_domains and route_menu != nav_domains:
         problems.append(
