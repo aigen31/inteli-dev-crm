@@ -9,6 +9,7 @@ import EmptyState from '@/Components/UI/EmptyState.vue';
 import StatCard from '@/Components/UI/StatCard.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
 import NavigationTrail from '@/Components/Navigation/NavigationTrail.vue';
+import BalanceSummaryCard from '@/Components/Balance/BalanceSummaryCard.vue';
 import { taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate, formatMoney } from '@/Utils/formatters.js';
 import { ArrowUpRightIcon, BanknotesIcon, CheckCircleIcon, ClockIcon, PlusIcon, SparklesIcon } from '@heroicons/vue/24/outline';
@@ -21,6 +22,8 @@ const props = defineProps({
     upcomingTasks: Array,
     forms: Array,
     customFields: Array,
+    balance: { type: Number, default: 0 },
+    balanceTransactions: { type: Array, default: () => [] },
     navigation: { type: Object, default: () => ({ recent: [] }) },
 });
 
@@ -60,6 +63,8 @@ const activeCount = computed(() =>
                 <img src="/images/kiki/kiki-client-welcome.webp" alt="Кики приветствует в личном кабинете" class="h-full w-full object-contain object-right-bottom" />
             </div>
         </section>
+
+        <BalanceSummaryCard class="mb-5" :balance="balance" :transactions="balanceTransactions" :compact="true" />
 
         <NavigationTrail :items="navigation?.recent || []" />
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\Auth;
 use App\Http\Controllers\CalendarIntervalController;
@@ -284,6 +285,7 @@ Route::middleware('auth')->group(function () {
 // Reports are shared by both roles; the policy checks the recipient.
 Route::middleware(['auth', 'is_active'])->group(function () {
     Route::patch('/sidebar-preferences', [SidebarPreferenceController::class, 'update'])->name('sidebar.update');
+    Route::get('/balance', [BalanceController::class, 'index'])->name('balance.index');
     Route::get('/widget-zone/data', [Admin\WidgetZoneController::class, 'data'])->name('widget-zone.data');
     Route::patch('/widget-zone/layout', [Admin\WidgetZoneController::class, 'updateLayout'])->name('widget-zone.layout');
     Route::patch('/dashboard-layout', [DashboardLayoutController::class, 'update'])->name('dashboard.layout');

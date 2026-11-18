@@ -22,6 +22,7 @@ import {
     SparklesIcon,
     UserIcon,
     UsersIcon,
+    WalletIcon,
     WrenchScrewdriverIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
@@ -72,6 +73,7 @@ const baseNavigation = computed(() => {
         { key: 'executor.tasks', label: 'Назначено мне', href: route('executor.tasks.index'), icon: WrenchScrewdriverIcon, active: path.value.startsWith('/executor/tasks') },
         { key: 'client.briefs', label: 'Брифы', href: route('client.briefs.index'), icon: ClipboardDocumentListIcon, active: path.value.startsWith('/briefs') },
         { key: 'client.invoices', label: 'Счета', href: route('client.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/invoices') },
+        { key: 'balance', label: 'Баланс', href: route('balance.index'), icon: WalletIcon, active: path.value.startsWith('/balance') },
         { key: 'client.reports', label: 'Отчёты', href: route('client.reports.index'), icon: InboxIcon, active: path.value.startsWith('/reports') || path.value.startsWith('/executor/reports') },
     ];
 });

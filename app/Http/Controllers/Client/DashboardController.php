@@ -63,6 +63,18 @@ class DashboardController extends Controller
                 ->map(fn (FormTemplate $form) => $form->toLibraryArray())
                 ->values(),
             'customFields' => $customFields->serializedValues($user),
+            'balance' => (float) $user->balance,
+            'balanceTransactions' => $user->balanceTransactions()
+                ->latest()
+                ->limit(3)
+                ->get()
+                ->map(fn ($transaction): array => [
+                    'id' => $transaction->id,
+                    'amount' => (float) $transaction->amount,
+                    'reason' => $transaction->reason,
+                    'description' => $transaction->description,
+                    'created_at' => $transaction->created_at?->toIso8601String(),
+                ]),
         ]);
     }
 }

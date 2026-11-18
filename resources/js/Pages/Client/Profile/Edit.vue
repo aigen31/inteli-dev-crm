@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
+import BalanceSummaryCard from '@/Components/Balance/BalanceSummaryCard.vue';
 import Card from '@/Components/UI/Card.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
 import Button from '@/Components/UI/Button.vue';
@@ -14,7 +15,9 @@ import { LockClosedIcon, SwatchIcon, UserCircleIcon } from '@heroicons/vue/24/ou
 const props = defineProps({
     user: Object,
     hasConsent: { type: Boolean, default: false },
-});
+
+    balance: { type: Number, default: 0 },
+    balanceTransactions: { type: Array, default: () => [] },});
 
 const allowedTab = new URLSearchParams(window.location.search).get('tab');
 const activeTab = ref(['profile', 'security', 'appearance'].includes(allowedTab) ? allowedTab : 'profile');
@@ -58,6 +61,7 @@ function updatePassword() {
 
 <template>
     <ClientLayout title="Профиль">
+        <BalanceSummaryCard class="mb-5" :balance="balance" :transactions="balanceTransactions" compact />
         <p class="mb-5 max-w-[620px] text-[12px] leading-relaxed text-muted">
             Личные данные, безопасность и интерфейс — в трёх отдельных разделах, без лишних блоков на одном экране.
         </p>
