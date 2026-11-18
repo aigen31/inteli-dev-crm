@@ -1,11 +1,12 @@
 <script setup>
 import { computed } from 'vue';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import Card from '@/Components/UI/Card.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
+import SelectInput from '@/Components/Form/SelectInput.vue';
 import CustomFieldsView from '@/Components/CustomFields/CustomFieldsView.vue';
 import StructuredFormSummary from '@/Components/FormTemplates/StructuredFormSummary.vue';
 import { invoiceStatusLabels, taskPriorityLabels, taskStatusLabels } from '@/Utils/constants.js';
@@ -17,7 +18,18 @@ const props = defineProps({
     canReview: Boolean,
     canEdit: Boolean,
     customFields: Array,
+    allowedTransitions: { type: Array, default: () => [] },
 });
+
+const page = usePage();
+const isAssignee = computed(() => props.task.assignee_id === page.props.auth?.user?.id && props.task.client_id !== page.props.auth?.user?.id);
+const statusForm = useForm({ status: '', comment: '' });
+
+function changeStatus() {
+    if (! statusForm.status) return;
+
+    statusForm.patch(route('client.tasks.status', props.task.id), { onSuccess: () => statusForm.reset() });
+}
 
 const reviewForm = useForm({ status: '', comment: '' });
 const commentForm = useForm({ content: '', attachments: null });
@@ -143,6 +155,14 @@ function addComment() {
                         <div class="flex items-center justify-between"><dt class="text-muted">Дедлайн</dt><dd class="font-mono text-[11px]">{{ formatDate(task.deadline) }}</dd></div>
                         <div class="flex items-center justify-between"><dt class="text-muted">Создана</dt><dd class="font-mono text-[10px]">{{ formatDateTime(task.created_at) }}</dd></div>
                     </dl>
+                </Card>
+
+                <Card v-if="isAssignee && allowedTransitions.length" title="Сменить статус">
+                    <form class="space-y-3" @submit.prevent="changeStatus">
+                        <SelectInput v-model="statusForm.status" :options="allowedTransitions" placeholder="Выберите статус" :error="statusForm.errors.status" />
+                        <TextArea v-model="statusForm.comment" placeholder="Комментарий (необязательно)" :rows="2" :error="statusForm.errors.comment" />
+                        <Button type="submit" class="w-full" size="sm" :disabled="statusForm.processing || !statusForm.status">Применить</Button>
+                    </form>
                 </Card>
 
                 <Card v-if="customFields?.length" title="Поля">

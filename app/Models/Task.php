@@ -81,11 +81,18 @@ class Task extends Model
             return $query;
         }
 
-        return $query->where('client_id', $user->id)
-            ->where(function (Builder $builder) use ($user): void {
-                $builder->whereNull('project_id')
-                    ->orWhereHas('project', fn (Builder $project) => $project->visibleTo($user));
-            });
+        // Пользователь видит задачи, где он заказчик (с учётом доступа к
+        // проекту) или исполнитель — назначение само даёт доступ.
+        return $query->where(function (Builder $builder) use ($user): void {
+            $builder->where('assignee_id', $user->id)
+                ->orWhere(function (Builder $inner) use ($user): void {
+                    $inner->where('client_id', $user->id)
+                        ->where(function (Builder $access) use ($user): void {
+                            $access->whereNull('project_id')
+                                ->orWhereHas('project', fn (Builder $project) => $project->visibleTo($user));
+                        });
+                });
+        });
     }
 
     public function reference(): ?string
