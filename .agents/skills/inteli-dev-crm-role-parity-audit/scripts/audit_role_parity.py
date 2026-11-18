@@ -27,7 +27,7 @@ ROLE_PREFIXES = {"admin": "admin.", "client": "client.", "executor": "executor."
 DOMAINS = [
     "dashboard", "tasks", "projects", "briefs", "reports", "invoices",
     "clients", "users", "forms", "settings", "assistant", "profile",
-    "feedback", "help", "team",
+    "feedback", "help", "team", "balance",
 ]
 DOMAIN_ALIASES = {"clients": "users", "team": "users"}
 

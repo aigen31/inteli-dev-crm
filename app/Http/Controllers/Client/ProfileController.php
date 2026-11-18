@@ -20,6 +20,18 @@ class ProfileController extends Controller
         return Inertia::render('Client/Profile/Edit', [
             'user' => $request->user()->only('id', 'name', 'email', 'phone', 'messenger_contacts'),
             'hasConsent' => $consents->hasAny($request->user()),
+            'balance' => (float) $request->user()->balance,
+            'balanceTransactions' => $request->user()->balanceTransactions()
+                ->latest()
+                ->limit(3)
+                ->get()
+                ->map(fn ($transaction): array => [
+                    'id' => $transaction->id,
+                    'amount' => (float) $transaction->amount,
+                    'reason' => $transaction->reason,
+                    'description' => $transaction->description,
+                    'created_at' => $transaction->created_at?->toIso8601String(),
+                ]),
         ]);
     }
 
