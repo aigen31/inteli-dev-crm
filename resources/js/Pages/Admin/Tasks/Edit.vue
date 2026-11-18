@@ -2,10 +2,9 @@
 import { computed } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import Card from '@/Components/UI/Card.vue';
-import SelectInput from '@/Components/Form/SelectInput.vue';
-import TextArea from '@/Components/Form/TextArea.vue';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
+import TaskStatusCard from '@/Components/Task/TaskStatusCard.vue';
 import TaskFormFields from '@/Components/Task/TaskFormFields.vue';
 import StructuredForm from '@/Components/FormTemplates/StructuredForm.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
@@ -51,14 +50,6 @@ function update(next) {
     Object.keys(next).forEach((key) => {
         form[key] = next[key];
     });
-}
-
-const statusForm = useForm({ status: '', comment: '' });
-
-function changeStatus() {
-    if (! statusForm.status) return;
-
-    statusForm.patch(route('admin.tasks.status', props.task.id), { onSuccess: () => statusForm.reset() });
 }
 
 function submit() {
@@ -108,13 +99,7 @@ function submit() {
             </div>
 
             <aside class="space-y-4 xl:sticky xl:top-24">
-                <Card v-if="allowedTransitions.length" title="Сменить статус">
-                    <form class="space-y-3" @submit.prevent="changeStatus">
-                        <SelectInput v-model="statusForm.status" :options="allowedTransitions" placeholder="Выберите статус" :error="statusForm.errors.status" />
-                        <TextArea v-model="statusForm.comment" placeholder="Комментарий (необязательно)" :rows="2" :error="statusForm.errors.comment" />
-                        <Button type="submit" class="w-full" size="sm" :disabled="statusForm.processing || !statusForm.status">Применить</Button>
-                    </form>
-                </Card>
+                <TaskStatusCard :task-id="task.id" :transitions="allowedTransitions" action="admin.tasks.status" />
 
                 <Card title="Сохранение">
                     <p class="text-[11px] leading-relaxed text-muted">Изменения полей задачи применяются кнопкой «Сохранить».</p>

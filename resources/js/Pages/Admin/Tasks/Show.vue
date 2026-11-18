@@ -4,9 +4,8 @@ import { Link, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
+import TaskStatusCard from '@/Components/Task/TaskStatusCard.vue';
 import Card from '@/Components/UI/Card.vue';
-import TextArea from '@/Components/Form/TextArea.vue';
-import SelectInput from '@/Components/Form/SelectInput.vue';
 import CustomFieldsView from '@/Components/CustomFields/CustomFieldsView.vue';
 import StructuredFormSummary from '@/Components/FormTemplates/StructuredFormSummary.vue';
 import ShareButton from '@/Components/Share/ShareButton.vue';
@@ -29,7 +28,6 @@ const controlLabel = computed(() => {
     return props.strictControl.override ? 'Строгий (задан в задаче)' : 'Мягкий (задан в задаче)';
 });
 
-const statusForm = useForm({ status: '', comment: '' });
 const commentForm = useForm({ content: '', attachments: null });
 
 const checklist = computed(() => props.task.checklist || []);
@@ -37,11 +35,6 @@ const checklist = computed(() => props.task.checklist || []);
 function toggleChecklist(index) {
     const next = checklist.value.map((item, i) => (i === index ? { ...item, done: !item.done } : item));
     router.patch(route('admin.tasks.checklist', props.task.id), { checklist: next }, { preserveScroll: true });
-}
-
-function changeStatus() {
-    if (!statusForm.status) return;
-    statusForm.patch(route('admin.tasks.status', props.task.id), { onSuccess: () => statusForm.reset() });
 }
 
 function addComment() {
@@ -199,13 +192,7 @@ function addComment() {
                     </dl>
                 </Card>
 
-                <Card v-if="allowedTransitions.length" title="Сменить статус">
-                    <form class="space-y-3" @submit.prevent="changeStatus">
-                        <SelectInput v-model="statusForm.status" :options="allowedTransitions" placeholder="Выберите статус" :error="statusForm.errors.status" />
-                        <TextArea v-model="statusForm.comment" placeholder="Комментарий (необязательно)" :rows="2" :error="statusForm.errors.comment" />
-                        <Button type="submit" class="w-full" size="sm" :disabled="statusForm.processing || !statusForm.status">Применить</Button>
-                    </form>
-                </Card>
+                <TaskStatusCard :task-id="task.id" :transitions="allowedTransitions" action="admin.tasks.status" />
 
                 <Card v-if="customFields?.length" title="Поля задачи">
                     <CustomFieldsView :fields="customFields" />

@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import ExecutorLayout from '@/Components/Layout/ExecutorLayout.vue';
+import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
 import { formatDateTime } from '@/Utils/formatters.js';
@@ -9,7 +9,7 @@ defineProps({ reports: Object });
 </script>
 
 <template>
-    <ExecutorLayout title="Мои отчёты">
+    <ClientLayout title="Мои отчёты">
         <p class="mb-5 max-w-[600px] text-[12px] leading-relaxed text-muted">Отчёты, которые вы отправили клиентам. Новый отчёт создаётся из карточки назначенной задачи.</p>
 
         <div v-if="!reports.data.length" class="surface-card">
@@ -25,5 +25,5 @@ defineProps({ reports: Object });
             </Link>
             <Pagination :links="reports" />
         </div>
-    </ExecutorLayout>
+    </ClientLayout>
 </template>

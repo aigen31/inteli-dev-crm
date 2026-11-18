@@ -4,7 +4,6 @@ import { validationMessage } from '@/Utils/validation';
 import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
-import ExecutorLayout from '@/Components/Layout/ExecutorLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import TextArea from '@/Components/Form/TextArea.vue';
 import TextInput from '@/Components/Form/TextInput.vue';
@@ -21,7 +20,7 @@ const props = defineProps({
 
 const layoutComponent = computed(() => {
     if (props.layout === 'client') return ClientLayout;
-    if (props.layout === 'executor') return ExecutorLayout;
+    if (props.layout === 'executor') return ClientLayout;
 
     return AdminLayout;
 });

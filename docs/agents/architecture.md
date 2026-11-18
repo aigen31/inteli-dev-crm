@@ -55,6 +55,20 @@ API идёт отдельным контуром: `routes/api.php` → `api.toke
 5. Страница в `resources/js/Pages/{Admin,Client}/…`; переиспользуйте `Components/UI`, `Components/Form`, `Components/CustomFields`.
 6. Тест в `tests/Feature` и, если меняется контракт, `mcp/src/tools.mjs` + `mcp/test`.
 
+## Один интерфейс для всех пользователей
+
+- Пользовательский лейаут один: `ClientLayout` → `AppShell`; отдельного
+  `ExecutorLayout` нет. Админ пользуется `AdminLayout`.
+- Навигация не ветвится по исполнительской роли: `AppShell` содержит один
+  массив разделов для не-админов.
+- Общие блоки выносятся в компоненты (`TaskStatusCard`, `TaskFormFields`,
+  `StructuredForm`), а не копируются в страницы ролей.
+- Проверка паритета: скилл `inteli-dev-crm-role-parity-audit`
+  (`.agents/skills/.../audit_role_parity.py`). Запускать после правок
+  навигации, лейаутов и общих карточек.
+- Бизнес-логика важнее DRY: различия в правах (приёмка клиентом, отчёт
+  исполнителя) остаются раздельными и фиксируются в allowlist скилла.
+
 ## Self-проекты
 
 `projects.type` — `client` (обычный, с заказчиком) или `self` (внутренний).
