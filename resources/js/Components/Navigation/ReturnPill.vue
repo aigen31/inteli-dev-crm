@@ -14,16 +14,7 @@ const currentPath = computed(() => page.url.split('?')[0]);
 const canGoBack = computed(() => typeof window !== 'undefined' && window.history.length > 1);
 const visible = computed(() => canGoBack.value || (primary.value !== null && primary.value.url !== currentPath.value));
 
-const colorDot = {
-    violet: 'bg-primary-500',
-    sage: 'bg-sage',
-    sky: 'bg-sky',
-    peach: 'bg-peach',
-    ink: 'bg-ink',
-};
-
-const dotClass = computed(() => colorDot[primary.value?.project?.color] || colorDot.violet);
-const label = computed(() => primary.value?.reference || primary.value?.title || 'Назад');
+const label = computed(() => primary.value?.title || 'Назад');
 
 function goBack() {
     if (window.history.length > 1) {
@@ -42,8 +33,6 @@ function goBack() {
         @click="goBack"
     >
         <ArrowLeftIcon class="h-3.5 w-3.5 shrink-0 transition group-hover:-translate-x-0.5 group-hover:text-primary-600" />
-        <span :class="['h-1.5 w-1.5 shrink-0 rounded-full', dotClass]"></span>
-        <span class="max-w-[110px] shrink-0 truncate text-[11px] font-semibold text-ink">{{ label }}</span>
-        <span v-if="primary" class="hidden truncate text-[11px] font-medium text-ink-soft group-hover:inline">{{ primary.title }}</span>
+        <span class="min-w-0 truncate text-[11px] font-semibold text-ink">{{ label }}</span>
     </button>
 </template>
