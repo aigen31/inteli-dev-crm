@@ -8,7 +8,6 @@ import Card from '@/Components/UI/Card.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import StatCard from '@/Components/UI/StatCard.vue';
 import KikiAvatar from '@/Components/Kiki/KikiAvatar.vue';
-import NavigationTrail from '@/Components/Navigation/NavigationTrail.vue';
 import BalanceSummaryCard from '@/Components/Balance/BalanceSummaryCard.vue';
 import { taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate, formatMoney } from '@/Utils/formatters.js';
@@ -65,8 +64,6 @@ const activeCount = computed(() =>
         </section>
 
         <BalanceSummaryCard class="mb-5" :balance="balance" :transactions="balanceTransactions" :compact="true" />
-
-        <NavigationTrail :items="navigation?.recent || []" />
 
         <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <StatCard label="Активные задачи" :value="activeCount" hint="в работе и на проверке" :icon="ClockIcon" tone="violet" />

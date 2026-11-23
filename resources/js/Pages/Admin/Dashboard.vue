@@ -5,7 +5,6 @@ import { localeTag } from '@/i18n';
 import { Link, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Button from '@/Components/UI/Button.vue';
-import NavigationTrail from '@/Components/Navigation/NavigationTrail.vue';
 import DashboardWidgetGrid from '@/Components/Dashboard/DashboardWidgetGrid.vue';
 import { defaultWidgetLayout, normalizeWidgetLayout } from '@/Utils/dashboardWidgets';
 import { PlusIcon, Squares2X2Icon, SparklesIcon } from '@heroicons/vue/24/outline';
@@ -70,8 +69,6 @@ function reset() {
                 <img src="/images/kiki/kiki-dashboard-mug.webp" alt="Кики с большой кружкой" class="h-full w-full object-contain object-right-bottom" />
             </div>
         </section>
-
-        <NavigationTrail :items="navigation?.recent || []" />
 
         <DashboardWidgetGrid
             :layout="layout"

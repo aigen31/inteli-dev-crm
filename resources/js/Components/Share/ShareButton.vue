@@ -93,15 +93,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                     aria-modal="true"
                     aria-label="Поделиться"
                 >
-                    <div class="relative overflow-hidden bg-ink px-5 pb-5 pt-5 text-canvas">
+                    <div class="relative overflow-hidden border-b border-line bg-surface-2/70 px-5 pb-5 pt-5 text-ink">
                         <div class="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary-400/30 blur-2xl"></div>
-                        <button type="button" class="absolute right-4 top-4 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full text-canvas/60 transition hover:bg-white/10 hover:text-canvas" aria-label="Закрыть" @click="close">
+                        <button type="button" class="absolute right-4 top-4 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full text-muted transition hover:bg-ink/[0.06] hover:text-ink" aria-label="Закрыть" @click="close">
                             <XMarkIcon class="h-4 w-4" />
                         </button>
                         <div class="relative flex items-center gap-3">
-                            <span class="flex h-10 w-10 items-center justify-center rounded-[13px] bg-white/10 text-canvas"><ShareIcon class="h-5 w-5" /></span>
+                            <span class="flex h-10 w-10 items-center justify-center rounded-[13px] bg-primary-soft text-primary-700"><ShareIcon class="h-5 w-5" /></span>
                             <div class="min-w-0">
-                                <p class="font-mono text-[8px] uppercase tracking-[0.16em] text-canvas/55">Передать клиенту</p>
+                                <p class="font-mono text-[8px] uppercase tracking-[0.16em] text-muted">Передать клиенту</p>
                                 <h2 class="mt-1 truncate font-display text-[19px] font-medium tracking-[-0.03em]">Поделиться {{ kindLabel }}</h2>
                             </div>
                         </div>

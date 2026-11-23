@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin;
-use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\Auth;
+use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\CalendarIntervalController;
 use App\Http\Controllers\Client;
 use App\Http\Controllers\DashboardLayoutController;

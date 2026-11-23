@@ -19,7 +19,7 @@ use Illuminate\Validation\Rule;
 
 class WidgetZoneController extends Controller
 {
-    private const WIDGETS = ['clients', 'active_tasks', 'revenue', 'focus', 'activity', 'deadlines', 'quick_links', 'activity_calendar', 'user_workload'];
+    private const WIDGETS = ['clients', 'active_tasks', 'revenue', 'focus', 'activity', 'deadlines', 'quick_links', 'activity_calendar', 'user_workload', 'navigation_trail'];
 
     public function data(Request $request): JsonResponse
     {

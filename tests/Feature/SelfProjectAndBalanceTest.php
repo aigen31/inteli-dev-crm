@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\PaymentMethod;
 use App\Enums\ProjectType;
 use App\Enums\TaskStatus;
 use App\Models\Invoice;
@@ -68,7 +67,7 @@ test('completing a self project task skips the client review status', function (
     expect($task->refresh()->status)->toBe(TaskStatus::Completed);
 });
 
-test('a completed task with a budget creates a transfer invoice and lowers the client balance', function (): void {
+test('a completed task with a budget lowers the client balance without an invoice', function (): void {
     $admin = User::factory()->admin()->create();
     $client = User::factory()->client()->create();
     $task = Task::factory()->create([
@@ -83,14 +82,16 @@ test('a completed task with a budget creates a transfer invoice and lowers the c
         ->patch(route('admin.tasks.status', $task), ['status' => TaskStatus::Completed->value])
         ->assertRedirect();
 
-    $invoice = Invoice::query()->where('task_id', $task->id)->firstOrFail();
-
-    expect($invoice->amount)->toBe('1500.00')
-        ->and($invoice->payment_method)->toBe(PaymentMethod::Transfer)
+    expect(Invoice::query()->where('task_id', $task->id)->exists())->toBeFalse()
         ->and((float) $client->refresh()->balance)->toBe(-1500.0);
+
+    $transaction = $client->balanceTransactions()->where('task_id', $task->id)->firstOrFail();
+
+    expect($transaction->reason)->toBe('task_completed')
+        ->and($transaction->description)->toContain('Сайт кофейни');
 });
 
-test('a zero budget task does not create an invoice and repeated completion does not duplicate it', function (): void {
+test('zero budget is not charged and repeated completion does not duplicate the write-off', function (): void {
     $admin = User::factory()->admin()->create();
     $client = User::factory()->client()->create();
     $free = Task::factory()->create([
@@ -117,7 +118,8 @@ test('a zero budget task does not create an invoice and repeated completion does
     $this->actingAs($admin)->patch(route('admin.tasks.status', $paid), ['status' => TaskStatus::InProgress]);
     $this->actingAs($admin)->patch(route('admin.tasks.status', $paid), ['status' => TaskStatus::Completed->value]);
 
-    expect(Invoice::query()->where('task_id', $paid->id)->count())->toBe(1)
+    expect(Invoice::query()->where('task_id', $paid->id)->count())->toBe(0)
+        ->and($client->balanceTransactions()->where('task_id', $paid->id)->count())->toBe(1)
         ->and((float) $client->refresh()->balance)->toBe(-500.0);
 });
 
