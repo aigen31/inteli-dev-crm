@@ -6,7 +6,7 @@ import UserWorkloadWidget from '@/Components/Dashboard/UserWorkloadWidget.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import Button from '@/Components/UI/Button.vue';
 import { taskStatusLabels } from '@/Utils/constants.js';
-import { formatDate, formatDateTime, formatMoney } from '@/Utils/formatters.js';
+import { formatDate, formatDateTime, formatMoney, formatRelativeTime } from '@/Utils/formatters.js';
 import {
     ArrowUpRightIcon, BanknotesIcon, Bars3Icon,
     CheckCircleIcon, ClockIcon, PlusIcon, Squares2X2Icon, UserGroupIcon, XMarkIcon,
@@ -44,9 +44,12 @@ const catalog = [
     { id: 'quick_links', title: 'Быстрые ссылки', description: 'Клиенты, проекты и шаблоны', icon: UserGroupIcon, w: 2, h: 1, roles: ['admin'] },
     { id: 'activity_calendar', title: 'Календарь активности', description: 'Мои задачи по датам', icon: ClockIcon, w: 2, h: 3 },
     { id: 'user_workload', title: 'Нагрузка сотрудника', description: 'Календарь конкретного сотрудника', icon: UserGroupIcon, w: 2, h: 3, roles: ['admin'] },
+    { id: 'navigation_trail', title: 'Последние места', description: 'Куда вы недавно заходили', icon: ClockIcon, w: 2, h: 2 },
 ];
 const page = usePage();
 const role = computed(() => page.props.auth?.user?.role ?? 'admin');
+const recentPlaces = computed(() => (page.props.navigation?.recent || []).slice(0, 6));
+const placeDot = { violet: 'bg-primary-500', sage: 'bg-sage', sky: 'bg-sky', peach: 'bg-peach', ink: 'bg-ink' };
 const availableCatalog = computed(() => catalog.filter((item) => !item.roles || item.roles.includes(role.value)));
 const meta = (id) => catalog.find((item) => item.id === id) || catalog[0];
 const activeIds = computed(() => props.layout.map((item) => item.id));
@@ -254,6 +257,25 @@ function endDrag() {
                             </Link>
                         </div>
                         <p v-else class="mt-3 text-[10px] text-muted">На сегодня задач нет.</p>
+                    </div>
+                    <div v-else-if="widget.id === 'navigation_trail'" class="flex h-full flex-col">
+                        <p class="eyebrow">Последние места</p>
+                        <div v-if="recentPlaces.length" class="mt-1 min-h-0 flex-1 divide-y divide-line/50 overflow-hidden">
+                            <Link
+                                v-for="place in recentPlaces.slice(0, compact(widget) ? 3 : 5)"
+                                :key="place.url"
+                                :href="place.url"
+                                class="group flex items-center gap-2 py-1.5 text-[10px] text-ink-soft transition hover:text-ink"
+                            >
+                                <span :class="['h-1.5 w-1.5 shrink-0 rounded-full', placeDot[place.project?.color] || placeDot.violet]"></span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate font-semibold">{{ place.title }}</span>
+                                    <span class="block truncate text-[8px] text-muted">{{ place.reference || (place.type === 'project' ? 'Проект' : 'Задача') }}</span>
+                                </span>
+                                <span class="shrink-0 font-mono text-[8px] text-faint">{{ formatRelativeTime(place.visited_at, 'short') }}</span>
+                            </Link>
+                        </div>
+                        <p v-else class="mt-3 text-[10px] text-muted">Пока нет истории — откройте задачу или проект.</p>
                     </div>
                     <div v-else-if="widget.id === 'activity'" class="flex h-full flex-col">
                         <p class="eyebrow">Движение</p>

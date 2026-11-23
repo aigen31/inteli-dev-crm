@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\InvoiceStatus;
-use App\Enums\PaymentMethod;
 use App\Models\BalanceTransaction;
-use App\Models\Invoice;
 use App\Models\Task;
 use App\Models\User;
 
@@ -40,10 +37,10 @@ class BalanceService
     }
 
     /**
-     * Завершённая задача со стоимостью создаёт счёт «прямой перевод» и
-     * уменьшает баланс заказчика. Повторный вызов счёт не дублирует.
+     * Завершённая задача со стоимостью просто списывает деньги с баланса
+     * заказчика — без отдельного счёта. Повторный вызов не дублирует списание.
      */
-    public function settleCompletedTask(Task $task, ?User $by = null): ?Invoice
+    public function settleCompletedTask(Task $task, ?User $by = null): ?BalanceTransaction
     {
         $budget = round((float) ($task->budget ?? 0), 2);
 
@@ -51,29 +48,22 @@ class BalanceService
             return null;
         }
 
-        if (Invoice::query()->where('task_id', $task->id)->exists()) {
+        $alreadyCharged = BalanceTransaction::query()
+            ->where('task_id', $task->id)
+            ->where('reason', 'task_completed')
+            ->exists();
+
+        if ($alreadyCharged) {
             return null;
         }
 
-        $invoice = Invoice::query()->create([
-            'task_id' => $task->id,
-            'client_id' => $task->client_id,
-            'amount' => $budget,
-            'currency' => 'RUB',
-            'description' => 'Задача: '.$task->title,
-            'status' => InvoiceStatus::Pending,
-            'payment_method' => PaymentMethod::Transfer,
-        ]);
-
-        $this->adjust(
+        return $this->adjust(
             User::query()->findOrFail($task->client_id),
             -$budget,
             'task_completed',
             'Списание за задачу «'.$task->title.'»',
-            ['task_id' => $task->id, 'invoice_id' => $invoice->id],
+            ['task_id' => $task->id],
             $by,
         );
-
-        return $invoice;
     }
 }

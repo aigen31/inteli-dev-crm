@@ -10,10 +10,12 @@ export const defaultWidgetLayout = [
     { id: 'user_workload', w: 2, h: 3 },
 ];
 
-const allowedIds = new Set(defaultWidgetLayout.map((item) => item.id));
+// Виджеты из каталога, которых нет в раскладке по умолчанию.
+const optionalWidgetIds = ['navigation_trail'];
+const allowedIds = new Set([...defaultWidgetLayout.map((item) => item.id), ...optionalWidgetIds]);
 
 // Календарь с сеткой месяца не влезает в две строки — держим минимум три.
-const minHeight = { activity_calendar: 3, user_workload: 3 };
+const minHeight = { activity_calendar: 3, user_workload: 3, navigation_trail: 2 };
 
 export function normalizeWidgetLayout(value) {
     if (!Array.isArray(value)) return defaultWidgetLayout;
