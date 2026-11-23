@@ -31,6 +31,7 @@ import AssistantPanel from '@/Components/Assistant/AssistantPanel.vue';
 import EarlyAccessBanner from '@/Components/UI/EarlyAccessBanner.vue';
 import LocaleSwitcher from '@/Components/UI/LocaleSwitcher.vue';
 import ReturnPill from '@/Components/Navigation/ReturnPill.vue';
+import { usePageHistory } from '@/Composables/usePageHistory';
 import { useAssistant } from '@/Composables/useAssistant';
 
 const props = defineProps({
@@ -41,7 +42,27 @@ const props = defineProps({
 });
 
 const page = usePage();
+
+function rememberPage() {
+    pageHistory.record(page.url);
+
+    // Inertia обновляет <title> после монтирования страницы — фиксируем
+    // заголовок ещё раз, когда он уже точно проставлен.
+    window.setTimeout(() => pageHistory.record(page.url), 200);
+}
+
+onMounted(() => {
+    window.requestAnimationFrame(rememberPage);
+});
+
+watch(
+    () => page.url,
+    () => {
+        window.requestAnimationFrame(() => window.requestAnimationFrame(rememberPage));
+    },
+);
 const { open } = useAssistant();
+const pageHistory = usePageHistory();
 const mobileMenu = ref(false);
 
 const path = computed(() => page.url.split('?')[0]);
@@ -418,7 +439,7 @@ function logout() {
                         </template>
                     </nav>
                 </div>
-                <ReturnPill :items="page.props.navigation?.recent || []" class="ml-3 hidden sm:flex" />
+                <ReturnPill class="ml-3 hidden sm:flex" />
                 <div class="ml-auto flex items-center gap-2">
                     <button
                         type="button"
