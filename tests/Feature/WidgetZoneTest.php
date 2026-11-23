@@ -10,6 +10,7 @@ uses(RefreshDatabase::class);
 test('an admin can load widget panel data and save its own layout', function (): void {
     $admin = User::factory()->admin()->create();
     $widgets = [
+        ['id' => 'navigation_trail', 'w' => 2, 'h' => 2],
         ['id' => 'activity_calendar', 'w' => 3, 'h' => 2],
         ['id' => 'revenue', 'w' => 1, 'h' => 1],
     ];
