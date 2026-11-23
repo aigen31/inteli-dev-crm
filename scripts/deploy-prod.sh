@@ -53,6 +53,9 @@ else
 fi
 
 echo "→ push $BRANCH в prod-репозиторий"
+if ! git remote get-url prod >/dev/null 2>&1; then
+    git remote add prod "$HOST:/root/git/crm-production.git"
+fi
 GIT_SSH_COMMAND="$GIT_SSH" git push prod "$BRANCH"
 
 echo "→ отправка файлов в $APP_DIR"

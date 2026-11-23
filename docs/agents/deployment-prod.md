@@ -8,6 +8,15 @@
 docker compose -f docker-compose.yml -f docker-compose.aapanel.yml ...
 ```
 
+## Одноразовая настройка
+
+```bash
+# из worktree production
+git remote add prod root@152.228.118.128:/root/git/crm-production.git
+```
+
+Скрипт сам добавит remote `prod`, если его нет.
+
 ## Быстрый деплой
 
 ```bash
