@@ -8,6 +8,21 @@
 docker compose -f docker-compose.yml -f docker-compose.aapanel.yml ...
 ```
 
+## Git и GitHub
+
+Ключ `~/.ssh/id_ed25519` добавлен в GitHub (passphrase хранится у владельца).
+Перед первым пушем загрузите его в агент:
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
+`deploy-prod.sh` пушит ветку:
+- в `prod` (bare-репозиторий на сервере) — обязательная резервная копия;
+- в `origin` (GitHub) — если доступен; при ошибке деплой продолжается.
+Отключить пуш в GitHub: `DEPLOY_PUSH_ORIGIN=0`.
+
 ## Одноразовая настройка
 
 ```bash

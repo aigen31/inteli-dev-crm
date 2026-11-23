@@ -58,6 +58,15 @@ if ! git remote get-url prod >/dev/null 2>&1; then
 fi
 GIT_SSH_COMMAND="$GIT_SSH" git push prod "$BRANCH"
 
+if [ "${DEPLOY_PUSH_ORIGIN:-1}" = "1" ]; then
+    echo "→ push $BRANCH в origin (GitHub)"
+    if git push origin "$BRANCH"; then
+        echo "  origin обновлён"
+    else
+        echo "  ⚠ origin не обновлён: нужен ssh-agent с ключом (ssh-add ~/.ssh/id_ed25519)"
+    fi
+fi
+
 echo "→ отправка файлов в $APP_DIR"
 git archive --format=tar.gz "$BRANCH" | "${SSH_CMD[@]}" "$HOST" "tar xzf - -C '$APP_DIR'"
 
