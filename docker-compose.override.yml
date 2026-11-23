@@ -8,14 +8,19 @@ services:
     profiles: ["production"]
 
   # Keep the production nginx on the assistant network for the kernel alias.
-
+  # traefik.enable остаётся true из docker-compose.yml: crm.inteli-dev.ru
+  # обслуживает общий Traefik хоста (проект traefik). Отключать маршрутизацию
+  # здесь нельзя — сайт сразу отдаёт 404.
   nginx:
     labels:
-      traefik.enable: "false"
+      traefik.enable: "true"
 
   # Local host edge on the CRM network: the host route to the assistant
   # Docker subnet is policy-routed through the VPN, so publish from here.
+  # Включён только по профилю: APP_PORT здесь равен 80, а 80 уже держит
+  # общий Traefik этого хоста. Запуск с edge: docker compose --profile local-edge up -d
   dev-edge:
+    profiles: ["local-edge"]
     image: nginx:1.27-alpine
     restart: unless-stopped
     depends_on:
