@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Actions\Task\ChangeTaskStatusAction;
 use App\Actions\Task\CreateTaskAction;
+use App\Enums\ProjectType;
 use App\Enums\TaskStatus;
 use App\Events\Task\TaskStatusChanged;
 use App\Http\Controllers\Controller;
@@ -18,9 +19,12 @@ use App\Services\ConsentService;
 use App\Services\CustomFieldService;
 use App\Services\FormTemplateService;
 use App\Services\HtmlSanitizer;
+use App\Services\Tasks\TaskStrictControl;
 use App\Support\Options;
+use App\Support\TaskCalendar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,17 +39,25 @@ class TaskController extends Controller
     {
         $user = $request->user();
 
-        $tasks = Task::query()
+        $date = $request->validate(['date' => ['nullable', 'date_format:Y-m-d']])['date'] ?? null;
+
+        $query = Task::query()
             ->visibleTo($user)
             ->with(['assignee:id,name', 'project:id,key,name,color'])
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s));
+
+        $calendar = TaskCalendar::ranges((clone $query)->get(['starts_at', 'deadline', 'status']));
+
+        if ($date !== null) {
+            TaskCalendar::applyDate($query, $date);
+        }
+
+        $tasks = $query->latest()->paginate(15)->withQueryString();
 
         return Inertia::render('Client/Tasks/Index', [
             'tasks' => $tasks,
-            'filters' => $request->only('status'),
+            'filters' => [...$request->only('status'), 'date' => $date],
+            'calendar' => $calendar,
             'statuses' => Options::taskStatuses(),
             'counts' => [
                 'all' => Task::query()->visibleTo($user)->count(),
@@ -99,7 +111,7 @@ class TaskController extends Controller
         ConsentService $consents,
     ): RedirectResponse {
         $project = Project::query()->find($request->input('project_id'));
-        $isSelfProject = $project?->type === \App\Enums\ProjectType::Self;
+        $isSelfProject = $project?->type === ProjectType::Self;
 
         $data = $request->validate([
             'consent' => $isSelfProject ? ['nullable'] : ['accepted'],
@@ -244,7 +256,7 @@ class TaskController extends Controller
             'canReview' => $canReview,
             'canEdit' => $request->user()->can('update', $task),
             'allowedTransitions' => $request->user()->can('changeStatus', $task)
-                ? collect(app(\App\Services\Tasks\TaskStrictControl::class)->allowed($task, $request->user()))->values()
+                ? collect(app(TaskStrictControl::class)->allowed($task, $request->user()))->values()
                 : [],
             'customFields' => $this->customFields->serializedValues($task),
         ]);
@@ -255,7 +267,7 @@ class TaskController extends Controller
         $this->authorize('changeStatus', $task);
 
         $data = $request->validate([
-            'status' => ['required', \Illuminate\Validation\Rule::enum(TaskStatus::class)],
+            'status' => ['required', Rule::enum(TaskStatus::class)],
             'comment' => ['nullable', 'string', 'max:1000'],
         ]);
 

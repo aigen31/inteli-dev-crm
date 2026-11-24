@@ -8,6 +8,7 @@ import EmptyState from '@/Components/UI/EmptyState.vue';
 import ProjectContextPanel from '@/Components/Projects/ProjectContextPanel.vue';
 import ProjectAccessPanel from '@/Components/Projects/ProjectAccessPanel.vue';
 import ProjectTaskFilter from '@/Components/Projects/ProjectTaskFilter.vue';
+import WorkloadCalendar from '@/Components/Calendar/WorkloadCalendar.vue';
 import BulkTaskEditor from '@/Components/Tasks/BulkTaskEditor.vue';
 import { useProjectTaskFilter } from '@/Composables/useProjectTaskFilter';
 import ProjectInvitesPanel from '@/Components/Projects/ProjectInvitesPanel.vue';
@@ -18,10 +19,12 @@ import { taskStatusLabels } from '@/Utils/constants.js';
 import {
     ArrowLeftIcon,
     ArrowTopRightOnSquareIcon,
+    CalendarDaysIcon,
     CheckCircleIcon,
     PencilSquareIcon,
     PlusIcon,
     SparklesIcon,
+    XMarkIcon,
 } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -43,10 +46,26 @@ const props = defineProps({
 const { open } = useAssistant();
 const filterStatuses = ['pending_review', 'queued', 'in_progress', 'awaiting_review', 'rejected_by_client', 'completed', 'rejected_by_admin'];
 const { status, filteredTasks, setStatus } = useProjectTaskFilter(() => props.tasks, filterStatuses);
+const date = ref(null);
+const calendarOpen = ref(false);
+const calendarRanges = computed(() => props.tasks.map((task) => ({
+    start: (task.starts_at || task.deadline || '').slice(0, 10) || null,
+    end: (task.deadline || task.starts_at || '').slice(0, 10) || null,
+    status: task.status,
+})));
+function inSelectedDate(task) {
+    if (!date.value) return true;
+
+    const start = (task.starts_at || task.deadline || '').slice(0, 10);
+    const end = (task.deadline || task.starts_at || '').slice(0, 10);
+
+    return Boolean(start && end && start <= date.value && date.value <= end);
+}
+const visibleTasks = computed(() => filteredTasks.value.filter(inSelectedDate));
 const selectedIds = ref([]);
 const bulkOpen = ref(false);
-const selectedTasks = computed(() => filteredTasks.value.filter((task) => selectedIds.value.includes(task.id)));
-const allSelected = computed(() => filteredTasks.value.length > 0 && filteredTasks.value.every((task) => selectedIds.value.includes(task.id)));
+const selectedTasks = computed(() => visibleTasks.value.filter((task) => selectedIds.value.includes(task.id)));
+const allSelected = computed(() => visibleTasks.value.length > 0 && visibleTasks.value.every((task) => selectedIds.value.includes(task.id)));
 
 watch(selectedIds, (ids) => { if (!ids.length) bulkOpen.value = false; });
 
@@ -55,7 +74,7 @@ function toggleTask(id) {
 }
 
 function toggleAll(event) {
-    selectedIds.value = event.target.checked ? filteredTasks.value.map((task) => task.id) : [];
+    selectedIds.value = event.target.checked ? visibleTasks.value.map((task) => task.id) : [];
 }
 
 function clearSelection() {
@@ -139,18 +158,35 @@ function archive() {
                     <header class="flex flex-wrap items-center gap-2 border-b border-line/80 px-5 py-3.5">
                         <CheckCircleIcon class="h-4 w-4 text-primary-600" />
                         <p class="text-[12px] font-bold text-ink">Задачи</p>
-                        <span class="font-mono text-[9px] text-faint">{{ filteredTasks.length }}<template v-if="status"> / {{ progress.total }}</template></span>
+                        <span class="font-mono text-[9px] text-faint">{{ visibleTasks.length }}<template v-if="status || date"> / {{ progress.total }}</template></span>
                         <label class="inline-flex cursor-pointer items-center gap-1.5 text-[10px] font-semibold text-muted">
                             <input type="checkbox" :checked="allSelected" class="h-3.5 w-3.5 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="toggleAll" />
                             Все
                         </label>
                         <Button v-if="selectedIds.length" size="sm" @click="bulkOpen = true">Изменить · {{ selectedIds.length }}</Button>
-                        <ProjectTaskFilter class="sm:ml-auto" :model-value="status" :statuses="filterStatuses" @update:model-value="setStatus" />
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/55 px-2.5 py-1 text-[9px] font-semibold text-ink-soft transition hover:border-primary-300 hover:text-primary-700 sm:ml-auto"
+                            :aria-expanded="calendarOpen"
+                            @click="calendarOpen = !calendarOpen"
+                        >
+                            <CalendarDaysIcon class="h-3 w-3" />
+                            Календарь
+                        </button>
+                        <button v-if="date" type="button" class="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800" @click="date = null">
+                            {{ formatDate(date) }}
+                            <XMarkIcon class="h-3 w-3" />
+                        </button>
+                        <ProjectTaskFilter :model-value="status" :statuses="filterStatuses" @update:model-value="setStatus" />
                         <Link :href="route('admin.projects.edit', project.id)" class="text-[10px] text-muted hover:text-ink">настройки</Link>
                     </header>
 
-                    <div v-if="filteredTasks.length" class="divide-y divide-line/70">
-                        <div v-for="task in filteredTasks" :key="task.id" :class="['flex items-stretch transition', selectedIds.includes(task.id) ? 'bg-primary-500/[0.045]' : 'hover:bg-primary-soft/30']">
+                    <div v-if="calendarOpen" class="border-b border-line/70 p-3">
+                        <WorkloadCalendar :ranges="calendarRanges" :model-value="date" @update:model-value="(value) => (date = value)" />
+                    </div>
+
+                    <div v-if="visibleTasks.length" class="divide-y divide-line/70">
+                        <div v-for="task in visibleTasks" :key="task.id" :class="['flex items-stretch transition', selectedIds.includes(task.id) ? 'bg-primary-500/[0.045]' : 'hover:bg-primary-soft/30']">
                             <label class="flex shrink-0 cursor-pointer items-center pl-5 pr-1" :aria-label="`Выбрать задачу ${task.title}`">
                                 <input type="checkbox" :checked="selectedIds.includes(task.id)" class="h-4 w-4 rounded border-line-strong text-primary-600 focus:ring-primary-500/30" @change="toggleTask(task.id)" />
                             </label>
@@ -164,9 +200,9 @@ function archive() {
                     </div>
 
                     <div v-else class="flex flex-col items-center gap-3 px-5 py-10 text-center">
-                        <p class="text-[11px] leading-relaxed text-muted">{{ status ? 'Нет задач с таким статусом.' : 'В проекте пока нет задач.' }}</p>
+                        <p class="text-[11px] leading-relaxed text-muted">{{ date ? 'На этот день задач нет.' : status ? 'Нет задач с таким статусом.' : 'В проекте пока нет задач.' }}</p>
                         <div class="flex flex-wrap items-center justify-center gap-2">
-                            <button v-if="status" type="button" class="text-[10px] font-semibold text-primary-700 hover:underline" @click="setStatus('')">Сбросить фильтр</button>
+                            <button v-if="status || date" type="button" class="text-[10px] font-semibold text-primary-700 hover:underline" @click="setStatus(''); date = null">Сбросить фильтр</button>
                             <Link :href="route('admin.tasks.create', { project_id: project.id })">
                                 <Button size="sm" variant="secondary"><PlusIcon class="h-3.5 w-3.5" />Добавить первую</Button>
                             </Link>
