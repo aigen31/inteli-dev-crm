@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
 import WorkloadCalendar from '@/Components/Calendar/WorkloadCalendar.vue';
+import { useFilterMemory } from '@/Composables/useFilterMemory';
 import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
@@ -26,8 +27,10 @@ const statusFilters = [
     { value: 'completed', label: 'Завершены' },
 ];
 
-const status = ref(props.filters?.status || '');
-const date = ref(props.filters?.date || null);
+const memory = useFilterMemory('client.tasks');
+const saved = memory.load();
+const status = ref(props.filters?.status || saved.status || '');
+const date = ref(props.filters?.date || saved.date || null);
 
 watch(
     () => props.filters?.status,
@@ -51,18 +54,29 @@ const selectedLabel = computed(() => {
     return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(year, month - 1, day));
 });
 
+function pushFilters() {
+    const params = { status: status.value || undefined, date: date.value || undefined };
+    memory.save(params);
+    router.get(route('client.tasks.index'), params, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+}
+
 function setStatus(value) {
     status.value = value;
-    router.get(route('client.tasks.index'), { status: value || undefined, date: date.value || undefined }, { preserveState: true, replace: true });
+    pushFilters();
 }
 
 function setDate(value) {
     date.value = value;
-    router.get(route('client.tasks.index'), {
-        status: status.value || undefined,
-        date: value || undefined,
-    }, { preserveState: true, preserveScroll: true, replace: true });
+    pushFilters();
 }
+
+onMounted(() => {
+    if (!props.filters?.date && saved.date) pushFilters();
+});
 </script>
 
 <template>

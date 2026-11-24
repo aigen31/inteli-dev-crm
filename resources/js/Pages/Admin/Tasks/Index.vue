@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Components/Layout/AdminLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -10,6 +10,7 @@ import Segmented from '@/Components/UI/Segmented.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import BulkTaskEditor from '@/Components/Tasks/BulkTaskEditor.vue';
 import WorkloadCalendar from '@/Components/Calendar/WorkloadCalendar.vue';
+import { useFilterMemory } from '@/Composables/useFilterMemory';
 import { taskPriorityLabels, taskStatusLabels, taskTypeLabels } from '@/Utils/constants.js';
 import { formatDate } from '@/Utils/formatters.js';
 import { CalendarDaysIcon, MagnifyingGlassIcon, PlusIcon, Squares2X2Icon, XMarkIcon } from '@heroicons/vue/24/outline';
@@ -27,16 +28,19 @@ const props = defineProps({
     calendar: { type: Array, default: () => [] },
 });
 
+const memory = useFilterMemory('admin.tasks');
+const saved = memory.load();
+
 const local = reactive({
-    q: props.filters?.q || '',
-    status: props.filters?.status || '',
-    type: props.filters?.type || '',
-    project_id: props.filters?.project_id || '',
+    q: props.filters?.q || saved.q || '',
+    status: props.filters?.status || saved.status || '',
+    type: props.filters?.type || saved.type || '',
+    project_id: props.filters?.project_id || saved.project_id || '',
 });
 
 const selectedIds = ref([]);
 const bulkOpen = ref(false);
-const date = ref(props.filters?.date || null);
+const date = ref(props.filters?.date || saved.date || null);
 const calendarOpen = ref(Boolean(date.value));
 
 watch(
@@ -90,20 +94,31 @@ const quickStatuses = [
 ];
 
 function apply(extra = {}) {
-    router.get(
-        route('admin.tasks.index'),
-        {
-            ...local,
-            ...extra,
-            status: local.status || undefined,
-            type: local.type || undefined,
-            project_id: local.project_id || undefined,
-            q: local.q || undefined,
-            date: date.value || undefined,
-        },
-        { preserveState: true, preserveScroll: true, replace: true },
-    );
+    const params = {
+        ...local,
+        ...extra,
+        status: local.status || undefined,
+        type: local.type || undefined,
+        project_id: local.project_id || undefined,
+        q: local.q || undefined,
+        date: date.value || undefined,
+    };
+
+    memory.save(params);
+
+    router.get(route('admin.tasks.index'), params, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
 }
+
+onMounted(() => {
+    const hasUrlDate = Boolean(props.filters?.date);
+    if (!hasUrlDate && saved.date) {
+        apply({ date: saved.date });
+    }
+});
 
 function setStatus(value) {
     local.status = value;
