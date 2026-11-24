@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -26,7 +26,22 @@ const statusFilters = [
     { value: 'completed', label: 'Завершены' },
 ];
 
+const status = ref(props.filters?.status || '');
 const date = ref(props.filters?.date || null);
+
+watch(
+    () => props.filters?.status,
+    (value) => {
+        status.value = value || '';
+    },
+);
+
+watch(
+    () => props.filters?.date,
+    (value) => {
+        date.value = value || null;
+    },
+);
 const calendarOpen = ref(Boolean(date.value));
 const selectedLabel = computed(() => {
     if (!date.value) return null;
@@ -37,13 +52,14 @@ const selectedLabel = computed(() => {
 });
 
 function setStatus(value) {
+    status.value = value;
     router.get(route('client.tasks.index'), { status: value || undefined, date: date.value || undefined }, { preserveState: true, replace: true });
 }
 
 function setDate(value) {
     date.value = value;
     router.get(route('client.tasks.index'), {
-        status: props.filters?.status || undefined,
+        status: status.value || undefined,
         date: value || undefined,
     }, { preserveState: true, preserveScroll: true, replace: true });
 }
@@ -64,7 +80,7 @@ function setDate(value) {
                 type="button"
                 :class="[
                     'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition',
-                    (props.filters?.status || '') === item.value ? 'bg-ink text-canvas' : 'text-muted hover:text-ink',
+                    status === item.value ? 'bg-ink text-canvas' : 'text-muted hover:text-ink',
                 ]"
                 @click="setStatus(item.value)"
             >

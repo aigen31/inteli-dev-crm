@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -29,6 +29,20 @@ const chips = [
 
 const date = ref(props.filters?.date || null);
 const calendarOpen = ref(Boolean(date.value));
+
+watch(
+    () => props.filters?.date,
+    (value) => {
+        date.value = value || null;
+    },
+);
+
+watch(
+    () => props.filters?.status,
+    (value) => {
+        local.status = value || '';
+    },
+);
 const selectedLabel = computed(() => {
     if (!date.value) return null;
 

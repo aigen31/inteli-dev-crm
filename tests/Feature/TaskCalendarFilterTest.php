@@ -136,3 +136,29 @@ test('admin project page exposes selected calendar date', function (): void {
             ->component('Admin/Projects/Show')
             ->where('date', '2026-11-18'));
 });
+
+test('status and date filters survive pagination', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = User::factory()->client()->create();
+
+    Task::factory()->count(21)->create([
+        'client_id' => $client->id,
+        'created_by' => $admin->id,
+        'status' => TaskStatus::InProgress,
+        'starts_at' => '2026-11-14',
+        'deadline' => '2026-11-14',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.tasks.index', [
+            'status' => 'in_progress',
+            'date' => '2026-11-14',
+            'page' => 2,
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.status', 'in_progress')
+            ->where('filters.date', '2026-11-14')
+            ->where('tasks.current_page', 2)
+            ->has('tasks.data', 1));
+});
