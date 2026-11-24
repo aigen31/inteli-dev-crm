@@ -26,6 +26,7 @@ use App\Services\FormTemplateService;
 use App\Services\HtmlSanitizer;
 use App\Services\Tasks\TaskStrictControl;
 use App\Support\Options;
+use App\Support\TaskCalendar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -42,16 +43,23 @@ class TaskController extends Controller
 
     public function index(Request $request): Response
     {
-        $tasks = Task::query()
+        $date = $request->validate(['date' => ['nullable', 'date_format:Y-m-d']])['date'] ?? null;
+
+        $query = Task::query()
             ->with(['client:id,name', 'assignee:id,name', 'project:id,key,name,color'])
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->input('client_id'), fn ($q, $clientId) => $q->where('client_id', $clientId))
             ->when($request->input('project_id'), fn ($q, $projectId) => $q->where('project_id', $projectId))
             ->when($request->input('type'), fn ($q, $type) => $q->where('type', $type))
-            ->when($request->input('q'), fn ($q, $search) => $q->where('title', 'like', "%{$search}%"))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->input('q'), fn ($q, $search) => $q->where('title', 'like', "%{$search}%"));
+
+        $calendar = TaskCalendar::ranges((clone $query)->get(['starts_at', 'deadline', 'status']));
+
+        if ($date !== null) {
+            TaskCalendar::applyDate($query, $date);
+        }
+
+        $tasks = $query->latest()->paginate(20)->withQueryString();
 
         $tasks->through(fn (Task $task): array => [
             ...$task->toArray(),
@@ -62,7 +70,11 @@ class TaskController extends Controller
 
         return Inertia::render('Admin/Tasks/Index', [
             'tasks' => $tasks,
-            'filters' => $request->only('status', 'client_id', 'type', 'project_id', 'q'),
+            'filters' => [
+                ...$request->only('status', 'client_id', 'type', 'project_id', 'q'),
+                'date' => $date,
+            ],
+            'calendar' => $calendar,
             'statuses' => Options::taskStatuses(),
             'types' => Options::taskTypes(),
             'assignees' => User::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'role']),
