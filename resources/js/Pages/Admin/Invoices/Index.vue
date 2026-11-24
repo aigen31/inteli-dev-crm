@@ -57,7 +57,7 @@ function setStatus(value) {
         </div>
 
         <div v-if="!invoices.data.length" class="surface-card">
-            <EmptyState image="/images/kiki/kiki-empty-invoices.webp" image-class="rounded-[18px] border border-line/60 shadow-[0_12px_30px_rgba(16,13,24,.14)]" title="Счетов пока нет" text="Счёт создаётся по задаче. Выберите задачу, сумму и способ оплаты.">
+            <EmptyState image="/images/kiki/kiki-empty-invoices.webp" title="Счетов пока нет" text="Счёт создаётся по задаче. Выберите задачу, сумму и способ оплаты.">
                 <Link :href="route('admin.invoices.create')"><Button size="sm">Создать счёт</Button></Link>
             </EmptyState>
         </div>
