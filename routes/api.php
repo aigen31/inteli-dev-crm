@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\AvailabilityController;
 use App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Internal\AssistantToolController;
 use App\Http\Controllers\McpController;
@@ -15,6 +16,11 @@ Route::prefix('internal/assistant')
         Route::post('/tools/{tool}', [AssistantToolController::class, 'tool']);
         Route::get('/files/{file}', [AssistantToolController::class, 'file']);
     });
+
+// Public workload for the website availability widget. Aggregates only.
+Route::get('/public/availability', AvailabilityController::class)
+    ->middleware('throttle:60,1')
+    ->name('api.public.availability');
 
 Route::get('/v1/ping', fn () => response()->json([
     'data' => ['status' => 'ok', 'version' => 'v1'],
@@ -49,7 +55,6 @@ Route::prefix('v1')
             Route::post('/tasks', [V1\TaskController::class, 'store']);
             Route::put('/tasks/{task}', [V1\TaskController::class, 'update']);
             Route::patch('/tasks/{task}/status', [V1\TaskController::class, 'status']);
-
 
             Route::post('/invoices', [V1\InvoiceController::class, 'store']);
             Route::patch('/invoices/{invoice}/mark-paid', [V1\InvoiceController::class, 'markPaid']);
