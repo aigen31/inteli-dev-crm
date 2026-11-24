@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\TaskStatus;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -77,4 +78,61 @@ test('client task list filters by calendar day', function (): void {
             ->where('filters.date', '2026-11-20')
             ->has('calendar', 2)
             ->where('tasks.data', fn ($tasks) => collect($tasks)->pluck('id')->all() === [$match->id]));
+});
+
+test('executor task list keeps status and filters by calendar day', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = User::factory()->client()->create();
+    $executor = User::factory()->executor()->create();
+
+    $match = Task::factory()->create([
+        'client_id' => $client->id,
+        'created_by' => $admin->id,
+        'assignee_id' => $executor->id,
+        'title' => 'Задача исполнителя',
+        'status' => TaskStatus::InProgress,
+        'starts_at' => '2026-11-17',
+        'deadline' => '2026-11-19',
+    ]);
+    Task::factory()->create([
+        'client_id' => $client->id,
+        'created_by' => $admin->id,
+        'assignee_id' => $executor->id,
+        'title' => 'Другая задача',
+        'status' => TaskStatus::InProgress,
+        'starts_at' => '2026-11-25',
+        'deadline' => '2026-11-26',
+    ]);
+
+    $this->actingAs($executor)
+        ->get(route('executor.tasks.index', ['date' => '2026-11-18', 'status' => 'in_progress']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Executor/Tasks/Index')
+            ->where('filters.date', '2026-11-18')
+            ->where('filters.status', 'in_progress')
+            ->has('calendar', 2)
+            ->where('tasks.data', fn ($tasks) => collect($tasks)->pluck('id')->all() === [$match->id]));
+});
+
+test('admin project page exposes selected calendar date', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = User::factory()->client()->create();
+
+    $project = Project::query()->create([
+        'key' => 'CAL',
+        'name' => 'Calendar project',
+        'client_id' => $client->id,
+        'created_by' => $admin->id,
+        'status' => 'active',
+        'priority' => 'medium',
+        'color' => 'violet',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.projects.show', ['project' => $project, 'date' => '2026-11-18']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Projects/Show')
+            ->where('date', '2026-11-18'));
 });

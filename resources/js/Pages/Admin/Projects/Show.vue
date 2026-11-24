@@ -30,6 +30,7 @@ import {
 const props = defineProps({
     project: Object,
     tasks: Array,
+    date: { type: String, default: null },
     progress: Object,
     studies: Array,
     statuses: Array,
@@ -46,8 +47,8 @@ const props = defineProps({
 const { open } = useAssistant();
 const filterStatuses = ['pending_review', 'queued', 'in_progress', 'awaiting_review', 'rejected_by_client', 'completed', 'rejected_by_admin'];
 const { status, filteredTasks, setStatus } = useProjectTaskFilter(() => props.tasks, filterStatuses);
-const date = ref(null);
-const calendarOpen = ref(false);
+const date = ref(props.date || null);
+const calendarOpen = ref(Boolean(date.value));
 const calendarRanges = computed(() => props.tasks.map((task) => ({
     start: (task.starts_at || task.deadline || '').slice(0, 10) || null,
     end: (task.deadline || task.starts_at || '').slice(0, 10) || null,
@@ -62,6 +63,14 @@ function inSelectedDate(task) {
     return Boolean(start && end && start <= date.value && date.value <= end);
 }
 const visibleTasks = computed(() => filteredTasks.value.filter(inSelectedDate));
+function setDate(value) {
+    date.value = value;
+    const url = new URL(window.location.href);
+    if (value) url.searchParams.set('date', value);
+    else url.searchParams.delete('date');
+    window.history.replaceState(window.history.state, '', url);
+}
+
 const selectedIds = ref([]);
 const bulkOpen = ref(false);
 const selectedTasks = computed(() => visibleTasks.value.filter((task) => selectedIds.value.includes(task.id)));
@@ -173,7 +182,7 @@ function archive() {
                             <CalendarDaysIcon class="h-3 w-3" />
                             Календарь
                         </button>
-                        <button v-if="date" type="button" class="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800" @click="date = null">
+                        <button v-if="date" type="button" class="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[9px] font-semibold text-primary-800" @click="setDate(null)">
                             {{ formatDate(date) }}
                             <XMarkIcon class="h-3 w-3" />
                         </button>
@@ -182,7 +191,7 @@ function archive() {
                     </header>
 
                     <div v-if="calendarOpen" class="border-b border-line/70 p-3">
-                        <WorkloadCalendar :ranges="calendarRanges" :model-value="date" @update:model-value="(value) => (date = value)" />
+                        <WorkloadCalendar :ranges="calendarRanges" :model-value="date" @update:model-value="setDate" />
                     </div>
 
                     <div v-if="visibleTasks.length" class="divide-y divide-line/70">
@@ -202,7 +211,7 @@ function archive() {
                     <div v-else class="flex flex-col items-center gap-3 px-5 py-10 text-center">
                         <p class="text-[11px] leading-relaxed text-muted">{{ date ? 'На этот день задач нет.' : status ? 'Нет задач с таким статусом.' : 'В проекте пока нет задач.' }}</p>
                         <div class="flex flex-wrap items-center justify-center gap-2">
-                            <button v-if="status || date" type="button" class="text-[10px] font-semibold text-primary-700 hover:underline" @click="setStatus(''); date = null">Сбросить фильтр</button>
+                            <button v-if="status || date" type="button" class="text-[10px] font-semibold text-primary-700 hover:underline" @click="setStatus(''); setDate(null)">Сбросить фильтр</button>
                             <Link :href="route('admin.tasks.create', { project_id: project.id })">
                                 <Button size="sm" variant="secondary"><PlusIcon class="h-3.5 w-3.5" />Добавить первую</Button>
                             </Link>

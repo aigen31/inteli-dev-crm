@@ -12,6 +12,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Services\Tasks\TaskStrictControl;
 use App\Support\Options;
+use App\Support\TaskCalendar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,11 +28,20 @@ class TaskController extends Controller
     {
         $user = $request->user();
 
-        $tasks = Task::query()
+        $date = $request->validate(['date' => ['nullable', 'date_format:Y-m-d']])['date'] ?? null;
+
+        $query = Task::query()
             ->where('assignee_id', $user->id)
             ->with(['client:id,name', 'project:id,key,name,color'])
-            ->when($request->input('status'), fn ($query, $status) => $query->where('status', $status))
-            ->latest()
+            ->when($request->input('status'), fn ($query, $status) => $query->where('status', $status));
+
+        $calendar = TaskCalendar::ranges((clone $query)->get(['starts_at', 'deadline', 'status']));
+
+        if ($date !== null) {
+            TaskCalendar::applyDate($query, $date);
+        }
+
+        $tasks = $query->latest()
             ->paginate(20)
             ->withQueryString()
             ->through(fn (Task $task): array => [
@@ -41,7 +51,8 @@ class TaskController extends Controller
 
         return Inertia::render('Executor/Tasks/Index', [
             'tasks' => $tasks,
-            'filters' => $request->only('status'),
+            'filters' => [...$request->only('status'), 'date' => $date],
+            'calendar' => $calendar,
             'statuses' => Options::taskStatuses(),
             'counts' => [
                 'all' => Task::query()->where('assignee_id', $user->id)->count(),

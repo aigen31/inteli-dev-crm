@@ -105,6 +105,7 @@ class ProjectController extends Controller
                 'hint' => $role->hint(),
             ]),
             'tasks' => $tasks,
+            'date' => $request->validate(['date' => ['nullable', 'date_format:Y-m-d']])['date'] ?? null,
             'progress' => $this->projects->progress($project),
             'studies' => $project->studies->map(fn (ProjectStudy $study): array => $this->studyPayload($study)),
             'statuses' => $this->statusOptions(),

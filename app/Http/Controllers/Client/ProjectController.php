@@ -84,6 +84,7 @@ class ProjectController extends Controller
                     ->all()
                 : [],
             'tasks' => $tasks,
+            'date' => $request->validate(['date' => ['nullable', 'date_format:Y-m-d']])['date'] ?? null,
             'progress' => $this->progress($project, $user),
         ]);
     }
