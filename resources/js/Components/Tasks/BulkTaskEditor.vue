@@ -118,16 +118,16 @@ function reset() {
             <div class="fixed inset-0 z-[60] flex justify-end bg-black/30 backdrop-blur-[2px]" @click.self="emit('clear')">
                 <transition enter-active-class="transition duration-200 ease-out" enter-from-class="translate-x-6 opacity-0" enter-to-class="translate-x-0 opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="translate-x-0 opacity-100" leave-to-class="translate-x-6 opacity-0">
                     <section class="flex h-full w-full max-w-[440px] flex-col border-l border-line bg-surface shadow-[-24px_0_70px_rgba(16,13,24,.16)]" role="dialog" aria-modal="true" aria-label="Пакетное редактирование задач">
-                        <header class="relative overflow-hidden bg-ink px-5 pb-5 pt-5 text-canvas">
+                        <header class="relative overflow-hidden border-b border-line bg-surface-2/70 px-5 pb-5 pt-5 text-ink">
                             <div class="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-primary-400/25 blur-2xl"></div>
                             <div class="relative flex items-start gap-3">
-                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-white/10"><AdjustmentsHorizontalIcon class="h-5 w-5" /></span>
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-primary-soft text-primary-700"><AdjustmentsHorizontalIcon class="h-5 w-5" /></span>
                                 <div class="min-w-0 flex-1">
-                                    <p class="font-mono text-[8px] uppercase tracking-[0.16em] text-canvas/55">Пакетное изменение</p>
+                                    <p class="font-mono text-[8px] uppercase tracking-[0.16em] text-muted">Пакетное изменение</p>
                                     <h2 class="mt-1 font-display text-[20px] font-medium tracking-[-0.03em]">Настроить задачи</h2>
-                                    <p class="mt-1 text-[10px] leading-relaxed text-canvas/55">Выбрано {{ selectedTasks.length }} · название и описание не меняются</p>
+                                    <p class="mt-1 text-[10px] leading-relaxed text-muted">Выбрано {{ selectedTasks.length }} · название и описание не меняются</p>
                                 </div>
-                                <button type="button" class="rounded-full p-1.5 text-canvas/55 transition hover:bg-white/10 hover:text-canvas" aria-label="Закрыть" @click="emit('clear')"><XMarkIcon class="h-4 w-4" /></button>
+                                <button type="button" class="rounded-full p-1.5 text-muted transition hover:bg-ink/[0.06] hover:text-ink" aria-label="Закрыть" @click="emit('clear')"><XMarkIcon class="h-4 w-4" /></button>
                             </div>
                         </header>
 
