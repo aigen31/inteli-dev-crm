@@ -20,7 +20,7 @@ const sources = {
     flight: '/images/kiki/kiki-flight-badge.webp',
     classic: '/images/kiki/kiki-avatar.png',
     peek: '/images/kiki/kiki-forms-avatar.webp',
-    face: '/images/kiki/kiki-avatar-face.png?v=3',
+    face: '/images/kiki/kiki-avatar-face.png?v=4',
 };
 
 const src = computed(() => sources[props.variant] ?? sources.avatar);
