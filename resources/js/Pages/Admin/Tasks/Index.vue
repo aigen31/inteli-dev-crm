@@ -39,6 +39,20 @@ const bulkOpen = ref(false);
 const date = ref(props.filters?.date || null);
 const calendarOpen = ref(Boolean(date.value));
 
+watch(
+    () => props.filters?.date,
+    (value) => {
+        date.value = value || null;
+    },
+);
+
+watch(
+    () => props.filters?.status,
+    (value) => {
+        local.status = value || '';
+    },
+);
+
 const selectedTasks = computed(() => (props.tasks?.data || []).filter((task) => selectedIds.value.includes(task.id)));
 const allSelected = computed(() => (props.tasks?.data || []).length > 0 && props.tasks.data.every((task) => selectedIds.value.includes(task.id)));
 
