@@ -114,6 +114,13 @@ class AssistantController extends Controller
         return response()->json($this->agent->sessionPayload($request->user(), $conversation));
     }
 
+    public function progress(Request $request, AiConversation $conversation): JsonResponse
+    {
+        $this->authorizeConversation($request, $conversation);
+
+        return response()->json($this->agent->progress($request->user(), $conversation));
+    }
+
     public function updateSession(Request $request, AiConversation $conversation): JsonResponse
     {
         $this->authorizeConversation($request, $conversation);

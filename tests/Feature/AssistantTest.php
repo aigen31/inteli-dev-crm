@@ -427,3 +427,71 @@ test('deleting a session removes the mirror and tells the kernel which actor own
         && str_contains($request->url(), '/v1/conversations/'.$conversation->id)
         && str_contains($request->url(), 'actor_id='.$this->admin->id));
 });
+
+test('assistant progress reports live tool steps from the kernel', function (): void {
+    $conversation = AiConversation::query()->create([
+        'id' => '00000000-0000-0000-0000-000000000077',
+        'user_id' => $this->client->id,
+        'title' => 'Прогресс',
+        'context' => ['generating_at' => now()->subSeconds(9)->toIso8601String()],
+    ]);
+
+    Http::fake([
+        'kernel.test/v1/conversations/*' => Http::response([
+            'messages' => [
+                ['role' => 'user', 'content' => 'Создай задачу'],
+                [
+                    'role' => 'assistant',
+                    'content' => '',
+                    'tool_calls' => [[
+                        'id' => 'call-1',
+                        'type' => 'function',
+                        'function' => [
+                            'name' => 'create_task',
+                            'arguments' => json_encode(['title' => 'Проверить макет'], JSON_UNESCAPED_UNICODE),
+                        ],
+                    ]],
+                ],
+                ['role' => 'tool', 'tool_call_id' => 'call-1', 'content' => '{"id":"task-1"}'],
+                [
+                    'role' => 'assistant',
+                    'content' => '',
+                    'tool_calls' => [[
+                        'id' => 'call-2',
+                        'type' => 'function',
+                        'function' => ['name' => 'list_tasks', 'arguments' => '{"status":"queued"}'],
+                    ]],
+                ],
+            ],
+        ]),
+    ]);
+
+    $response = $this->actingAs($this->client)
+        ->getJson(route('assistant.conversations.progress', $conversation));
+
+    $response->assertOk()
+        ->assertJsonPath('generating', true)
+        ->assertJsonPath('steps.0.name', 'create_task')
+        ->assertJsonPath('steps.0.status', 'done')
+        ->assertJsonPath('steps.0.detail', 'Проверить макет')
+        ->assertJsonPath('steps.1.name', 'list_tasks')
+        ->assertJsonPath('steps.1.status', 'running')
+        ->assertJsonPath('stage', 'Выполняю: Ищу задачи');
+});
+
+test('assistant progress is idle without a running turn', function (): void {
+    $conversation = AiConversation::query()->create([
+        'id' => '00000000-0000-0000-0000-000000000078',
+        'user_id' => $this->client->id,
+        'title' => 'Тишина',
+        'context' => [],
+    ]);
+
+    Http::preventStrayRequests();
+
+    $this->actingAs($this->client)
+        ->getJson(route('assistant.conversations.progress', $conversation))
+        ->assertOk()
+        ->assertJsonPath('generating', false)
+        ->assertJsonCount(0, 'steps');
+});

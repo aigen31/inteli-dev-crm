@@ -45,6 +45,11 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(30)->by('assistant:'.($request->user()?->getKey() ?? $request->ip()));
         });
 
+        // Прогресс опрашивается чаще обычных запросов, поэтому у него свой лимит.
+        RateLimiter::for('assistant-progress', function (Request $request): Limit {
+            return Limit::perMinute(120)->by('assistant-progress:'.($request->user()?->getKey() ?? $request->ip()));
+        });
+
         // Публичная ссылка на бриф: токен в URL, авторизации нет, поэтому
         // режем по IP и отдельно по паре «IP + токен».
         RateLimiter::for('brief-link', function (Request $request): Limit {

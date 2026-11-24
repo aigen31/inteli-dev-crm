@@ -28,6 +28,7 @@ function toggleSize() {
 
 const sessions = ref([]);
 const sessionsLoading = ref(false);
+const sessionLoadingId = ref(null);
 
 async function fetchSessions() {
     if (sessionsLoading.value) return;
@@ -43,8 +44,14 @@ async function fetchSessions() {
 }
 
 async function openSession(id) {
-    await loadSession(id);
-    fetchSessions();
+    sessionLoadingId.value = id;
+
+    try {
+        await loadSession(id);
+        await fetchSessions();
+    } finally {
+        sessionLoadingId.value = null;
+    }
 }
 
 watch(
@@ -245,6 +252,12 @@ onBeforeUnmount(() => {
                             </button>
                         </div>
                         <div class="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
+                            <div v-if="sessionsLoading && !sessions.length" class="space-y-2">
+                                <div v-for="index in 4" :key="index" class="rounded-[10px] border border-line/50 px-2.5 py-2">
+                                    <span class="block h-2.5 animate-pulse rounded-full bg-ink/[0.07]" :class="index % 2 ? 'w-3/4' : 'w-5/6'" :style="{ animationDelay: `-${index * 120}ms` }"></span>
+                                    <span class="mt-1.5 block h-2 w-1/2 animate-pulse rounded-full bg-ink/[0.05]"></span>
+                                </div>
+                            </div>
                             <button
                                 v-for="item in sessions"
                                 :key="item.id"
@@ -255,9 +268,10 @@ onBeforeUnmount(() => {
                                 ]"
                                 @click="openSession(item.id)"
                             >
+                                <span v-if="sessionLoadingId === item.id" class="h-3 w-3 shrink-0 animate-spin rounded-full border-[1.5px] border-current border-t-transparent"></span>
                                 <span class="min-w-0 flex-1 truncate">{{ item.title || 'Без названия' }}</span>
                             </button>
-                            <p v-if="! sessions.length" class="px-2 py-3 text-[11px] text-faint">Пока нет диалогов</p>
+                            <p v-if="! sessionsLoading && !sessions.length" class="px-2 py-3 text-[11px] text-faint">Пока нет диалогов</p>
                         </div>
                     </aside>
 
@@ -265,6 +279,7 @@ onBeforeUnmount(() => {
                         <ChatThread
                     class="min-h-0 flex-1"
                     compact
+                    :conversation-id="conversationId"
                     :messages="messages"
                     :pending-actions="pendingActions"
                     :suggestions="promptSuggestions"
