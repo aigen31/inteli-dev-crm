@@ -5,6 +5,7 @@ import { Link } from '@inertiajs/vue3';
 import { ArrowUpRightIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate } from '@/Utils/formatters.js';
+import { loadTone } from '@/Utils/loadTones.js';
 
 const props = defineProps({
     compact: { type: Boolean, default: false },
@@ -120,29 +121,8 @@ function moveMonth(delta) { view.value = new Date(view.value.getFullYear(), view
 watch(() => props.assigneeId, () => { counts.value = {}; closeTasks(); load(); });
 
 function dateKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
-const isDarkTheme = () => typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark';
-
-const LOAD_TONES = {
-    light: [
-        { background: 'transparent', color: 'inherit' },
-        { background: '#E8F3EC', color: '#2F8F62' },
-        { background: '#FBF0D9', color: '#B7791F' },
-        { background: '#F6D8C4', color: '#A96120' },
-        { background: '#F2C7C1', color: '#A33A33' },
-    ],
-    dark: [
-        { background: 'transparent', color: 'inherit' },
-        { background: '#1d2a22', color: '#7fd2a7' },
-        { background: '#2f2818', color: '#e5c07b' },
-        { background: '#33231a', color: '#e8a87c' },
-        { background: '#3a1e1e', color: '#f1998f' },
-    ],
-};
-
 function tone(load) {
-    const palette = isDarkTheme() ? LOAD_TONES.dark : LOAD_TONES.light;
-
-    return palette[Math.min(Number(load) || 0, 4)];
+    return loadTone(load);
 }
 function formatDay(key) { const [y,m,d] = key.split('-').map(Number); return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(new Date(y, m-1, d)); }
 onMounted(() => {

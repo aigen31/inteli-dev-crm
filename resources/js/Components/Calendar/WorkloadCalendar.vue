@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { loadTone } from '@/Utils/loadTones.js';
 
 const props = defineProps({
     ranges: { type: Array, default: () => [] },
@@ -93,12 +94,12 @@ const selectedLabel = computed(() => {
 
 function loadClass(cell) {
     if (!cell.current) return 'text-faint/60';
-    if (cell.selected) return 'bg-primary-600 text-white shadow-[0_4px_12px_rgba(83,61,130,.25)]';
-    if (cell.load >= 5) return 'bg-primary-500/20 text-ink';
-    if (cell.load >= 3) return 'bg-sage/40 text-ink';
-    if (cell.load >= 1) return 'bg-sage/25 text-ink';
 
-    return 'text-muted hover:bg-surface-2';
+    return cell.selected ? 'bg-primary-600 text-white shadow-[0_4px_12px_rgba(83,61,130,.25)]' : 'text-ink hover:ring-1 hover:ring-primary-300';
+}
+
+function loadStyle(cell) {
+    return cell.selected || !cell.current ? {} : loadTone(cell.load);
 }
 
 function select(cell) {
@@ -145,6 +146,7 @@ function goToday() {
                 :aria-label="`${cell.key}, задач: ${cell.load}`"
                 :aria-pressed="cell.selected"
                 :class="['relative flex h-9 items-center justify-center rounded-[10px] text-[11px] font-semibold transition', loadClass(cell)]"
+                :style="loadStyle(cell)"
                 @click="select(cell)"
             >
                 {{ cell.day }}
@@ -154,10 +156,11 @@ function goToday() {
 
         <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-line/60 pt-2.5">
             <button type="button" class="text-[10px] font-semibold text-primary-700 hover:underline" @click="goToday">Сегодня</button>
-            <div class="ml-auto flex items-center gap-2 text-[9px] text-muted">
-                <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-sage/40"></span>1–2</span>
-                <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-sage"></span>3–4</span>
-                <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-primary-500/70"></span>5+</span>
+            <div class="ml-auto flex items-center gap-1 text-[8px] text-muted">
+                <span class="h-2 w-2 rounded-[2px]" :style="{ background: loadTone(1).background }"></span><span>спокойно</span>
+                <span class="ml-1 h-2 w-2 rounded-[2px]" :style="{ background: loadTone(2).background }"></span>
+                <span class="ml-1 h-2 w-2 rounded-[2px]" :style="{ background: loadTone(3).background }"></span>
+                <span class="ml-1 h-2 w-2 rounded-[2px]" :style="{ background: loadTone(4).background }"></span><span>пик</span>
             </div>
         </div>
 
