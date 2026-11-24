@@ -52,6 +52,7 @@ use App\Services\ProjectService;
 use App\Services\ReportService;
 use App\Services\SettingsService;
 use App\Services\TaskTemplateService;
+use App\Support\TaskCalendar;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
@@ -101,6 +102,7 @@ class CrmMcpService
             $this->tool('list_clients', 'Find client accounts by name, email or phone.', [
                 'query' => ['type' => 'string'],
                 'active' => ['type' => 'boolean'],
+                'date' => ['type' => 'string', 'description' => 'День YYYY-MM-DD: задачи, которые занимают эту дату.'],
                 'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100],
             ], [], true),
             $this->tool('get_client', 'Client card with recent tasks, invoices and custom fields. Use UUID or email.', [
@@ -110,6 +112,7 @@ class CrmMcpService
                 'query' => ['type' => 'string'],
                 'client_id' => ['type' => 'string'],
                 'include_archived' => ['type' => 'boolean'],
+                'date' => ['type' => 'string', 'description' => 'День YYYY-MM-DD: задачи, которые занимают эту дату.'],
                 'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100],
             ], [], true),
             $this->tool('get_project', 'Project card with members, invites, tasks and progress. Use UUID or key.', [
@@ -120,6 +123,7 @@ class CrmMcpService
                 'project_id' => ['type' => 'string'],
                 'client_id' => ['type' => 'string'],
                 'status' => ['type' => 'string', 'enum' => array_map(fn (TaskStatus $s) => $s->value, TaskStatus::cases())],
+                'date' => ['type' => 'string', 'description' => 'День YYYY-MM-DD: задачи, которые занимают эту дату.'],
                 'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100],
             ], [], true),
             $this->tool('get_task', 'Task card with comments, checklist, reports and invoices. Use UUID or reference (KEY-12).', [
@@ -128,6 +132,7 @@ class CrmMcpService
             $this->tool('list_invoices', 'List invoices with payment status and client.', [
                 'status' => ['type' => 'string', 'enum' => array_map(fn (InvoiceStatus $s) => $s->value, InvoiceStatus::cases())],
                 'client_id' => ['type' => 'string'],
+                'date' => ['type' => 'string', 'description' => 'День YYYY-MM-DD: задачи, которые занимают эту дату.'],
                 'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100],
             ], [], true),
             $this->tool('get_invoice', 'Invoice with tasks, client, payment method and client payment URL.', [
@@ -136,6 +141,7 @@ class CrmMcpService
             $this->tool('list_reports', 'Recent client reports; optionally filter by recipient or task.', [
                 'recipient_id' => ['type' => 'string'],
                 'task_id' => ['type' => 'string'],
+                'date' => ['type' => 'string', 'description' => 'День YYYY-MM-DD: задачи, которые занимают эту дату.'],
                 'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100],
             ], [], true),
             $this->tool('get_report', 'Full report with description/link groups and screenshot links.', [
@@ -161,6 +167,7 @@ class CrmMcpService
                 'client_id' => ['type' => 'string'],
                 'project_id' => ['type' => 'string'],
                 'query' => ['type' => 'string'],
+                'date' => ['type' => 'string', 'description' => 'День YYYY-MM-DD: задачи, которые занимают эту дату.'],
                 'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100],
             ], [], true),
             $this->tool('get_brief', 'Client brief card: template, client, progress, answers by section and revision history.', [
@@ -619,6 +626,10 @@ class CrmMcpService
 
         if (filled($arguments['query'] ?? null)) {
             $query->where('title', 'like', '%'.(string) $arguments['query'].'%');
+        }
+
+        if (filled($arguments['date'] ?? null)) {
+            TaskCalendar::applyDate($query, (string) $arguments['date']);
         }
 
         return ['tasks' => $query->limit($limit)->get()->map(fn (Task $task): array => $this->taskSummary($task))->all()];

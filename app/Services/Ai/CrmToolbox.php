@@ -14,8 +14,8 @@ use App\Enums\CustomFieldEntity;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\ProjectMemberRole;
-use App\Enums\ProjectType;
 use App\Enums\ProjectStatus;
+use App\Enums\ProjectType;
 use App\Enums\TaskPriority;
 use App\Enums\TaskSource;
 use App\Enums\TaskStatus;
@@ -46,6 +46,7 @@ use App\Services\ProjectService;
 use App\Services\ReportService;
 use App\Services\Tasks\TaskStrictControl;
 use App\Services\TaskTemplateService;
+use App\Support\TaskCalendar;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -296,6 +297,7 @@ class CrmToolbox
                     'status' => ['type' => 'string', 'enum' => array_column(TaskStatus::cases(), 'value'), 'description' => 'Статус задачи.'],
                     'client_id' => ['type' => 'string', 'description' => 'UUID клиента (только администратор).'],
                     'query' => ['type' => 'string', 'description' => 'Поиск по названию.'],
+                    'date' => ['type' => 'string', 'description' => 'День YYYY-MM-DD: задачи, которые занимают эту дату.'],
                     'limit' => ['type' => 'integer', 'description' => 'Сколько вернуть, 1–50.'],
                 ],
                 'required' => [],
@@ -1058,6 +1060,10 @@ class CrmToolbox
             }
 
             $query->where('status', $status);
+        }
+
+        if (filled($arguments['date'] ?? null)) {
+            TaskCalendar::applyDate($query, (string) $arguments['date']);
         }
 
         if (($search = trim((string) ($arguments['query'] ?? ''))) !== '') {

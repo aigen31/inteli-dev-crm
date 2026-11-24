@@ -11,10 +11,10 @@
 | Kernel API | `/v1/chat`, `/v1/conversations`, `/v1/studies`, `/v1/knowledge/pricing` | `KERNEL_TOKEN` | kernel |
 | Kernel native tools | model tool loop | shared | `get_price_list` |
 
-## Current counts (audit 2026-11-16)
+## Current counts (audit 2026-11-24)
 
-- CRM MCP: 41 tools (briefs: `list_briefs`, `get_brief`, `create_brief`, `reopen_brief`, `archive_brief`, `list_brief_templates`; balance: `get_balance`, `adjust_balance`).
-- CRM Kiki provider: 45 catalog entries (44 visible to an admin), including read-only `list_briefs` / `get_brief`.
+- CRM MCP: 41 tools; `list_tasks` принимает `date` (YYYY-MM-DD) для выборки задач на день (briefs: `list_briefs`, `get_brief`, `create_brief`, `reopen_brief`, `archive_brief`, `list_brief_templates`; balance: `get_balance`, `adjust_balance`).
+- CRM Kiki provider: 54 catalog entries, including read-only `list_briefs` / `get_brief`.
 - Site MCP: 8 read-only tools.
 - Site kernel provider: all 8 site MCP tools (generated from `mcp::TOOLS`) + alias `site_lookup`.
 - Kernel native: `get_price_list`; provider ceiling 64 tools.
