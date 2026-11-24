@@ -42,7 +42,7 @@ function setStatus(value) {
         </div>
 
         <div v-if="!invoices.data.length" class="surface-card">
-            <EmptyState image="/images/kiki/kiki-empty-invoices.webp?v=2" title="Счетов пока нет" text="Когда работа будет оценена, владелец выставит счёт — он появится здесь." />
+            <EmptyState image="/images/kiki/kiki-empty-invoices.webp?v=3" image-class="!h-[200px]" title="Счетов пока нет" text="Когда работа будет оценена, владелец выставит счёт — он появится здесь." />
         </div>
 
         <div v-else class="space-y-2.5">
