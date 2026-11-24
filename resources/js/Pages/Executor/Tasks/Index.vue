@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -7,15 +7,17 @@ import Button from '@/Components/UI/Button.vue';
 import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
 import Segmented from '@/Components/UI/Segmented.vue';
+import WorkloadCalendar from '@/Components/Calendar/WorkloadCalendar.vue';
 import { taskPriorityLabels, taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate } from '@/Utils/formatters.js';
-import { ArrowUpRightIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import { ArrowUpRightIcon, CalendarDaysIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     tasks: Object,
     filters: Object,
     statuses: Array,
     counts: Object,
+    calendar: { type: Array, default: () => [] },
 });
 
 const local = reactive({ status: props.filters?.status || '' });
@@ -25,9 +27,30 @@ const chips = [
     { value: 'awaiting_review', label: 'На проверке', count: props.counts?.awaiting_review },
 ];
 
+const date = ref(props.filters?.date || null);
+const calendarOpen = ref(Boolean(date.value));
+const selectedLabel = computed(() => {
+    if (!date.value) return null;
+
+    const [year, month, day] = date.value.split('-').map(Number);
+
+    return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(year, month - 1, day));
+});
+
 function setStatus(value) {
     local.status = value;
-    router.get(route('executor.tasks.index'), { status: value || undefined }, { preserveState: true, preserveScroll: true, replace: true });
+    router.get(route('executor.tasks.index'), {
+        status: value || undefined,
+        date: date.value || undefined,
+    }, { preserveState: true, preserveScroll: true, replace: true });
+}
+
+function setDate(value) {
+    date.value = value;
+    router.get(route('executor.tasks.index'), {
+        status: local.status || undefined,
+        date: value || undefined,
+    }, { preserveState: true, preserveScroll: true, replace: true });
 }
 </script>
 
@@ -40,6 +63,28 @@ function setStatus(value) {
         <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
             <Segmented :model-value="local.status" :options="chips" @update:model-value="setStatus" />
             <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{{ tasks.total }} задач</p>
+        </div>
+
+        <div class="surface-card mb-4 p-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/55 px-3 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:border-primary-300 hover:text-primary-700"
+                    :aria-expanded="calendarOpen"
+                    @click="calendarOpen = !calendarOpen"
+                >
+                    <CalendarDaysIcon class="h-3.5 w-3.5" />
+                    Календарь нагрузки
+                </button>
+                <button v-if="date" type="button" class="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[10px] font-semibold text-primary-800" @click="setDate(null)">
+                    {{ selectedLabel }}
+                    <XMarkIcon class="h-3 w-3" />
+                </button>
+                <span v-else class="text-[9px] text-faint">Выберите день, чтобы отфильтровать задачи</span>
+            </div>
+            <div v-if="calendarOpen" class="mt-2">
+                <WorkloadCalendar :ranges="calendar" :model-value="date" @update:model-value="setDate" />
+            </div>
         </div>
 
         <div class="surface-card overflow-hidden">
