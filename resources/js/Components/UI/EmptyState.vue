@@ -8,6 +8,7 @@ defineProps({
     compact: { type: Boolean, default: false },
     showAvatar: { type: Boolean, default: true },
     image: { type: String, default: null },
+    imageClass: { type: String, default: '' },
 });
 </script>
 
@@ -17,7 +18,7 @@ defineProps({
             v-if="image"
             :src="image"
             :alt="title"
-            class="pointer-events-none h-[170px] w-auto max-w-full select-none object-contain"
+            :class="['pointer-events-none h-[170px] w-auto max-w-full select-none object-contain', imageClass]"
             loading="lazy"
             draggable="false"
         />
