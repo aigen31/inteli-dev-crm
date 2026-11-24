@@ -333,3 +333,25 @@ test('MCP creates a self project without an external client', function (): void 
     expect($project->type->value)->toBe('self')
         ->and($project->client_id)->toBe($this->admin->id);
 });
+
+test('MCP list_tasks filters by calendar day', function (): void {
+    $inside = Task::factory()->create([
+        'client_id' => $this->client->id,
+        'created_by' => $this->admin->id,
+        'title' => 'Задача на выбранный день',
+        'starts_at' => '2026-11-20',
+        'deadline' => '2026-11-24',
+    ]);
+    Task::factory()->create([
+        'client_id' => $this->client->id,
+        'created_by' => $this->admin->id,
+        'title' => 'Задача вне дня',
+        'starts_at' => '2026-12-01',
+        'deadline' => '2026-12-02',
+    ]);
+
+    $result = mcpCall($this, 'list_tasks', ['date' => '2026-11-22']);
+
+    expect($result['isError'])->toBeFalse()
+        ->and(collect($result['structuredContent']['tasks'])->pluck('title')->all())->toBe([$inside->title]);
+});
