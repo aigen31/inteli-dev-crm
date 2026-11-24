@@ -159,7 +159,7 @@ function reset() {
                                 <p v-if="!hasFields" class="rounded-[13px] border border-dashed border-line px-3 py-2.5 text-[10px] leading-relaxed text-muted">Отметьте поля, которые нужно изменить. Остальные данные останутся как есть.</p>
                                 <p v-if="form.errors.fields" class="text-[10px] text-danger-ink">{{ validationMessage(form.errors.fields) }}</p>
                                 <div v-for="[key, message] in fieldErrors" :key="key" class="text-[10px] text-danger-ink"><template v-if="key !== 'fields'">{{ key }}: </template>{{ validationMessage(message) }}</div>
-                                <p v-if="enabled.status" class="rounded-[12px] bg-[#FBF0E6] px-3 py-2 text-[9px] leading-relaxed text-warning">Если задача не может перейти в выбранный статус, она останется без изменения статуса. Остальные поля применятся.</p>
+                                <p v-if="enabled.status" class="rounded-[12px] border border-warning/20 bg-warning/10 px-3 py-2 text-[9px] leading-relaxed text-warning">Если задача не может перейти в выбранный статус, она останется без изменения статуса. Остальные поля применятся.</p>
                             </div>
                         </div>
 
