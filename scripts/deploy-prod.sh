@@ -78,4 +78,4 @@ else
 fi
 
 echo "→ проверка /up"
-"${SSH_CMD[@]}" "$HOST" "curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:18001/up"
+"${SSH_CMD[@]}" "$HOST" 'for i in $(seq 1 30); do code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:18001/up); [ "$code" = "200" ] && { echo 200; exit 0; }; sleep 2; done; echo "$code"; exit 1'
