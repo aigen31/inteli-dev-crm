@@ -1,8 +1,9 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import ProjectTaskFilter from '@/Components/Projects/ProjectTaskFilter.vue';
 import WorkloadCalendar from '@/Components/Calendar/WorkloadCalendar.vue';
+import { useFilterMemory } from '@/Composables/useFilterMemory';
 import { useProjectTaskFilter } from '@/Composables/useProjectTaskFilter';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -21,7 +22,9 @@ const props = defineProps({
 
 const statuses = ['pending_review', 'queued', 'in_progress', 'awaiting_review', 'rejected_by_client', 'completed', 'rejected_by_admin'];
 const { status, filteredTasks, setStatus } = useProjectTaskFilter(() => props.tasks, statuses);
-const date = ref(props.date || null);
+const memory = useFilterMemory(`client.project.${props.project.id}`);
+const savedDate = memory.load().date || null;
+const date = ref(props.date || savedDate);
 const calendarOpen = ref(Boolean(date.value));
 const calendarRanges = computed(() => props.tasks.map((task) => ({
     start: (task.starts_at || task.deadline || '').slice(0, 10) || null,
@@ -39,11 +42,16 @@ function inSelectedDate(task) {
 const visibleTasks = computed(() => filteredTasks.value.filter(inSelectedDate));
 function setDate(value) {
     date.value = value;
+    memory.save({ date: value });
     const url = new URL(window.location.href);
     if (value) url.searchParams.set('date', value);
     else url.searchParams.delete('date');
     window.history.replaceState(window.history.state, '', url);
 }
+
+onMounted(() => {
+    if (!props.date && savedDate) setDate(savedDate);
+});
 </script>
 
 <template>

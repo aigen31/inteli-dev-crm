@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import ClientLayout from '@/Components/Layout/ClientLayout.vue';
 import Badge from '@/Components/UI/Badge.vue';
@@ -8,6 +8,7 @@ import EmptyState from '@/Components/UI/EmptyState.vue';
 import Pagination from '@/Components/UI/Pagination.vue';
 import Segmented from '@/Components/UI/Segmented.vue';
 import WorkloadCalendar from '@/Components/Calendar/WorkloadCalendar.vue';
+import { useFilterMemory } from '@/Composables/useFilterMemory';
 import { taskPriorityLabels, taskStatusLabels } from '@/Utils/constants.js';
 import { formatDate } from '@/Utils/formatters.js';
 import { ArrowUpRightIcon, CalendarDaysIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
@@ -20,14 +21,16 @@ const props = defineProps({
     calendar: { type: Array, default: () => [] },
 });
 
-const local = reactive({ status: props.filters?.status || '' });
+const memory = useFilterMemory('executor.tasks');
+const saved = memory.load();
+const local = reactive({ status: props.filters?.status || saved.status || '' });
 const chips = [
     { value: '', label: 'Все', count: props.counts?.all },
     { value: 'in_progress', label: 'В работе', count: props.counts?.in_progress },
     { value: 'awaiting_review', label: 'На проверке', count: props.counts?.awaiting_review },
 ];
 
-const date = ref(props.filters?.date || null);
+const date = ref(props.filters?.date || saved.date || null);
 const calendarOpen = ref(Boolean(date.value));
 
 watch(
@@ -51,21 +54,29 @@ const selectedLabel = computed(() => {
     return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(year, month - 1, day));
 });
 
+function pushFilters() {
+    const params = { status: local.status || undefined, date: date.value || undefined };
+    memory.save(params);
+    router.get(route('executor.tasks.index'), params, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+}
+
 function setStatus(value) {
     local.status = value;
-    router.get(route('executor.tasks.index'), {
-        status: value || undefined,
-        date: date.value || undefined,
-    }, { preserveState: true, preserveScroll: true, replace: true });
+    pushFilters();
 }
 
 function setDate(value) {
     date.value = value;
-    router.get(route('executor.tasks.index'), {
-        status: local.status || undefined,
-        date: value || undefined,
-    }, { preserveState: true, preserveScroll: true, replace: true });
+    pushFilters();
 }
+
+onMounted(() => {
+    if (!props.filters?.date && saved.date) pushFilters();
+});
 </script>
 
 <template>
