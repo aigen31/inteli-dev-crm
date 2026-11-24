@@ -5,6 +5,7 @@ import MessageBubble from '@/Components/Assistant/MessageBubble.vue';
 import PendingActionCard from '@/Components/Assistant/PendingActionCard.vue';
 import FormActionCard from '@/Components/Assistant/FormActionCard.vue';
 import TaskPlanCard from '@/Components/Assistant/TaskPlanCard.vue';
+import AssistantProgress from '@/Components/Assistant/AssistantProgress.vue';
 
 const props = defineProps({
     messages: { type: Array, default: () => [] },
@@ -16,6 +17,7 @@ const props = defineProps({
     error: { type: String, default: null },
     fieldErrors: { type: Object, default: () => ({}) },
     compact: { type: Boolean, default: false },
+    conversationId: { type: String, default: null },
 });
 
 const emit = defineEmits(['send', 'confirm', 'reject', 'regenerate']);
@@ -125,14 +127,7 @@ function lastAssistantId() {
                 />
             </template>
 
-            <div v-if="loading" class="flex items-center gap-2.5">
-                <KikiAvatar variant="face" fit="contain" :size="28" />
-                <div class="flex items-center gap-1 rounded-full border border-line bg-white/60 px-4 py-3">
-                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-primary-400 [animation-delay:-0.2s]"></span>
-                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-primary-400 [animation-delay:-0.1s]"></span>
-                    <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-primary-400"></span>
-                </div>
-            </div>
+            <AssistantProgress v-if="loading" :active="loading" :conversation-id="conversationId" />
 
             <div v-if="error" class="rounded-2xl border border-danger/20 bg-danger/[0.06] px-3.5 py-2.5 text-[12px] text-danger-ink">
                 {{ error }}

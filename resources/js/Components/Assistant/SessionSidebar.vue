@@ -17,6 +17,7 @@ const props = defineProps({
     activeId: { type: String, default: null },
     loading: { type: Boolean, default: false },
     showArchived: { type: Boolean, default: false },
+    loadingId: { type: String, default: null },
 });
 
 const emit = defineEmits(['select', 'new', 'rename', 'pin', 'archive', 'delete', 'search', 'toggle-archived']);
@@ -158,8 +159,24 @@ onBeforeUnmount(() => document.removeEventListener('click', closeMenu));
             </label>
         </div>
 
+        <div v-if="loading && sessions.length" class="mx-3 mb-2 h-0.5 overflow-hidden rounded-full bg-ink/[0.06]">
+            <span class="block h-full w-1/2 animate-pulse rounded-full bg-primary-500/70"></span>
+        </div>
+
         <div class="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
-            <p v-if="loading && sessions.length === 0" class="px-3 py-6 text-center text-[11px] text-muted">Загружаю диалоги…</p>
+            <div v-if="loading && sessions.length === 0" class="px-1 py-2">
+                <p class="flex items-center gap-2 px-2 pb-2 text-[10px] text-muted">
+                    <span class="relative flex h-2 w-2">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-400/60"></span>
+                        <span class="relative inline-flex h-2 w-2 rounded-full bg-primary-500"></span>
+                    </span>
+                    Кики открывает диалоги…
+                </p>
+                <div v-for="index in 5" :key="index" class="mb-2 rounded-[13px] border border-line/50 px-2.5 py-2">
+                    <span class="block h-2.5 animate-pulse rounded-full bg-ink/[0.07]" :class="index % 3 === 0 ? 'w-2/3' : index % 2 === 0 ? 'w-5/6' : 'w-3/4'" :style="{ animationDelay: `-${index * 120}ms` }"></span>
+                    <span class="mt-1.5 block h-2 w-1/2 animate-pulse rounded-full bg-ink/[0.05]" :style="{ animationDelay: `-${index * 90}ms` }"></span>
+                </div>
+            </div>
 
             <p v-else-if="sessions.length === 0" class="px-3 py-6 text-center text-[11px] leading-relaxed text-muted">
                 {{ search ? 'Ничего не нашлось.' : 'Здесь появятся ваши диалоги с Кики.' }}
@@ -183,7 +200,10 @@ onBeforeUnmount(() => document.removeEventListener('click', closeMenu));
                             @click="emit('select', session.id)"
                         >
                             <span :class="['mt-0.5 shrink-0', activeId === session.id ? 'text-primary-600' : 'text-faint']">
-                                <MapPinIcon v-if="session.pinned" class="h-3.5 w-3.5" />
+                                <span v-if="loadingId === session.id" class="flex h-3.5 w-3.5 items-center justify-center">
+                                    <span class="h-3 w-3 animate-spin rounded-full border-[1.5px] border-primary-500 border-t-transparent"></span>
+                                </span>
+                                <MapPinIcon v-else-if="session.pinned" class="h-3.5 w-3.5" />
                                 <ChatBubbleLeftRightIcon v-else class="h-3.5 w-3.5" />
                             </span>
 

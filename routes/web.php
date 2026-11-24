@@ -71,6 +71,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [Auth\LogoutController::class, 'destroy'])->name('logout');
     Route::put('/password', [Auth\PasswordController::class, 'update'])->name('password.update');
 
+    // Live progress is polled often: it gets its own, higher limiter.
+    Route::middleware(['is_active', 'throttle:assistant-progress'])
+        ->get('/assistant/conversations/{conversation}/progress', [AssistantController::class, 'progress'])
+        ->name('assistant.conversations.progress');
+
     // Kiki assistant (both roles)
     Route::middleware(['is_active', 'throttle:assistant'])->group(function () {
         Route::get('/assistant', [AssistantController::class, 'page'])->name('assistant.index');

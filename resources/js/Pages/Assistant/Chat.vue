@@ -58,6 +58,7 @@ const {
 
 const sessionList = ref([...props.sessions]);
 const listLoading = ref(false);
+const sessionLoadingId = ref(null);
 const sidebarOpen = ref(false);
 const showArchived = ref(false);
 const searchQuery = ref('');
@@ -104,10 +105,16 @@ async function selectSession(id) {
         return;
     }
 
-    const payload = await loadSession(id);
+    sessionLoadingId.value = id;
 
-    if (payload) {
-        syncUrl(id);
+    try {
+        const payload = await loadSession(id);
+
+        if (payload) {
+            syncUrl(id);
+        }
+    } finally {
+        sessionLoadingId.value = null;
     }
 }
 
@@ -231,6 +238,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                     :sessions="sessionList"
                     :active-id="activeId"
                     :loading="listLoading"
+                    :loading-id="sessionLoadingId"
                     :show-archived="showArchived"
                     @select="selectSession"
                     @new="newChat"
@@ -287,6 +295,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                 <div class="flex min-h-0 flex-1 flex-col">
                     <ChatThread
                         class="min-h-0 flex-1"
+                        :conversation-id="activeId"
                         :messages="messages"
                         :pending-actions="pendingActions"
                         :suggestions="promptSuggestions"
@@ -343,6 +352,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                             :sessions="sessionList"
                             :active-id="activeId"
                             :loading="listLoading"
+                    :loading-id="sessionLoadingId"
                             :show-archived="showArchived"
                             @select="selectSession"
                             @new="newChat"

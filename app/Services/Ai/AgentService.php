@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
  * CRM adapter for the central Kiki assistant kernel.
@@ -162,6 +163,184 @@ class AgentService
     }
 
     /**
+     * Live progress of the current turn: which tools the kernel already called
+     * and what it is doing right now. Read-only, cheap when nothing runs.
+     *
+     * @return array<string, mixed>
+     */
+    public function progress(User $user, AiConversation $conversation): array
+    {
+        $context = is_array($conversation->context) ? $conversation->context : [];
+        $generatingAt = $context['generating_at'] ?? null;
+        $generating = false;
+        $elapsed = 0;
+
+        if (is_string($generatingAt) && $generatingAt !== '') {
+            try {
+                $started = Carbon::parse($generatingAt);
+                $elapsed = (int) max(0, $started->diffInSeconds(now()));
+                $generating = $started->gt(now()->subSeconds(180));
+            } catch (Throwable) {
+                $generating = false;
+            }
+        }
+
+        if (! $generating) {
+            return [
+                'conversation_id' => $conversation->id,
+                'generating' => false,
+                'elapsed_seconds' => 0,
+                'stage' => null,
+                'steps' => [],
+            ];
+        }
+
+        $steps = [];
+
+        try {
+            $history = $this->kernel->history($user, $conversation->id);
+        } catch (AiException) {
+            $history = [];
+        }
+
+        $lastUser = -1;
+        foreach ($history as $index => $message) {
+            if (($message['role'] ?? null) === 'user') {
+                $lastUser = $index;
+            }
+        }
+
+        $index = 0;
+        foreach (array_slice($history, $lastUser + 1) as $message) {
+            $role = $message['role'] ?? null;
+
+            if ($role === 'assistant' && is_array($message['tool_calls'] ?? null)) {
+                foreach ($message['tool_calls'] as $call) {
+                    $name = (string) ($call['function']['name'] ?? 'tool');
+                    $arguments = json_decode((string) ($call['function']['arguments'] ?? '{}'), true);
+                    $arguments = is_array($arguments) ? $arguments : [];
+                    $id = (string) ($call['id'] ?? $name.'-'.$index);
+
+                    $steps[] = [
+                        'id' => $id,
+                        'name' => $name,
+                        'label' => $this->toolLabel($name, $arguments),
+                        'detail' => $this->toolDetail($arguments),
+                        'status' => 'running',
+                    ];
+                    $index++;
+                }
+
+                continue;
+            }
+
+            if ($role === 'tool' && isset($message['tool_call_id'])) {
+                $toolId = (string) $message['tool_call_id'];
+
+                foreach ($steps as $stepIndex => $step) {
+                    if ($step['id'] !== $toolId) {
+                        continue;
+                    }
+
+                    $payload = json_decode((string) ($message['content'] ?? ''), true);
+                    $steps[$stepIndex]['status'] = is_array($payload) && array_key_exists('error', $payload) ? 'error' : 'done';
+                    $steps[$stepIndex]['detail'] = $this->toolResultDetail($steps[$stepIndex]['detail'], $payload);
+                }
+            }
+        }
+
+        $running = null;
+        foreach ($steps as $step) {
+            if ($step['status'] === 'running') {
+                $running = $step;
+            }
+        }
+
+        if ($steps === []) {
+            $steps = [[
+                'id' => 'thinking',
+                'name' => 'thinking',
+                'label' => 'Разбираюсь в запросе',
+                'detail' => null,
+                'status' => 'running',
+            ]];
+            $stage = 'Разбираюсь в запросе и контексте страницы';
+        } elseif ($running !== null) {
+            $stage = 'Выполняю: '.$running['label'];
+        } else {
+            $stage = 'Собираю ответ';
+        }
+
+        return [
+            'conversation_id' => $conversation->id,
+            'generating' => true,
+            'elapsed_seconds' => $elapsed,
+            'stage' => $stage,
+            'steps' => array_slice($steps, -8),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     */
+    private function toolLabel(string $name, array $arguments): string
+    {
+        $labels = [
+            'overview' => 'Смотрю обзор CRM',
+            'list_tasks' => 'Ищу задачи',
+            'get_task' => 'Открываю задачу',
+            'create_task' => 'Создаю задачу',
+            'update_task' => 'Обновляю задачу',
+            'list_clients' => 'Ищу клиентов',
+            'get_client' => 'Открываю клиента',
+            'list_projects' => 'Ищу проекты',
+            'create_invoice' => 'Готовлю счёт',
+            'list_invoices' => 'Ищу счета',
+            'create_brief' => 'Готовлю бриф',
+            'read_document' => 'Читаю документ',
+            'study_project_site' => 'Изучаю сайт проекта',
+            'get_price_list' => 'Смотрю прайс-лист',
+            'set_custom_field' => 'Меняю поле',
+        ];
+
+        if (isset($labels[$name])) {
+            return $labels[$name];
+        }
+
+        $summary = $this->toolbox->summarize($name, $arguments);
+
+        return $summary !== $name ? Str::ucfirst($summary) : 'Использую '.str_replace('_', ' ', $name);
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     */
+    private function toolDetail(array $arguments): ?string
+    {
+        foreach (['title', 'query', 'name', 'status', 'date'] as $key) {
+            $value = $arguments[$key] ?? null;
+
+            if (is_string($value) && trim($value) !== '') {
+                return Str::limit($value, 60);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $payload
+     */
+    private function toolResultDetail(?string $current, mixed $payload): ?string
+    {
+        if (is_array($payload) && array_key_exists('error', $payload)) {
+            return Str::limit((string) $payload['error'], 80);
+        }
+
+        return $current;
+    }
+
+    /**
      * Regenerate the last answer. Local mirror drops the trailing assistant
      * messages first, then the kernel re-runs the same user turn.
      *
@@ -229,7 +408,7 @@ class AgentService
             // The form did not pass domain validation. Keep the action proposed
             // so the user can fix the fields and confirm again.
             throw $exception;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $action->update([
                 'status' => AiActionStatus::Failed,
                 'error' => $exception->getMessage(),
@@ -470,7 +649,7 @@ class AgentService
         if (is_string($generatingAt) && $generatingAt !== '') {
             try {
                 $generating = Carbon::parse($generatingAt)->gt(now()->subSeconds(180));
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 $generating = false;
             }
 
