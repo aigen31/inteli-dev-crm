@@ -9,11 +9,12 @@ import Pagination from '@/Components/UI/Pagination.vue';
 import Segmented from '@/Components/UI/Segmented.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import BulkTaskEditor from '@/Components/Tasks/BulkTaskEditor.vue';
+import TaskDateFilter from '@/Components/Tasks/TaskDateFilter.vue';
 import WorkloadCalendar from '@/Components/Calendar/WorkloadCalendar.vue';
 import { useFilterMemory } from '@/Composables/useFilterMemory';
 import { taskPriorityLabels, taskStatusLabels, taskTypeLabels } from '@/Utils/constants.js';
 import { formatDate } from '@/Utils/formatters.js';
-import { CalendarDaysIcon, MagnifyingGlassIcon, PlusIcon, Squares2X2Icon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { MagnifyingGlassIcon, PlusIcon, Squares2X2Icon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     tasks: Object,
@@ -41,7 +42,7 @@ const local = reactive({
 const selectedIds = ref([]);
 const bulkOpen = ref(false);
 const date = ref(props.filters?.date || saved.date || null);
-const calendarOpen = ref(Boolean(date.value));
+const calendarOpen = ref(false);
 
 watch(
     () => props.filters?.date,
@@ -127,6 +128,7 @@ function setStatus(value) {
 
 function setDate(value) {
     date.value = value;
+    calendarOpen.value = false;
     apply({ date: value || undefined });
 }
 </script>
@@ -159,8 +161,12 @@ function setDate(value) {
             <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{{ tasks.total }} задач</p>
         </div>
 
-        <div class="surface-card mb-4 p-3">
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_150px_150px_180px]">
+        <div
+            class="surface-card mb-4 p-3 transition"
+            :class="calendarOpen ? 'ring-1 ring-primary-200/60' : ''"
+            @keydown.esc="calendarOpen = false"
+        >
+            <div class="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_150px_170px_210px]">
                 <form class="relative" @submit.prevent="apply()">
                     <MagnifyingGlassIcon class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                     <input
@@ -172,30 +178,26 @@ function setDate(value) {
                 </form>
                 <SelectInput v-model="local.type" :options="types" placeholder="Все типы" @update:model-value="apply()" />
                 <SelectInput v-model="local.project_id" :options="projects.map((p) => ({ value: p.id, label: p.key + ' · ' + p.name }))" placeholder="Все проекты" @update:model-value="apply()" />
-            </div>
-            <div class="mt-2 flex flex-wrap items-center gap-2 border-t border-line/60 pt-2">
-                <button
-                    type="button"
-                    class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/55 px-3 py-1.5 text-[10px] font-semibold text-ink-soft transition hover:border-primary-300 hover:text-primary-700"
-                    :aria-expanded="calendarOpen"
-                    @click="calendarOpen = !calendarOpen"
-                >
-                    <CalendarDaysIcon class="h-3.5 w-3.5" />
-                    Календарь нагрузки
-                </button>
-                <button
-                    v-if="date"
-                    type="button"
-                    class="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[10px] font-semibold text-primary-800"
-                    @click="setDate(null)"
-                >
-                    {{ formatDate(date) }}
-                    <XMarkIcon class="h-3 w-3" />
-                </button>
-                <span v-else class="text-[9px] text-faint">Выберите день, чтобы отфильтровать задачи</span>
-            </div>
-            <div v-if="calendarOpen" class="mt-2">
-                <WorkloadCalendar :ranges="calendar" :model-value="date" @update:model-value="setDate" />
+                <div class="relative min-w-0">
+                    <TaskDateFilter
+                        :ranges="calendar"
+                        :model-value="date"
+                        :open="calendarOpen"
+                        @toggle="calendarOpen = !calendarOpen"
+                        @update:model-value="setDate"
+                    />
+
+                    <div v-if="calendarOpen" class="fixed inset-0 z-30" aria-hidden="true" @click="calendarOpen = false"></div>
+                    <div
+                        v-if="calendarOpen"
+                        id="task-date-calendar"
+                        role="dialog"
+                        aria-label="Нагрузка по датам"
+                        class="absolute right-0 top-[calc(100%+8px)] z-40 w-[min(92vw,380px)] rounded-[18px] border border-line bg-surface p-1.5 shadow-[0_18px_50px_rgba(40,32,65,0.16)] max-sm:fixed max-sm:inset-x-3 max-sm:bottom-20 max-sm:top-auto max-sm:max-h-[72vh] max-sm:w-auto max-sm:overflow-y-auto"
+                    >
+                        <WorkloadCalendar :ranges="calendar" :model-value="date" @update:model-value="setDate" />
+                    </div>
+                </div>
             </div>
         </div>
 
