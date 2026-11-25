@@ -2,23 +2,27 @@
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh_CN.md)
 
-<img src="public/images/kiki/kiki-readme-orbit.png" width="180" align="right" alt="Kiki 手捧发光的紫色球体，纸文件夹和纸飞机环绕飞行">
+<img src="docs/assets/readme/kiki-header.svg" alt="Kiki，inteli dev 吉祥物，在矢量盾牌后" width="100%">
 
-自由职业者的工作空间：客户、任务、项目、模板、账单、报告和助手 Kiki——尽在一处。
+自由职业者的工作空间：客户、简报、项目、任务、账单、报告、自定义字段和助手 Kiki——尽在一处。
 
 CRM 是封闭的：没有注册，账户由所有者创建。管理员管理业务，客户只能看到自己的任务、账单和报告。
+
+> 此 worktree 使用 `production` 分支，只接收来自 `master` 的合并提交，不在这里开发。部署前请执行迁移并检查 `/up`。
 
 ## 功能
 
 - **客户和任务**——状态、优先级、截止日期、检查清单、评论和变更历史。
-- **项目**——形如 `KOR` 的键、客户、成员和角色、进度、网站、`AGENTS.md` 和网站研究。
-- **任务模板和申请表单**——可重复的场景、必填字段和结构化申请。
+- **项目**——形如 `KOR` 的键、客户、成员与 `manager`/`member`/`viewer` 角色、进度、网站、`AGENTS.md` 和网站研究。
+- **简报和申请表单**——客户简报向导、可复用模板、必填字段、结构化申请和导出。
+- **任务模板**——带必填字段、检查清单和 AI 草稿的可重复场景。
 - **账单和支付**——ЮKassa、直接转账、定期付款和提醒。
-- **客户报告**——「说明 → 验证链接 → 截图」分组、收件人和未读状态。
+- **客户报告**——「说明 → 验证链接 → 截图」分组、收件人、未读状态和可选任务关联。
+- **自定义字段**——客户、项目和任务的类型化值，不用松散 JSON。
 - **资料库**——工作空间的材料和文档。
-- **Kiki**——通过工具访问 CRM 的助手：查找客户和任务、准备计划、创建申请并协助处理界面。
+- **Kiki**——通过工具访问 CRM 的助手：查找客户和任务、读取简报、准备任务计划、创建表单并协助处理界面。
 - **帮助**——带有步骤和链接的 CRM 分区地图。
-- **API 和 MCP**——REST API v1 和面向外部 AI 客户端的 MCP 服务器。
+- **API 和 MCP**——REST API v1 和面向外部 AI 客户端的 39 工具 MCP 服务器。
 - **法律页面**——隐私政策和个人数据处理同意书。
 
 ## 技术栈
@@ -140,12 +144,16 @@ docker compose -f docker-compose.yml exec app php artisan migrate --force
 | 安装和环境 | [docs/agents/setup.md](docs/agents/setup.md) |
 | 架构和领域 | [docs/agents/architecture.md](docs/agents/architecture.md) |
 | 项目和任务 | [docs/agents/project-management.md](docs/agents/project-management.md) |
+| 客户简报 | [docs/agents/briefs.md](docs/agents/briefs.md) |
 | 申请表单 | [docs/agents/form-templates.md](docs/agents/form-templates.md) |
 | 用户字段 | [docs/agents/custom-fields.md](docs/agents/custom-fields.md) |
 | Kiki 和 AI | [docs/agents/ai.md](docs/agents/ai.md) |
 | REST API | [docs/agents/api.md](docs/agents/api.md) |
 | MCP | [docs/agents/mcp.md](docs/agents/mcp.md) |
 | Frontend 和设计 | [docs/agents/frontend.md](docs/agents/frontend.md) |
+| 设计系统 | [docs/agents/design-system.md](docs/agents/design-system.md) |
+| Kiki 素材 | [docs/agents/kiki-assets.md](docs/agents/kiki-assets.md) |
+| 运维注意事项 | [docs/agents/gotchas.md](docs/agents/gotchas.md) |
 | 测试 | [docs/agents/testing.md](docs/agents/testing.md) |
 | 部署 | [docs/agents/deployment.md](docs/agents/deployment.md) |
 
