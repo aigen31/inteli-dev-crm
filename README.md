@@ -2,7 +2,7 @@
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh_CN.md)
 
-<img src="docs/assets/readme/kiki-header.svg" alt="Kiki, the inteli dev mascot, with a vector design palette" width="100%">
+<img src="docs/assets/readme/kiki-header.en.svg" alt="Kiki, the inteli dev mascot, sitting on a design-system shelf" width="100%">
 
 A workspace for the self-employed: clients, briefs, projects, tasks, invoices, reports, custom fields and the Kiki assistant — all in one place.
 
