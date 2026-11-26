@@ -470,3 +470,44 @@ html[data-theme="dark"] input[type="checkbox"]:indeterminate::after {
     background: #ffffff;
     transform: translate(-50%, -50%);
 }
+
+/*
+ * Study · harness terminal.
+ *
+ * Light theme renders this card as an inverted dark terminal (bg-ink +
+ * text-canvas). In dark theme those two tokens swap, so the terminal turned
+ * into a light panel with white-on-white logs. Keep it a terminal in both
+ * themes and give the event colors enough contrast on graphite.
+ */
+html[data-theme="dark"] .study-terminal {
+    background: #0b0910 !important;
+    border-color: #332c40 !important;
+    color: #ece6f3 !important;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.04), 0 18px 40px rgba(0, 0, 0, 0.38) !important;
+}
+html[data-theme="dark"] .study-terminal-bar {
+    background: #100d17 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html[data-theme="dark"] .study-terminal-log {
+    background: #0b0910 !important;
+    color: #ece6f3 !important;
+}
+html[data-theme="dark"] .study-terminal-foot {
+    background: #0f0c15 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html[data-theme="dark"] .study-terminal [class*="text-white/70"] { color: #d7cfe3 !important; }
+html[data-theme="dark"] .study-terminal [class*="text-white/50"] { color: #b8afc8 !important; }
+html[data-theme="dark"] .study-terminal [class*="text-white/40"] { color: #968ba8 !important; }
+html[data-theme="dark"] .study-terminal [class*="text-white/35"] { color: #8a7f9b !important; }
+html[data-theme="dark"] .study-terminal [class*="text-white/30"] { color: #7c718c !important; }
+html[data-theme="dark"] .study-terminal [class*="text-white/25"] { color: #6f647f !important; }
+html[data-theme="dark"] .study-terminal .text-sky { color: #8ecdf5 !important; }
+html[data-theme="dark"] .study-terminal .text-sage { color: #8fe0ae !important; }
+html[data-theme="dark"] .study-terminal .text-peach { color: #f0b99e !important; }
+html[data-theme="dark"] .study-terminal .text-danger { color: #ff9aa5 !important; }
+html[data-theme="dark"] .study-terminal .text-canvas { color: #ece6f3 !important; }
+html[data-theme="dark"] .study-terminal-log::-webkit-scrollbar { width: 8px; }
+html[data-theme="dark"] .study-terminal-log::-webkit-scrollbar-track { background: #0b0910; }
+html[data-theme="dark"] .study-terminal-log::-webkit-scrollbar-thumb { background: #332c40; border-radius: 4px; }

@@ -2,7 +2,7 @@
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh_CN.md)
 
-<img src="docs/assets/readme/kiki-header.svg" alt="Кики, маскот inteli dev, в орбите карточек CRM" width="100%">
+<img src="docs/assets/readme/kiki-header.ru.svg" alt="Кики, маскот inteli dev, опирается на карточку CRM" width="100%">
 
 Рабочее пространство для самозанятого: клиенты, брифы, проекты, задачи, счета, отчёты, пользовательские поля и ассистент Кики — в одном месте.
 

@@ -2,7 +2,7 @@
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh_CN.md)
 
-<img src="docs/assets/readme/kiki-header.svg" alt="Kiki，inteli dev 吉祥物，置身 CRM 卡片轨道中" width="100%">
+<img src="docs/assets/readme/kiki-header.zh.svg" alt="Kiki，inteli dev 吉祥物，倚靠在 CRM 状态卡片上" width="100%">
 
 自由职业者的工作空间：客户、简报、项目、任务、账单、报告、自定义字段和助手 Kiki——尽在一处。
 

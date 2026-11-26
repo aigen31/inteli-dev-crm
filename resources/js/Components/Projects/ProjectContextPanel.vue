@@ -179,8 +179,8 @@ onBeforeUnmount(() => window.clearInterval(pollTimer));
             </p>
         </section>
 
-        <section v-if="study" class="overflow-hidden rounded-[22px] border border-ink/15 bg-ink text-canvas shadow-[0_18px_40px_rgba(28,24,35,0.22)]">
-            <header class="flex items-center gap-2 border-b border-white/10 px-4 py-2">
+        <section v-if="study" class="study-terminal overflow-hidden rounded-[22px] border border-ink/15 bg-ink text-canvas shadow-[0_18px_40px_rgba(28,24,35,0.22)]">
+            <header class="study-terminal-bar flex items-center gap-2 border-b border-white/10 px-4 py-2">
                 <span class="flex gap-1">
                     <span class="h-1.5 w-1.5 rounded-full bg-danger/70"></span>
                     <span class="h-1.5 w-1.5 rounded-full bg-warning/70"></span>
@@ -189,15 +189,15 @@ onBeforeUnmount(() => window.clearInterval(pollTimer));
                 <p class="ml-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/50">study · harness</p>
                 <span class="ml-auto font-mono text-[9px] text-white/35">{{ study.id?.slice(0, 8) }}</span>
             </header>
-            <div class="max-h-[240px] overflow-y-auto px-4 py-2 font-mono text-[9px] leading-relaxed">
+            <div class="study-terminal-log max-h-[240px] overflow-y-auto px-4 py-2 font-mono text-[9px] leading-relaxed">
                 <p v-if="events.length === 0" class="text-white/40">Агент готовит план изучения…</p>
-                <div v-for="(event, index) in events" :key="index" class="flex gap-2 py-0.5">
+                <div v-for="(event, index) in events" :key="index" class="study-terminal-row flex gap-2 py-0.5">
                     <span class="w-[64px] shrink-0 text-white/25">{{ event.type }}</span>
                     <span :class="['min-w-0 break-words', tone(event)]">{{ eventLabel(event) }}</span>
                 </div>
                 <p v-if="running" class="mt-1 animate-pulse text-white/40">▍</p>
             </div>
-            <footer class="flex items-center gap-2 border-t border-white/10 px-4 py-2">
+            <footer class="study-terminal-foot flex items-center gap-2 border-t border-white/10 px-4 py-2">
                 <span v-if="study.status === 'completed'" class="inline-flex items-center gap-1.5 text-[10px] text-sage">
                     <CheckCircleIcon class="h-3.5 w-3.5" />
                     AGENTS.md обновлён — проверьте и сохраните
