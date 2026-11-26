@@ -22,6 +22,8 @@ class Invoice extends Model
 
     protected $fillable = [
         'task_id',
+        'infrastructure_service_id',
+        'service_period',
         'client_id',
         'amount',
         'currency',
@@ -47,6 +49,11 @@ class Invoice extends Model
             'recurring_next_date' => 'date',
             'paid_at' => 'datetime',
         ];
+    }
+
+    public function infrastructureService(): BelongsTo
+    {
+        return $this->belongsTo(InfrastructureService::class, 'infrastructure_service_id');
     }
 
     public function task(): BelongsTo
