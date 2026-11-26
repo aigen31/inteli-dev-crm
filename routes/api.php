@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\AvailabilityController;
-use App\Http\Controllers\Api\InfrastructureReportController;
 use App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Internal\AssistantToolController;
 use App\Http\Controllers\McpController;
@@ -64,11 +63,6 @@ Route::prefix('v1')
                 ->whereIn('entity', ['client', 'task', 'invoice']);
         });
     });
-
-// Манифест бэкапов от агента на сервере хранения (bearer-токен внутри).
-Route::post('/infrastructure/report', InfrastructureReportController::class)
-    ->middleware('throttle:60,1')
-    ->name('api.infrastructure.report');
 
 // MCP server for DeepSeek Harness and other agents (token auth inside).
 Route::post('/mcp', [McpController::class, 'handle'])->name('mcp.handle');

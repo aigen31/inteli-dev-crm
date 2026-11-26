@@ -23,7 +23,6 @@ import {
     UserIcon,
     UsersIcon,
     WalletIcon,
-    ServerStackIcon,
     WrenchScrewdriverIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
@@ -83,7 +82,6 @@ const baseNavigation = computed(() => {
             { key: 'admin.clients', label: 'Пользователи', href: route('admin.clients.index'), icon: UsersIcon, active: path.value.startsWith('/admin/clients') || path.value.startsWith('/admin/team') },
             { key: 'admin.invoices', label: 'Счета', href: route('admin.invoices.index'), icon: BanknotesIcon, active: path.value.startsWith('/admin/invoices') },
             { key: 'admin.reports', label: 'Отчёты', href: route('admin.reports.index'), icon: InboxIcon, active: path.value.startsWith('/admin/reports') },
-            { key: 'admin.infrastructure', label: 'Инфраструктура', href: route('admin.infrastructure.index'), icon: ServerStackIcon, active: path.value.startsWith('/admin/infrastructure') },
         ];
     }
 

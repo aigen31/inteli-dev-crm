@@ -200,11 +200,6 @@ Route::middleware('auth')->group(function () {
 
         // Reports
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-        Route::get('/infrastructure', [Admin\InfrastructureController::class, 'index'])->name('infrastructure.index');
-        Route::post('/infrastructure', [Admin\InfrastructureController::class, 'store'])->name('infrastructure.store');
-        Route::post('/infrastructure/sync', [Admin\InfrastructureController::class, 'sync'])->name('infrastructure.sync');
-        Route::patch('/infrastructure/{service}/status', [Admin\InfrastructureController::class, 'status'])->whereUuid('service')->name('infrastructure.status');
-        Route::post('/infrastructure/{service}/invoice', [Admin\InfrastructureController::class, 'invoice'])->whereUuid('service')->name('infrastructure.invoice');
         Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
         Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
         Route::get('/reports/{report}/edit', [ReportController::class, 'edit'])->whereUuid('report')->name('reports.edit');
